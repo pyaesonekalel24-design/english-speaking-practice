@@ -1,142 +1,22 @@
 /* =====================================================
-   SPEAKUP ENGLISH
-   Version 1
+   ENGLISH SPEAKING PRACTICE
+   SCRIPT.JS
 ===================================================== */
-
-
-/* =====================================================
-   PARAGRAPH DATABASE
-===================================================== */
-
-const paragraphs = {
-
-  easy: [
-    {
-      title: "A Morning Walk",
-      text:
-        "Every morning, I take a short walk around my neighborhood. " +
-        "The streets are usually quiet, and the weather is cool. " +
-        "I enjoy seeing the trees, the houses, and the people starting their day."
-    },
-
-    {
-      title: "My Favorite Food",
-      text:
-        "My favorite food is noodles. " +
-        "I like eating them with vegetables and a little spicy sauce. " +
-        "Sometimes I cook noodles at home when I am hungry."
-    },
-
-    {
-      title: "A Busy Day",
-      text:
-        "Today is a busy day at work. " +
-        "I have several things to finish before the afternoon. " +
-        "I will take a short break when I finish my most important task."
-    }
-  ],
-
-
-  medium: [
-    {
-      title: "Learning Something New",
-      text:
-        "Learning something new can feel difficult at first, but practice makes the process easier. " +
-        "When we make mistakes, we have an opportunity to understand what we need to improve. " +
-        "The most important thing is to continue practicing instead of giving up."
-    },
-
-    {
-      title: "Technology and Daily Life",
-      text:
-        "Technology has become an important part of our daily lives. " +
-        "We use phones and computers to communicate, study, work, and entertain ourselves. " +
-        "Although technology is useful, it is also important to take regular breaks from screens."
-    },
-
-    {
-      title: "A Visit to the Market",
-      text:
-        "Last weekend, I visited a local market with my friend. " +
-        "There were many people buying fresh vegetables, fruit, and other food. " +
-        "We walked around for an hour before stopping at a small restaurant for lunch."
-    }
-  ],
-
-
-  intermediate: [
-    {
-      title: "The Value of Communication",
-      text:
-        "Effective communication is not simply about speaking clearly. " +
-        "It also requires us to listen carefully and understand what another person is trying to express. " +
-        "In everyday conversations, small misunderstandings can often be avoided when people take the time to listen before responding."
-    },
-
-    {
-      title: "Building a Good Habit",
-      text:
-        "Developing a useful habit usually requires patience and consistency. " +
-        "People sometimes expect immediate results and become discouraged when progress seems slow. " +
-        "However, small actions repeated every day can eventually produce meaningful changes."
-    },
-
-    {
-      title: "Working With Other People",
-      text:
-        "Working with other people can be challenging because everyone has different experiences, opinions, and ways of solving problems. " +
-        "A successful team does not necessarily require everyone to think in exactly the same way. " +
-        "Instead, people can contribute different ideas while respecting one another."
-    }
-  ]
-
-};
-
-
-/* =====================================================
-   APPLICATION STATE
-===================================================== */
-
-let currentLevel = "easy";
 
 let currentParagraph = null;
 
 let recognition = null;
-
 let isListening = false;
 
 let finalTranscript = "";
+let interimTranscript = "";
 
 let selectedWord = "";
 
 
 /* =====================================================
-   SCREEN ELEMENTS
+   GET HTML ELEMENTS
 ===================================================== */
-
-const homeScreen =
-  document.getElementById("homeScreen");
-
-const levelScreen =
-  document.getElementById("levelScreen");
-
-const practiceScreen =
-  document.getElementById("practiceScreen");
-
-const startButton =
-  document.getElementById("startButton");
-
-const backHomeButton =
-  document.getElementById("backHomeButton");
-
-const homeButton =
-  document.getElementById("homeButton");
-
-const currentLevelDisplay =
-  document.getElementById("currentLevel");
-
-const paragraphText =
-  document.getElementById("paragraphText");
 
 const micButton =
   document.getElementById("micButton");
@@ -147,158 +27,21 @@ const micStatus =
 const transcript =
   document.getElementById("transcript");
 
+const wordResults =
+  document.getElementById("wordResults");
+
 const resultCard =
   document.getElementById("resultCard");
 
 const resultSummary =
   document.getElementById("resultSummary");
 
-const wordResults =
-  document.getElementById("wordResults");
-
-const wordInfo =
-  document.getElementById("wordInfo");
-
-const selectedWordDisplay =
-  document.getElementById("selectedWord");
-
-const similarWords =
-  document.getElementById("similarWords");
-
-const pronounceButton =
-  document.getElementById("pronounceButton");
-
-const closeWordInfo =
-  document.getElementById("closeWordInfo");
+const paragraphText =
+  document.getElementById("paragraphText");
 
 
 /* =====================================================
-   SCREEN CONTROL
-===================================================== */
-
-function showScreen(screen) {
-
-  document
-    .querySelectorAll(".screen")
-    .forEach(item => {
-      item.classList.remove("active");
-    });
-
-  screen.classList.add("active");
-}
-
-
-/* =====================================================
-   HOME → LEVEL
-===================================================== */
-
-startButton.addEventListener("click", () => {
-
-  showScreen(levelScreen);
-
-});
-
-
-/* =====================================================
-   LEVEL SELECTION
-===================================================== */
-
-document
-  .querySelectorAll(".level-button")
-  .forEach(button => {
-
-    button.addEventListener("click", () => {
-
-      currentLevel =
-        button.dataset.level;
-
-      startPractice();
-
-    });
-
-  });
-
-
-/* =====================================================
-   BACK TO HOME
-===================================================== */
-
-backHomeButton.addEventListener("click", () => {
-
-  showScreen(homeScreen);
-
-});
-
-
-homeButton.addEventListener("click", () => {
-
-  stopRecognition();
-
-  showScreen(homeScreen);
-
-});
-
-
-/* =====================================================
-   RANDOM PARAGRAPH
-===================================================== */
-
-function chooseParagraph() {
-
-  const list =
-    paragraphs[currentLevel];
-
-  const randomIndex =
-    Math.floor(Math.random() * list.length);
-
-  return list[randomIndex];
-
-}
-
-
-/* =====================================================
-   START PRACTICE
-===================================================== */
-
-function startPractice() {
-
-  currentParagraph =
-    chooseParagraph();
-
-  currentLevelDisplay.textContent =
-    capitalize(currentLevel);
-
-  paragraphText.textContent =
-    currentParagraph.text;
-
-  transcript.textContent =
-    "Your speech will appear here...";
-
-  finalTranscript = "";
-
-  resultCard.classList.add("hidden");
-
-  wordInfo.classList.add("hidden");
-
-  showScreen(practiceScreen);
-
-}
-
-
-/* =====================================================
-   CAPITALIZE
-===================================================== */
-
-function capitalize(text) {
-
-  return text.charAt(0).toUpperCase()
-    + text.slice(1);
-
-}
-
-
-/* =====================================================
-   SPEECH RECOGNITION
+   SPEECH RECOGNITION SETUP
 ===================================================== */
 
 function setupSpeechRecognition() {
@@ -306,7 +49,6 @@ function setupSpeechRecognition() {
   const SpeechRecognition =
     window.SpeechRecognition ||
     window.webkitSpeechRecognition;
-
 
   if (!SpeechRecognition) {
 
@@ -316,35 +58,25 @@ function setupSpeechRecognition() {
     micButton.disabled = true;
 
     return;
-
   }
-
 
   recognition =
     new SpeechRecognition();
 
+  recognition.lang = "en-US";
 
-  recognition.lang =
-    "en-US";
+  recognition.continuous = true;
 
+  recognition.interimResults = true;
 
-  recognition.continuous =
-    true;
-
-
-  recognition.interimResults =
-    true;
+  recognition.maxAlternatives = 1;
 
 
-  recognition.maxAlternatives =
-    1;
-
-
-  /* --------------------------------
+  /* ---------------------------------------------------
      WHEN MICROPHONE STARTS
-  -------------------------------- */
+  --------------------------------------------------- */
 
-  recognition.onstart = () => {
+  recognition.onstart = function() {
 
     isListening = true;
 
@@ -352,17 +84,17 @@ function setupSpeechRecognition() {
 
     micStatus.textContent =
       "Listening... Read the passage aloud.";
-
   };
 
 
-  /* --------------------------------
-     SPEECH RESULT
-  -------------------------------- */
+  /* ---------------------------------------------------
+     WHEN SPEECH IS RECEIVED
+  --------------------------------------------------- */
 
-  recognition.onresult = (event) => {
+  recognition.onresult = function(event) {
 
-    let temporaryTranscript = "";
+    let newInterim = "";
+
 
     for (
       let i = event.resultIndex;
@@ -373,29 +105,78 @@ function setupSpeechRecognition() {
       const result =
         event.results[i];
 
-      const text =
-        result[0].transcript;
+      const spokenText =
+        result[0].transcript.trim();
+
+
+      if (!spokenText) {
+        continue;
+      }
+
+
+      /*
+        FINAL RESULT
+
+        Only final results are permanently stored.
+      */
 
       if (result.isFinal) {
 
-        finalTranscript +=
-          " " + text;
-
-      } else {
-
-        temporaryTranscript +=
-          " " + text;
+        finalTranscript =
+          (
+            finalTranscript +
+            " " +
+            spokenText
+          ).trim();
 
       }
 
+
+      /*
+        INTERIM RESULT
+
+        This is temporary speech.
+
+        IMPORTANT:
+        We do NOT add this permanently.
+
+        This prevents:
+
+        "last night last night last night"
+
+        from appearing because the browser
+        repeatedly updates its temporary result.
+      */
+
+      else {
+
+        newInterim =
+          (
+            newInterim +
+            " " +
+            spokenText
+          ).trim();
+      }
     }
 
+
+    interimTranscript =
+      newInterim;
+
+
+    /*
+      Display both:
+
+      permanent final speech
+      +
+      temporary speech
+    */
 
     const displayText =
       (
         finalTranscript +
         " " +
-        temporaryTranscript
+        interimTranscript
       ).trim();
 
 
@@ -404,48 +185,70 @@ function setupSpeechRecognition() {
       "Listening...";
 
 
-    /* --------------------------------
-       LIVE COMPARISON
-    -------------------------------- */
+    /*
+      Show live comparison while speaking.
+      The actual final score is calculated
+      when the user stops.
+    */
 
     if (displayText.length > 0) {
 
-      compareSpeech(displayText);
-
+      compareSpeech(
+        displayText,
+        false
+      );
     }
-
   };
 
 
-  /* --------------------------------
+  /* ---------------------------------------------------
      MICROPHONE ENDS
-  -------------------------------- */
+  --------------------------------------------------- */
 
-  recognition.onend = () => {
+  recognition.onend = function() {
 
     isListening = false;
 
-    micButton.classList.remove("listening");
+    micButton.classList.remove(
+      "listening"
+    );
+
+
+    /*
+      IMPORTANT:
+
+      We DO NOT call recognition.start()
+      here.
+
+      Therefore the microphone NEVER
+      automatically turns itself back on.
+    */
 
     micStatus.textContent =
-      "Reading finished.";
+      finalTranscript.trim()
+        ? "Reading finished. Press Start Speaking to try again."
+        : "Microphone stopped. Press Start Speaking to begin.";
+
+
+    /*
+      Calculate the final score.
+    */
 
     if (finalTranscript.trim()) {
 
       compareSpeech(
-        finalTranscript.trim()
+        finalTranscript.trim(),
+        true
       );
-
     }
-
   };
 
 
-  /* --------------------------------
-     ERRORS
-  -------------------------------- */
+  /* ---------------------------------------------------
+     SPEECH RECOGNITION ERROR
+  --------------------------------------------------- */
 
-  recognition.onerror = (event) => {
+  recognition.onerror = function(event) {
 
     console.log(
       "Speech recognition error:",
@@ -455,81 +258,74 @@ function setupSpeechRecognition() {
 
     isListening = false;
 
-    micButton.classList.remove("listening");
+    micButton.classList.remove(
+      "listening"
+    );
 
 
     if (event.error === "not-allowed") {
 
       micStatus.textContent =
         "Microphone permission was blocked. Please allow microphone access.";
-
     }
 
     else if (event.error === "no-speech") {
 
       micStatus.textContent =
-        "I didn't hear speech. Try speaking a little louder.";
+        "I didn't hear speech. Try speaking a little louder, then press Start Speaking again.";
+    }
 
+    else if (event.error === "audio-capture") {
+
+      micStatus.textContent =
+        "The browser could not access the microphone. Check your microphone permission.";
     }
 
     else {
 
       micStatus.textContent =
-        "Something went wrong with speech recognition.";
-
+        "Speech recognition stopped. Press Start Speaking to try again.";
     }
-
   };
-
 }
 
 
 /* =====================================================
-   MICROPHONE BUTTON
+   START MICROPHONE
 ===================================================== */
 
-micButton.addEventListener("click", () => {
-
-  if (!recognition) {
-
-    setupSpeechRecognition();
-
-  }
-
+function startRecognition() {
 
   if (!recognition) {
     return;
   }
 
 
+  /*
+    Prevent starting twice.
+  */
+
   if (isListening) {
-
-    stopRecognition();
-
+    return;
   }
 
-  else {
 
-    startRecognition();
-
-  }
-
-});
-
-
-/* =====================================================
-   START RECOGNITION
-===================================================== */
-
-function startRecognition() {
+  /*
+    Clear previous attempt.
+  */
 
   finalTranscript = "";
+
+  interimTranscript = "";
+
 
   transcript.textContent =
     "Listening...";
 
 
-  resultCard.classList.add("hidden");
+  resultCard.classList.add(
+    "hidden"
+  );
 
 
   try {
@@ -541,14 +337,12 @@ function startRecognition() {
   catch (error) {
 
     console.log(error);
-
   }
-
 }
 
 
 /* =====================================================
-   STOP RECOGNITION
+   STOP MICROPHONE
 ===================================================== */
 
 function stopRecognition() {
@@ -556,6 +350,12 @@ function stopRecognition() {
   if (!recognition) {
     return;
   }
+
+
+  if (!isListening) {
+    return;
+  }
+
 
   try {
 
@@ -566,45 +366,199 @@ function stopRecognition() {
   catch (error) {
 
     console.log(error);
-
   }
-
 }
 
 
 /* =====================================================
-   TEXT NORMALIZATION
+   MICROPHONE BUTTON
 ===================================================== */
 
-function cleanWord(word) {
+if (micButton) {
 
-  return word
-    .toLowerCase()
-    .replace(/[.,!?;:"'()[\]{}]/g, "")
-    .trim();
+  micButton.addEventListener(
+    "click",
+    function() {
 
+      /*
+        MANUAL TOGGLE ONLY
+
+        Press once:
+        START
+
+        Press again:
+        STOP
+      */
+
+      if (isListening) {
+
+        stopRecognition();
+
+      }
+
+      else {
+
+        startRecognition();
+      }
+    }
+  );
 }
 
 
 /* =====================================================
-   GET WORDS
+   NORMALIZE WORDS
 ===================================================== */
 
 function getWords(text) {
 
   return text
+    .toLowerCase()
+    .replace(/[.,!?;:"'()]/g, "")
     .split(/\s+/)
-    .map(cleanWord)
     .filter(Boolean);
-
 }
 
 
 /* =====================================================
-   SIMPLE WORD COMPARISON
+   WORD SIMILARITY
 ===================================================== */
 
-function compareSpeech(spokenText) {
+function wordsAreSimilar(
+  target,
+  spoken
+) {
+
+  target =
+    target.toLowerCase();
+
+  spoken =
+    spoken.toLowerCase();
+
+
+  /*
+    Exact match
+  */
+
+  if (target === spoken) {
+
+    return true;
+  }
+
+
+  /*
+    Small difference tolerance.
+
+    This allows tiny speech-recognition
+    variations without immediately
+    marking everything wrong.
+  */
+
+  if (
+    target.length > 4 &&
+    spoken.length > 3
+  ) {
+
+    const distance =
+      levenshteinDistance(
+        target,
+        spoken
+      );
+
+    if (
+      distance <= 1
+    ) {
+
+      return true;
+    }
+  }
+
+
+  return false;
+}
+
+
+/* =====================================================
+   LEVENSHTEIN DISTANCE
+===================================================== */
+
+function levenshteinDistance(
+  a,
+  b
+) {
+
+  const matrix = [];
+
+
+  for (
+    let i = 0;
+    i <= b.length;
+    i++
+  ) {
+
+    matrix[i] = [i];
+  }
+
+
+  for (
+    let j = 0;
+    j <= a.length;
+    j++
+  ) {
+
+    matrix[0][j] = j;
+  }
+
+
+  for (
+    let i = 1;
+    i <= b.length;
+    i++
+  ) {
+
+    for (
+      let j = 1;
+      j <= a.length;
+      j++
+    ) {
+
+      if (
+        b.charAt(i - 1) ===
+        a.charAt(j - 1)
+      ) {
+
+        matrix[i][j] =
+          matrix[i - 1][j - 1];
+
+      }
+
+      else {
+
+        matrix[i][j] =
+          Math.min(
+
+            matrix[i - 1][j] + 1,
+
+            matrix[i][j - 1] + 1,
+
+            matrix[i - 1][j - 1] + 1
+          );
+      }
+    }
+  }
+
+
+  return matrix[b.length][a.length];
+}
+
+
+/* =====================================================
+   COMPARE SPEECH
+===================================================== */
+
+function compareSpeech(
+  spokenText,
+  showFinalScore = false
+) {
 
   if (!currentParagraph) {
     return;
@@ -618,27 +572,45 @@ function compareSpeech(spokenText) {
 
 
   const spokenWords =
-    getWords(spokenText);
+    getWords(
+      spokenText
+    );
 
 
   let matched = 0;
 
 
+  /*
+    Clear previous highlighted words.
+  */
+
   wordResults.innerHTML = "";
 
 
+  /*
+    Compare every expected word
+    against the corresponding spoken word.
+  */
+
   targetWords.forEach(
-    (targetWord, index) => {
+    function(
+      targetWord,
+      index
+    ) {
 
       const spokenWord =
         spokenWords[index];
 
 
       const wordElement =
-        document.createElement("span");
+        document.createElement(
+          "span"
+        );
 
 
-      wordElement.classList.add("word");
+      wordElement.classList.add(
+        "word"
+      );
 
 
       wordElement.textContent =
@@ -650,8 +622,7 @@ function compareSpeech(spokenText) {
 
 
       /*
-       If the spoken word is missing
-       or different, mark it.
+        WRONG WORD
       */
 
       if (
@@ -665,24 +636,31 @@ function compareSpeech(spokenText) {
         wordElement.classList.add(
           "wrong"
         );
-
       }
+
+
+      /*
+        CORRECT WORD
+      */
 
       else {
 
         matched++;
-
       }
 
 
+      /*
+        Clicking a word will later
+        open pronunciation information.
+      */
+
       wordElement.addEventListener(
         "click",
-        () => {
+        function() {
 
           showWordInfo(
             targetWord
           );
-
         }
       );
 
@@ -690,73 +668,126 @@ function compareSpeech(spokenText) {
       wordResults.appendChild(
         wordElement
       );
-
     }
   );
 
 
-  const percentage =
-    Math.round(
-      (
-        matched /
-        targetWords.length
-      ) * 100
-    );
+  /*
+    SCORE
+
+    Example:
+
+    10 expected words
+    7 matched
+
+    = 70 / 100
+  */
+
+  let percentage = 0;
+
+
+  if (targetWords.length > 0) {
+
+    percentage =
+      Math.round(
+        (
+          matched /
+          targetWords.length
+        ) * 100
+      );
+  }
 
 
   resultSummary.textContent =
-    `${percentage}% of the words matched the expected reading. ` +
-    `Tap a highlighted word to practice it.`;
+    `${percentage}/100 — ${percentage}% of the words matched the expected reading. Tap a highlighted word to practice it.`;
 
 
   resultCard.classList.remove(
     "hidden"
   );
 
+
+  /*
+    Only create the final score
+    when the user actually stops.
+  */
+
+  if (showFinalScore) {
+
+    updateScoreDisplay(
+      percentage
+    );
+  }
 }
 
 
 /* =====================================================
-   SIMPLE WORD SIMILARITY
+   SCORE DISPLAY
 ===================================================== */
 
-function wordsAreSimilar(
-  target,
-  spoken
+function updateScoreDisplay(
+  score
 ) {
 
-  if (target === spoken) {
-    return true;
-  }
+  let scoreDisplay =
+    document.getElementById(
+      "scoreDisplay"
+    );
 
 
   /*
-   Small spelling differences are allowed.
-   This helps avoid marking every tiny
-   recognition mistake as wrong.
+    Create score element if it
+    doesn't already exist.
   */
 
-  if (
-    target.startsWith(spoken) ||
-    spoken.startsWith(target)
-  ) {
+  if (!scoreDisplay) {
 
-    if (
-      Math.abs(
-        target.length -
-        spoken.length
-      ) <= 2
-    ) {
+    scoreDisplay =
+      document.createElement(
+        "div"
+      );
 
-      return true;
 
-    }
+    scoreDisplay.id =
+      "scoreDisplay";
 
+
+    scoreDisplay.style.marginTop =
+      "12px";
+
+
+    scoreDisplay.style.padding =
+      "14px 18px";
+
+
+    scoreDisplay.style.borderRadius =
+      "12px";
+
+
+    scoreDisplay.style.background =
+      "rgba(255,255,255,0.08)";
+
+
+    scoreDisplay.style.fontSize =
+      "24px";
+
+
+    scoreDisplay.style.fontWeight =
+      "700";
+
+
+    scoreDisplay.style.textAlign =
+      "center";
+
+
+    resultCard.appendChild(
+      scoreDisplay
+    );
   }
 
 
-  return false;
-
+  scoreDisplay.textContent =
+    `Score: ${score}/100`;
 }
 
 
@@ -764,144 +795,93 @@ function wordsAreSimilar(
    WORD INFORMATION
 ===================================================== */
 
-function showWordInfo(word) {
+function showWordInfo(
+  word
+) {
 
   selectedWord =
     word;
 
 
-  selectedWordDisplay.textContent =
-    word;
+  /*
+    If your existing HTML already
+    has a word-info section, use it.
+  */
+
+  const wordInfo =
+    document.getElementById(
+      "wordInfo"
+    );
 
 
-  const examples =
-    getSimilarSoundExamples(word);
+  if (wordInfo) {
 
+    wordInfo.textContent =
+      `Practice word: ${word}`;
+  }
 
-  similarWords.textContent =
-    examples;
+  else {
 
-
-  wordInfo.classList.remove(
-    "hidden"
-  );
-
+    console.log(
+      "Selected word:",
+      word
+    );
+  }
 }
 
 
 /* =====================================================
-   CLOSE WORD INFORMATION
+   START PRACTICE
 ===================================================== */
 
-closeWordInfo.addEventListener(
-  "click",
-  () => {
+function startPractice(
+  paragraph
+) {
 
-    wordInfo.classList.add(
+  /*
+    Stop an existing microphone
+    session before starting another
+    practice.
+  */
+
+  if (
+    recognition &&
+    isListening
+  ) {
+
+    stopRecognition();
+  }
+
+
+  finalTranscript = "";
+
+  interimTranscript = "";
+
+
+  currentParagraph =
+    paragraph;
+
+
+  if (paragraphText) {
+
+    paragraphText.textContent =
+      paragraph.text;
+  }
+
+
+  if (transcript) {
+
+    transcript.textContent =
+      "Press Start Speaking when you're ready.";
+  }
+
+
+  if (resultCard) {
+
+    resultCard.classList.add(
       "hidden"
     );
-
   }
-);
-
-
-/* =====================================================
-   PRONUNCIATION
-===================================================== */
-
-pronounceButton.addEventListener(
-  "click",
-  () => {
-
-    if (!selectedWord) {
-      return;
-    }
-
-
-    if (
-      !window.speechSynthesis
-    ) {
-
-      alert(
-        "Speech pronunciation is not supported in this browser."
-      );
-
-      return;
-
-    }
-
-
-    window.speechSynthesis.cancel();
-
-
-    const utterance =
-      new SpeechSynthesisUtterance(
-        selectedWord
-      );
-
-
-    utterance.lang =
-      "en-US";
-
-
-    utterance.rate =
-      0.75;
-
-
-    window.speechSynthesis.speak(
-      utterance
-    );
-
-  }
-);
-
-
-/* =====================================================
-   SIMPLE SOUND EXAMPLES
-===================================================== */
-
-function getSimilarSoundExamples(word) {
-
-  const soundExamples = {
-
-    three:
-      "tree, free, see",
-
-    see:
-      "sea, tree, free",
-
-    beach:
-      "peach, teach, reach",
-
-    day:
-      "say, way, play",
-
-    food:
-      "mood, rude, good",
-
-    work:
-      "word, world",
-
-    read:
-      "need, seed, lead",
-
-    light:
-      "right, night, sight",
-
-    walk:
-      "talk, chalk, stalk",
-
-    thing:
-      "think, sink, ring"
-
-  };
-
-
-  return (
-    soundExamples[word] ||
-    "Similar-sounding examples will be added to the pronunciation dictionary."
-  );
-
 }
 
 
