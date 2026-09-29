@@ -1,6 +1,13 @@
 /* =====================================================
    SPEAKUP ENGLISH
-   Version 2 - microphone + scoring fixes
+   VERSION 3
+   - Manual microphone only
+   - No automatic microphone restart
+   - Better transcript handling
+   - Duplicate-result protection
+   - Improved word alignment
+   - 0–100 scoring
+   - One-time paragraph scrolling
 ===================================================== */
 
 
@@ -117,10 +124,30 @@ let selectedWord = "";
 
 
 /*
-   Prevent old recognition events from
-   accidentally changing a new session.
+   Used to make sure an old recognition session
+   cannot interfere with a newer one.
 */
 let recognitionSession = 0;
+
+
+/*
+   Stores individual recognition results.
+
+   This is safer than simply doing:
+
+   finalTranscript += text
+
+   because the browser's result list can contain
+   previous final results plus newer results.
+*/
+let recognitionChunks = [];
+
+
+/*
+   Prevents accidental double-clicks while the
+   browser is starting/stopping recognition.
+*/
+let recognitionBusy = false;
 
 
 /* =====================================================
@@ -186,9 +213,7 @@ const closeWordInfo =
 
 
 /* =====================================================
-   CREATE START AGAIN BUTTON
-   We create it with JavaScript so HTML does not
-   need to be changed.
+   START AGAIN BUTTON
 ===================================================== */
 
 const restartButton =
@@ -206,13 +231,10 @@ restartButton.style.marginTop =
 restartButton.style.display =
   "none";
 
+
 restartButton.addEventListener(
   "click",
   () => {
-
-    if (!currentLevel) {
-      return;
-    }
 
     startPractice();
 
@@ -220,10 +242,9 @@ restartButton.addEventListener(
 );
 
 
-/*
-   Put the button inside the result card.
-*/
-resultCard.appendChild(restartButton);
+resultCard.appendChild(
+  restartButton
+);
 
 
 /* =====================================================
@@ -336,12 +357,31 @@ function chooseParagraph() {
 function startPractice() {
 
   /*
-     Make sure microphone from an old
-     practice is completely stopped.
+     Stop any previous recognition session.
   */
 
   stopRecognition();
 
+
+  /*
+     New recognition session.
+  */
+
+  recognitionSession++;
+
+
+  /*
+     Clear old recognition data.
+  */
+
+  recognitionChunks = [];
+
+  finalTranscript = "";
+
+
+  /*
+     Choose new paragraph.
+  */
 
   currentParagraph =
     chooseParagraph();
@@ -359,9 +399,6 @@ function startPractice() {
     "Your speech will appear here...";
 
 
-  finalTranscript = "";
-
-
   resultCard.classList.add(
     "hidden"
   );
@@ -377,14 +414,9 @@ function startPractice() {
 
 
   /*
-     SCROLL FIX
+     Reset paragraph animation.
 
-     Force the paragraph animation
-     to run only once.
-
-     We remove the animation first,
-     then add it again on the next
-     browser frame.
+     It will run ONCE only.
   */
 
   paragraphText.style.animation =
@@ -403,6 +435,23 @@ function startPractice() {
       "forwards";
 
   });
+
+
+  /*
+     Reset microphone UI.
+  */
+
+  isListening = false;
+
+  recognitionBusy = false;
+
+  micButton.classList.remove(
+    "listening"
+  );
+
+
+  micStatus.textContent =
+    "Tap the microphone and start reading.";
 
 
   showScreen(practiceScreen);
@@ -440,7 +489,7 @@ function setupSpeechRecognition() {
 
     micButton.disabled = true;
 
-    return;
+    return false;
 
   }
 
@@ -449,36 +498,56 @@ function setupSpeechRecognition() {
     new SpeechRecognition();
 
 
+  /*
+     English recognition.
+  */
+
   recognition.lang =
     "en-US";
 
 
   /*
-     Continuous means the browser keeps
-     listening until WE tell it to stop.
+     Keep listening while the service allows it.
 
-     It does NOT mean automatically restart.
+     IMPORTANT:
+     This does NOT mean our code will
+     automatically restart it.
+
+     If the browser ends the session,
+     the microphone stays OFF.
   */
 
   recognition.continuous =
     true;
 
 
+  /*
+     IMPORTANT CHANGE:
+
+     We turn interim results OFF.
+
+     That means the app waits for a
+     finalized recognition result instead
+     of repeatedly replacing temporary guesses.
+  */
+
   recognition.interimResults =
-    true;
+    false;
 
 
   recognition.maxAlternatives =
     1;
 
 
-  /* --------------------------------
-     MICROPHONE STARTS
-  -------------------------------- */
+  /* ===================================================
+     START
+  =================================================== */
 
   recognition.onstart = () => {
 
     isListening = true;
+
+    recognitionBusy = false;
 
     micButton.classList.add(
       "listening"
@@ -490,30 +559,21 @@ function setupSpeechRecognition() {
   };
 
 
-  /* --------------------------------
-     SPEECH RESULT
-  -------------------------------- */
+  /* ===================================================
+     RESULT
+  =================================================== */
 
   recognition.onresult = (event) => {
 
     /*
-       IMPORTANT FIX
+       Only process NEW result positions.
 
-       The old version kept doing:
-
-       finalTranscript += text
-
-       That can cause repeated phrases.
-
-       Instead, rebuild the entire transcript
-       from the browser's CURRENT result list.
+       resultIndex tells us the first result
+       that changed.
     */
 
-    let completeTranscript = "";
-
-
     for (
-      let i = 0;
+      let i = event.resultIndex;
       i < event.results.length;
       i++
     ) {
@@ -522,64 +582,71 @@ function setupSpeechRecognition() {
         event.results[i];
 
 
-      const text =
-        result[0].transcript;
+      /*
+         We only store FINAL results.
+
+         This prevents temporary recognition
+         guesses from polluting the transcript.
+      */
+
+      if (
+        result.isFinal &&
+        result[0]
+      ) {
+
+        const text =
+          cleanTranscript(
+            result[0].transcript
+          );
 
 
-      completeTranscript +=
-        " " + text;
+        if (text) {
+
+          /*
+             Add this result only if it is
+             not an obvious duplicate.
+          */
+
+          addRecognitionChunk(text);
+
+        }
+
+      }
 
     }
 
 
-    completeTranscript =
-      cleanTranscript(
-        completeTranscript
-      );
-
-
     /*
-       Store the current complete version.
+       Rebuild the transcript from our
+       controlled chunks.
     */
 
     finalTranscript =
-      completeTranscript;
+      recognitionChunks.join(" ");
 
 
-    /*
-       Display what the microphone currently
-       understands.
-    */
-
-    transcript.textContent =
-      completeTranscript ||
-      "Listening...";
-
-
-    /*
-       Compare against the target paragraph.
-    */
-
-    if (
-      completeTranscript.length > 0
-    ) {
-
-      compareSpeech(
-        completeTranscript
+    finalTranscript =
+      cleanTranscript(
+        finalTranscript
       );
 
-    }
+
+    transcript.textContent =
+      finalTranscript ||
+      "Listening...";
 
   };
 
 
-  /* --------------------------------
-     MICROPHONE ENDS
-  -------------------------------- */
+  /* ===================================================
+     END
+  =================================================== */
 
   recognition.onend = () => {
 
     isListening = false;
+
+    recognitionBusy = false;
 
     micButton.classList.remove(
       "listening"
@@ -587,18 +654,22 @@ function setupSpeechRecognition() {
 
 
     /*
-       DO NOT automatically call
-       recognition.start() here.
+       CRITICAL:
 
-       This is important.
+       DO NOT restart recognition here.
 
-       The microphone is now OFF until
-       the user manually presses the button.
+       The user must manually press the
+       microphone button again.
     */
 
     micStatus.textContent =
       "Microphone off. Tap the microphone to continue.";
 
+
+    /*
+       Only score after the microphone
+       has actually stopped.
+    */
 
     if (
       finalTranscript.trim()
@@ -617,9 +688,9 @@ function setupSpeechRecognition() {
   };
 
 
-  /* --------------------------------
-     ERRORS
-  -------------------------------- */
+  /* ===================================================
+     ERROR
+  =================================================== */
 
   recognition.onerror = (event) => {
 
@@ -631,6 +702,7 @@ function setupSpeechRecognition() {
 
     isListening = false;
 
+    recognitionBusy = false;
 
     micButton.classList.remove(
       "listening"
@@ -667,11 +739,259 @@ function setupSpeechRecognition() {
     else {
 
       micStatus.textContent =
-        "Something went wrong with speech recognition.";
+        "Speech recognition error: " +
+        event.error;
 
     }
 
   };
+
+
+  return true;
+
+}
+
+
+/* =====================================================
+   ADD RECOGNITION CHUNK
+===================================================== */
+
+function addRecognitionChunk(text) {
+
+  const cleaned =
+    cleanTranscript(text);
+
+
+  if (!cleaned) {
+
+    return;
+
+  }
+
+
+  /*
+     Don't add the exact same phrase twice
+     in a row.
+
+     Example:
+
+     "last night"
+     "last night"
+
+     becomes:
+
+     "last night"
+  */
+
+  const lastChunk =
+    recognitionChunks[
+      recognitionChunks.length - 1
+    ];
+
+
+  if (
+    lastChunk &&
+    normalizeForComparison(lastChunk) ===
+    normalizeForComparison(cleaned)
+  ) {
+
+    return;
+
+  }
+
+
+  /*
+     Detect repeated phrases such as:
+
+     "last night last night"
+     
+     If the whole new chunk is basically
+     two copies of the same phrase, keep one.
+  */
+
+  const deduplicated =
+    removeRepeatedPhrase(cleaned);
+
+
+  recognitionChunks.push(
+    deduplicated
+  );
+
+}
+
+
+/* =====================================================
+   REMOVE OBVIOUS REPEATED PHRASES
+===================================================== */
+
+function removeRepeatedPhrase(text) {
+
+  const words =
+    getWords(text);
+
+
+  if (
+    words.length < 2
+  ) {
+
+    return text;
+
+  }
+
+
+  /*
+     Check whether the text consists of
+     the same half repeated twice.
+
+     Example:
+
+     last night last night
+
+     → last night
+  */
+
+  if (
+    words.length % 2 === 0
+  ) {
+
+    const half =
+      words.length / 2;
+
+
+    const firstHalf =
+      words.slice(
+        0,
+        half
+      );
+
+
+    const secondHalf =
+      words.slice(
+        half
+      );
+
+
+    let identical = true;
+
+
+    for (
+      let i = 0;
+      i < half;
+      i++
+    ) {
+
+      if (
+        firstHalf[i] !==
+        secondHalf[i]
+      ) {
+
+        identical = false;
+
+        break;
+
+      }
+
+    }
+
+
+    if (identical) {
+
+      return firstHalf.join(" ");
+
+    }
+
+  }
+
+
+  /*
+     Also remove obvious triple repetition.
+
+     Example:
+
+     "last night last night last night"
+
+     → "last night"
+  */
+
+  if (
+    words.length % 3 === 0
+  ) {
+
+    const third =
+      words.length / 3;
+
+
+    const first =
+      words.slice(
+        0,
+        third
+      );
+
+
+    const second =
+      words.slice(
+        third,
+        third * 2
+      );
+
+
+    const thirdPart =
+      words.slice(
+        third * 2
+      );
+
+
+    if (
+      arraysEqual(first, second) &&
+      arraysEqual(first, thirdPart)
+    ) {
+
+      return first.join(" ");
+
+    }
+
+  }
+
+
+  return text;
+
+}
+
+
+/* =====================================================
+   ARRAY COMPARISON
+===================================================== */
+
+function arraysEqual(a, b) {
+
+  if (
+    a.length !==
+    b.length
+  ) {
+
+    return false;
+
+  }
+
+
+  for (
+    let i = 0;
+    i < a.length;
+    i++
+  ) {
+
+    if (
+      a[i] !== b[i]
+    ) {
+
+      return false;
+
+    }
+
+  }
+
+
+  return true;
 
 }
 
@@ -685,18 +1005,13 @@ micButton.addEventListener(
   () => {
 
     /*
-       Create recognition the first time
-       the user actually presses the mic.
+       Prevent accidental double-clicking
+       while the browser is changing state.
     */
 
-    if (!recognition) {
-
-      setupSpeechRecognition();
-
-    }
-
-
-    if (!recognition) {
+    if (
+      recognitionBusy
+    ) {
 
       return;
 
@@ -704,13 +1019,28 @@ micButton.addEventListener(
 
 
     /*
-       MANUAL TOGGLE
-
-       OFF → ON
-       ON → OFF
+       Create recognition only when
+       the user manually presses the button.
     */
 
-    if (isListening) {
+    if (!recognition) {
+
+      const ready =
+        setupSpeechRecognition();
+
+
+      if (!ready) {
+
+        return;
+
+      }
+
+    }
+
+
+    if (
+      isListening
+    ) {
 
       stopRecognition();
 
@@ -732,21 +1062,23 @@ micButton.addEventListener(
 
 function startRecognition() {
 
-  if (!recognition) {
+  if (
+    !recognition ||
+    isListening ||
+    recognitionBusy
+  ) {
 
     return;
 
   }
 
 
+  recognitionBusy = true;
+
+
   /*
-     Start a NEW recognition session.
-
-     We intentionally do not erase the old
-     transcript here.
-
-     This means the user can stop the mic
-     and manually start it again.
+     Hide previous result while continuing
+     this practice session.
   */
 
   resultCard.classList.add(
@@ -771,6 +1103,8 @@ function startRecognition() {
       error
     );
 
+    recognitionBusy = false;
+
   }
 
 }
@@ -782,11 +1116,25 @@ function startRecognition() {
 
 function stopRecognition() {
 
-  if (!recognition) {
+  if (
+    !recognition
+  ) {
 
     return;
 
   }
+
+
+  if (
+    !isListening
+  ) {
+
+    return;
+
+  }
+
+
+  recognitionBusy = true;
 
 
   try {
@@ -802,6 +1150,10 @@ function stopRecognition() {
       error
     );
 
+    recognitionBusy = false;
+
+    isListening = false;
+
   }
 
 }
@@ -813,10 +1165,6 @@ function stopRecognition() {
 
 function cleanTranscript(text) {
 
-  /*
-     Remove excessive whitespace.
-  */
-
   return text
     .replace(/\s+/g, " ")
     .trim();
@@ -825,7 +1173,22 @@ function cleanTranscript(text) {
 
 
 /* =====================================================
-   TEXT NORMALIZATION
+   NORMALIZE FOR COMPARISON
+===================================================== */
+
+function normalizeForComparison(text) {
+
+  return text
+    .toLowerCase()
+    .replace(/[.,!?;:"'()[\]{}]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+}
+
+
+/* =====================================================
+   CLEAN WORD
 ===================================================== */
 
 function cleanWord(word) {
@@ -853,12 +1216,14 @@ function getWords(text) {
 
 
 /* =====================================================
-   SIMPLE WORD COMPARISON
+   IMPROVED SPEECH COMPARISON
 ===================================================== */
 
 function compareSpeech(spokenText) {
 
-  if (!currentParagraph) {
+  if (
+    !currentParagraph
+  ) {
 
     return;
 
@@ -875,6 +1240,27 @@ function compareSpeech(spokenText) {
     getWords(spokenText);
 
 
+  /*
+     Instead of simply comparing:
+
+     target[0] with spoken[0]
+     target[1] with spoken[1]
+     target[2] with spoken[2]
+
+     we use a small alignment algorithm.
+
+     This means if the microphone misses
+     one word, the entire rest of the
+     paragraph doesn't automatically become red.
+  */
+
+  const alignment =
+    alignWords(
+      targetWords,
+      spokenWords
+    );
+
+
   let matched = 0;
 
 
@@ -884,10 +1270,6 @@ function compareSpeech(spokenText) {
 
   targetWords.forEach(
     (targetWord, index) => {
-
-      const spokenWord =
-        spokenWords[index];
-
 
       const wordElement =
         document.createElement("span");
@@ -906,29 +1288,25 @@ function compareSpeech(spokenText) {
         targetWord;
 
 
-      /*
-         If the microphone did not hear
-         the word or heard something different,
-         mark the TARGET word as wrong.
-      */
+      const match =
+        alignment[index];
 
-      if (
-        !spokenWord ||
-        !wordsAreSimilar(
-          targetWord,
-          spokenWord
-        )
-      ) {
+
+      if (match) {
 
         wordElement.classList.add(
-          "wrong"
+          "correct"
         );
+
+        matched++;
 
       }
 
       else {
 
-        matched++;
+        wordElement.classList.add(
+          "wrong"
+        );
 
       }
 
@@ -954,7 +1332,7 @@ function compareSpeech(spokenText) {
 
 
   /*
-     Score is always between 0 and 100.
+     Score out of 100.
   */
 
   const percentage =
@@ -967,10 +1345,6 @@ function compareSpeech(spokenText) {
           ) * 100
         );
 
-
-  /*
-     NEW SCORE DISPLAY
-  */
 
   resultSummary.textContent =
     `Score: ${percentage} / 100 — ` +
@@ -986,7 +1360,220 @@ function compareSpeech(spokenText) {
 
 
 /* =====================================================
-   SIMPLE WORD SIMILARITY
+   WORD ALIGNMENT
+===================================================== */
+
+function alignWords(
+  targetWords,
+  spokenWords
+) {
+
+  const targetLength =
+    targetWords.length;
+
+
+  const spokenLength =
+    spokenWords.length;
+
+
+  /*
+     Create dynamic programming table.
+
+     This is basically a simplified
+     edit-distance alignment.
+
+     It lets us account for:
+
+     - missed words
+     - extra words
+     - slightly different words
+  */
+
+  const dp =
+    Array.from(
+      {
+        length:
+          targetLength + 1
+      },
+      () =>
+        Array(
+          spokenLength + 1
+        ).fill(0)
+    );
+
+
+  for (
+    let i = 0;
+    i <= targetLength;
+    i++
+  ) {
+
+    dp[i][0] =
+      i;
+
+  }
+
+
+  for (
+    let j = 0;
+    j <= spokenLength;
+    j++
+  ) {
+
+    dp[0][j] =
+      j;
+
+  }
+
+
+  for (
+    let i = 1;
+    i <= targetLength;
+    i++
+  ) {
+
+    for (
+      let j = 1;
+      j <= spokenLength;
+      j++
+    ) {
+
+      const same =
+        wordsAreSimilar(
+          targetWords[i - 1],
+          spokenWords[j - 1]
+        );
+
+
+      const substitution =
+        dp[i - 1][j - 1] +
+        (same ? 0 : 1);
+
+
+      const deletion =
+        dp[i - 1][j] +
+        1;
+
+
+      const insertion =
+        dp[i][j - 1] +
+        1;
+
+
+      dp[i][j] =
+        Math.min(
+          substitution,
+          deletion,
+          insertion
+        );
+
+    }
+
+  }
+
+
+  /*
+     Walk backwards through the table
+     to discover which target words
+     actually matched.
+  */
+
+  const matched =
+    Array(
+      targetLength
+    ).fill(false);
+
+
+  let i =
+    targetLength;
+
+
+  let j =
+    spokenLength;
+
+
+  while (
+    i > 0 ||
+    j > 0
+  ) {
+
+    if (
+      i > 0 &&
+      j > 0
+    ) {
+
+      const same =
+        wordsAreSimilar(
+          targetWords[i - 1],
+          spokenWords[j - 1]
+        );
+
+
+      const substitution =
+        dp[i - 1][j - 1] +
+        (same ? 0 : 1);
+
+
+      if (
+        dp[i][j] ===
+        substitution
+      ) {
+
+        if (same) {
+
+          matched[i - 1] =
+            true;
+
+        }
+
+
+        i--;
+
+        j--;
+
+        continue;
+
+      }
+
+    }
+
+
+    if (
+      i > 0 &&
+      dp[i][j] ===
+      dp[i - 1][j] + 1
+    ) {
+
+      i--;
+
+      continue;
+
+    }
+
+
+    if (
+      j > 0
+    ) {
+
+      j--;
+
+      continue;
+
+    }
+
+
+    break;
+
+  }
+
+
+  return matched;
+
+}
+
+
+/* =====================================================
+   WORD SIMILARITY
 ===================================================== */
 
 function wordsAreSimilar(
@@ -1004,7 +1591,13 @@ function wordsAreSimilar(
 
 
   /*
-     Small spelling differences are allowed.
+     Small spelling differences.
+
+     Example:
+
+     color / colours
+
+     or tiny recognition differences.
   */
 
   if (
@@ -1026,7 +1619,114 @@ function wordsAreSimilar(
   }
 
 
+  /*
+     Basic edit-distance check.
+
+     This allows small transcription
+     mistakes without treating completely
+     different words as correct.
+  */
+
+  if (
+    levenshteinDistance(
+      target,
+      spoken
+    ) <= 1 &&
+    Math.max(
+      target.length,
+      spoken.length
+    ) >= 4
+  ) {
+
+    return true;
+
+  }
+
+
   return false;
+
+}
+
+
+/* =====================================================
+   LEVENSHTEIN DISTANCE
+===================================================== */
+
+function levenshteinDistance(a, b) {
+
+  const matrix =
+    Array.from(
+      {
+        length:
+          a.length + 1
+      },
+      () =>
+        Array(
+          b.length + 1
+        ).fill(0)
+    );
+
+
+  for (
+    let i = 0;
+    i <= a.length;
+    i++
+  ) {
+
+    matrix[i][0] =
+      i;
+
+  }
+
+
+  for (
+    let j = 0;
+    j <= b.length;
+    j++
+  ) {
+
+    matrix[0][j] =
+      j;
+
+  }
+
+
+  for (
+    let i = 1;
+    i <= a.length;
+    i++
+  ) {
+
+    for (
+      let j = 1;
+      j <= b.length;
+      j++
+    ) {
+
+      const cost =
+        a[i - 1] ===
+        b[j - 1]
+          ? 0
+          : 1;
+
+
+      matrix[i][j] =
+        Math.min(
+
+          matrix[i - 1][j] + 1,
+
+          matrix[i][j - 1] + 1,
+
+          matrix[i - 1][j - 1] + cost
+
+        );
+
+    }
+
+  }
+
+
+  return matrix[a.length][b.length];
 
 }
 
@@ -1086,7 +1786,9 @@ pronounceButton.addEventListener(
   "click",
   () => {
 
-    if (!selectedWord) {
+    if (
+      !selectedWord
+    ) {
 
       return;
 
@@ -1184,15 +1886,6 @@ function getSimilarSoundExamples(word) {
    INITIALIZE
 ===================================================== */
 
-/*
-   IMPORTANT:
-
-   We DO NOT start the microphone here.
-
-   Recognition is created only when the
-   user presses the microphone button.
-*/
-
 console.log(
-  "SpeakUp loaded successfully."
+  "SpeakUp Version 3 loaded successfully."
 );
