@@ -1,1 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
 
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>SpeakUp English</title>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- =========================
+       HOME SCREEN
+  ========================== -->
+
+  <section id="homeScreen" class="screen active">
+
+    <div class="home-card">
+
+      <div class="logo-circle">
+        🎙️
+      </div>
+
+      <h1>SpeakUp</h1>
+
+      <p class="subtitle">
+        English speaking practice
+      </p>
+
+      <p class="description">
+        Read the passage aloud and see what the microphone understands.
+      </p>
+
+      <button id="startButton" class="primary-button">
+        Start Practice
+      </button>
+
+    </div>
+
+  </section>
+
+
+  <!-- =========================
+       LEVEL SCREEN
+  ========================== -->
+
+  <section id="levelScreen" class="screen">
+
+    <div class="level-card">
+
+      <h2>Choose your level</h2>
+
+      <p>
+        Choose a difficulty for today's reading.
+      </p>
+
+      <div class="level-buttons">
+
+        <button
+          class="level-button"
+          data-level="easy"
+        >
+          <strong>Easy</strong>
+          <span>Short and simple</span>
+        </button>
+
+        <button
+          class="level-button"
+          data-level="medium"
+        >
+          <strong>Medium</strong>
+          <span>Everyday English</span>
+        </button>
+
+        <button
+          class="level-button"
+          data-level="intermediate"
+        >
+          <strong>Intermediate</strong>
+          <span>Longer and more complex</span>
+        </button>
+
+      </div>
+
+      <button id="backHomeButton" class="secondary-button">
+        ← Back
+      </button>
+
+    </div>
+
+  </section>
+
+
+  <!-- =========================
+       PRACTICE SCREEN
+  ========================== -->
+
+  <section id="practiceScreen" class="screen">
+
+    <header class="practice-header">
+
+      <div>
+        <h1>SpeakUp</h1>
+        <span id="currentLevel">Easy</span>
+      </div>
+
+      <button id="homeButton" class="small-button">
+        Home
+      </button>
+
+    </header>
+
+
+    <main class="practice-main">
+
+      <!-- Scrolling paragraph -->
+
+      <div class="reading-window">
+
+        <div id="paragraphText" class="scrolling-text">
+        </div>
+
+      </div>
+
+
+      <!-- Microphone -->
+
+      <div class="mic-section">
+
+        <button
+          id="micButton"
+          class="mic-button"
+          aria-label="Start microphone"
+        >
+          🎙️
+        </button>
+
+        <p id="micStatus">
+          Tap the microphone and start reading.
+        </p>
+
+      </div>
+
+
+      <!-- User transcript -->
+
+      <div class="transcript-card">
+
+        <div class="card-title">
+          What the microphone heard
+        </div>
+
+        <div
+          id="transcript"
+          class="transcript"
+        >
+          Your speech will appear here...
+        </div>
+
+      </div>
+
+
+      <!-- Results -->
+
+      <div
+        id="resultCard"
+        class="result-card hidden"
+      >
+
+        <h3>Reading check</h3>
+
+        <p id="resultSummary"></p>
+
+        <div
+          id="wordResults"
+          class="word-results"
+        ></div>
+
+      </div>
+
+
+      <!-- Word information -->
+
+      <div
+        id="wordInfo"
+        class="word-info hidden"
+      >
+
+        <button
+          id="closeWordInfo"
+          class="close-button"
+        >
+          ×
+        </button>
+
+        <h3 id="selectedWord"></h3>
+
+        <p>
+          Tap the button below to hear the word.
+        </p>
+
+        <button
+          id="pronounceButton"
+          class="pronounce-button"
+        >
+          🔊 Hear pronunciation
+        </button>
+
+        <div class="sound-example">
+
+          <strong>Similar sound examples</strong>
+
+          <p id="similarWords"></p>
+
+        </div>
+
+      </div>
+
+    </main>
+
+  </section>
+
+
+  <script src="app.js"></script>
+
+</body>
+</html>
