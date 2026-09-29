@@ -1,22 +1,49 @@
-/* =====================================================
-   ENGLISH SPEAKING PRACTICE
-   SCRIPT.JS
-===================================================== */
-
-let currentParagraph = null;
-
-let recognition = null;
-let isListening = false;
-
-let finalTranscript = "";
-let interimTranscript = "";
-
-let selectedWord = "";
+/* =========================================================
+   SPEAKUP ENGLISH
+   COMPLETE APP.JS
+========================================================= */
 
 
-/* =====================================================
-   GET HTML ELEMENTS
-===================================================== */
+/* =========================================================
+   SCREEN ELEMENTS
+========================================================= */
+
+const homeScreen =
+  document.getElementById("homeScreen");
+
+const levelScreen =
+  document.getElementById("levelScreen");
+
+const practiceScreen =
+  document.getElementById("practiceScreen");
+
+
+/* =========================================================
+   BUTTONS
+========================================================= */
+
+const startButton =
+  document.getElementById("startButton");
+
+const backHomeButton =
+  document.getElementById("backHomeButton");
+
+const homeButton =
+  document.getElementById("homeButton");
+
+const levelButtons =
+  document.querySelectorAll(".level-button");
+
+
+/* =========================================================
+   PRACTICE ELEMENTS
+========================================================= */
+
+const currentLevel =
+  document.getElementById("currentLevel");
+
+const paragraphText =
+  document.getElementById("paragraphText");
 
 const micButton =
   document.getElementById("micButton");
@@ -27,22 +54,297 @@ const micStatus =
 const transcript =
   document.getElementById("transcript");
 
-const wordResults =
-  document.getElementById("wordResults");
-
 const resultCard =
   document.getElementById("resultCard");
 
 const resultSummary =
   document.getElementById("resultSummary");
 
-const paragraphText =
-  document.getElementById("paragraphText");
+const wordResults =
+  document.getElementById("wordResults");
+
+const wordInfo =
+  document.getElementById("wordInfo");
+
+const selectedWord =
+  document.getElementById("selectedWord");
+
+const closeWordInfo =
+  document.getElementById("closeWordInfo");
+
+const pronounceButton =
+  document.getElementById("pronounceButton");
+
+const similarWords =
+  document.getElementById("similarWords");
 
 
-/* =====================================================
+/* =========================================================
+   PARAGRAPHS
+========================================================= */
+
+const paragraphs = {
+
+  easy: [
+
+    {
+      text:
+        "Every morning I wake up early and drink a glass of water. Then I get ready for work and eat a simple breakfast."
+    },
+
+    {
+      text:
+        "Last night I stayed at home and watched a movie. The weather was quiet and cool, so I enjoyed a relaxing evening."
+    },
+
+    {
+      text:
+        "My friend called me this morning. We talked about our plans and decided to meet for lunch later today."
+    }
+
+  ],
+
+
+  medium: [
+
+    {
+      text:
+        "Last night I went to the market after work. I wanted to buy some vegetables, but I also found a small restaurant that looked very interesting."
+    },
+
+    {
+      text:
+        "Learning English takes time and regular practice. The more often you listen and speak, the easier it becomes to understand natural conversations."
+    },
+
+    {
+      text:
+        "When I have free time, I usually watch videos in English. Sometimes I understand everything, but sometimes I need to listen again."
+    }
+
+  ],
+
+
+  intermediate: [
+
+    {
+      text:
+        "Improving your speaking ability requires more than memorizing vocabulary. You need to listen carefully, notice how words are pronounced, and practice using them in real situations."
+    },
+
+    {
+      text:
+        "Technology has changed the way people learn languages. Today, students can practice speaking with applications that provide immediate feedback and help them identify areas that need improvement."
+    },
+
+    {
+      text:
+        "Although learning a new language can sometimes feel frustrating, consistent practice can gradually make difficult words and expressions feel much more natural."
+    }
+
+  ]
+
+};
+
+
+/* =========================================================
+   CURRENT PRACTICE STATE
+========================================================= */
+
+let currentLevelName =
+  "easy";
+
+let currentParagraph =
+  null;
+
+let recognition =
+  null;
+
+let isListening =
+  false;
+
+let finalTranscript =
+  "";
+
+let interimTranscript =
+  "";
+
+let finalizedResultIndexes =
+  new Set();
+
+let selectedWordValue =
+  "";
+
+
+/* =========================================================
+   SCREEN SWITCHING
+========================================================= */
+
+function showScreen(screen) {
+
+  homeScreen.classList.remove("active");
+
+  levelScreen.classList.remove("active");
+
+  practiceScreen.classList.remove("active");
+
+  screen.classList.add("active");
+}
+
+
+/* =========================================================
+   HOME -> LEVEL
+========================================================= */
+
+if (startButton) {
+
+  startButton.addEventListener(
+    "click",
+    function() {
+
+      showScreen(levelScreen);
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   LEVEL SELECTION
+========================================================= */
+
+levelButtons.forEach(
+  function(button) {
+
+    button.addEventListener(
+      "click",
+      function() {
+
+        const level =
+          button.dataset.level;
+
+        startPractice(level);
+
+      }
+    );
+
+  }
+);
+
+
+/* =========================================================
+   BACK TO HOME FROM LEVEL SCREEN
+========================================================= */
+
+if (backHomeButton) {
+
+  backHomeButton.addEventListener(
+    "click",
+    function() {
+
+      showScreen(homeScreen);
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   HOME BUTTON DURING PRACTICE
+========================================================= */
+
+if (homeButton) {
+
+  homeButton.addEventListener(
+    "click",
+    function() {
+
+      stopRecognition();
+
+      showScreen(homeScreen);
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   START A PRACTICE
+========================================================= */
+
+function startPractice(level) {
+
+  currentLevelName =
+    level;
+
+
+  currentLevel.textContent =
+    level.charAt(0).toUpperCase() +
+    level.slice(1);
+
+
+  const availableParagraphs =
+    paragraphs[level];
+
+
+  const randomIndex =
+    Math.floor(
+      Math.random() *
+      availableParagraphs.length
+    );
+
+
+  currentParagraph =
+    availableParagraphs[randomIndex];
+
+
+  paragraphText.textContent =
+    currentParagraph.text;
+
+
+  transcript.textContent =
+    "Your speech will appear here...";
+
+
+  micStatus.textContent =
+    "Tap the microphone and start reading.";
+
+
+  resultCard.classList.add(
+    "hidden"
+  );
+
+
+  wordInfo.classList.add(
+    "hidden"
+  );
+
+
+  wordResults.innerHTML =
+    "";
+
+
+  finalTranscript =
+    "";
+
+  interimTranscript =
+    "";
+
+  finalizedResultIndexes.clear();
+
+
+  showScreen(
+    practiceScreen
+  );
+}
+
+
+/* =========================================================
    SPEECH RECOGNITION SETUP
-===================================================== */
+========================================================= */
 
 function setupSpeechRecognition() {
 
@@ -50,260 +352,360 @@ function setupSpeechRecognition() {
     window.SpeechRecognition ||
     window.webkitSpeechRecognition;
 
+
   if (!SpeechRecognition) {
 
     micStatus.textContent =
-      "Speech recognition is not supported in this browser. Try Chrome.";
+      "Speech recognition is not supported here. Please use Google Chrome.";
 
-    micButton.disabled = true;
+    micButton.disabled =
+      true;
 
     return;
+
   }
+
 
   recognition =
     new SpeechRecognition();
 
-  recognition.lang = "en-US";
 
-  recognition.continuous = true;
+  /*
+    English recognition
+  */
 
-  recognition.interimResults = true;
-
-  recognition.maxAlternatives = 1;
-
-
-  /* ---------------------------------------------------
-     WHEN MICROPHONE STARTS
-  --------------------------------------------------- */
-
-  recognition.onstart = function() {
-
-    isListening = true;
-
-    micButton.classList.add("listening");
-
-    micStatus.textContent =
-      "Listening... Read the passage aloud.";
-  };
+  recognition.lang =
+    "en-US";
 
 
-  /* ---------------------------------------------------
-     WHEN SPEECH IS RECEIVED
-  --------------------------------------------------- */
+  /*
+    Keep listening while the user speaks.
 
-  recognition.onresult = function(event) {
+    IMPORTANT:
+    We do NOT automatically restart it.
+  */
 
-    let newInterim = "";
-
-
-    for (
-      let i = event.resultIndex;
-      i < event.results.length;
-      i++
-    ) {
-
-      const result =
-        event.results[i];
-
-      const spokenText =
-        result[0].transcript.trim();
+  recognition.continuous =
+    true;
 
 
-      if (!spokenText) {
-        continue;
-      }
+  /*
+    We need interim results so the user
+    can see what the microphone is hearing.
+  */
+
+  recognition.interimResults =
+    true;
+
+
+  recognition.maxAlternatives =
+    1;
+
+
+  /* =======================================================
+     MICROPHONE STARTED
+  ======================================================= */
+
+  recognition.onstart =
+    function() {
+
+      isListening =
+        true;
+
+
+      micButton.classList.add(
+        "listening"
+      );
+
+
+      micStatus.textContent =
+        "Listening... Read the passage aloud.";
+
+
+      micButton.setAttribute(
+        "aria-label",
+        "Stop microphone"
+      );
+
+    };
+
+
+  /* =======================================================
+     SPEECH RESULT
+  ======================================================= */
+
+  recognition.onresult =
+    function(event) {
+
+      let newInterim =
+        "";
 
 
       /*
-        FINAL RESULT
+        SpeechRecognition keeps a list of results.
 
-        Only final results are permanently stored.
-      */
+        We only permanently save a result ONCE.
 
-      if (result.isFinal) {
-
-        finalTranscript =
-          (
-            finalTranscript +
-            " " +
-            spokenText
-          ).trim();
-
-      }
-
-
-      /*
-        INTERIM RESULT
-
-        This is temporary speech.
-
-        IMPORTANT:
-        We do NOT add this permanently.
-
-        This prevents:
+        This is the important part that prevents
+        repeated text such as:
 
         "last night last night last night"
-
-        from appearing because the browser
-        repeatedly updates its temporary result.
       */
+
+      for (
+        let i = event.resultIndex;
+        i < event.results.length;
+        i++
+      ) {
+
+        const result =
+          event.results[i];
+
+
+        const spokenText =
+          result[0].transcript.trim();
+
+
+        if (!spokenText) {
+          continue;
+        }
+
+
+        /*
+          FINAL RESULT
+        */
+
+        if (result.isFinal) {
+
+          /*
+            Make absolutely sure we don't
+            permanently add the same result twice.
+          */
+
+          if (
+            !finalizedResultIndexes.has(i)
+          ) {
+
+            finalTranscript =
+              (
+                finalTranscript +
+                " " +
+                spokenText
+              ).trim();
+
+
+            finalizedResultIndexes.add(
+              i
+            );
+
+          }
+
+        }
+
+
+        /*
+          INTERIM RESULT
+
+          Temporary only.
+        */
+
+        else {
+
+          newInterim =
+            (
+              newInterim +
+              " " +
+              spokenText
+            ).trim();
+
+        }
+
+      }
+
+
+      interimTranscript =
+        newInterim;
+
+
+      /*
+        What the user sees while speaking.
+      */
+
+      const displayText =
+        (
+          finalTranscript +
+          " " +
+          interimTranscript
+        ).trim();
+
+
+      transcript.textContent =
+        displayText ||
+        "Listening...";
+
+
+      /*
+        Live word comparison.
+      */
+
+      if (
+        displayText.length > 0
+      ) {
+
+        compareSpeech(
+          displayText,
+          false
+        );
+
+      }
+
+    };
+
+
+  /* =======================================================
+     MICROPHONE STOPPED
+  ======================================================= */
+
+  recognition.onend =
+    function() {
+
+      isListening =
+        false;
+
+
+      micButton.classList.remove(
+        "listening"
+      );
+
+
+      micButton.setAttribute(
+        "aria-label",
+        "Start microphone"
+      );
+
+
+      /*
+        VERY IMPORTANT:
+
+        There is NO:
+
+        recognition.start()
+
+        here.
+
+        Therefore the microphone will NEVER
+        automatically restart.
+      */
+
+
+      if (
+        finalTranscript.trim()
+      ) {
+
+        micStatus.textContent =
+          "Finished. Your final score is below.";
+
+        compareSpeech(
+          finalTranscript.trim(),
+          true
+        );
+
+      }
 
       else {
 
-        newInterim =
-          (
-            newInterim +
-            " " +
-            spokenText
-          ).trim();
+        micStatus.textContent =
+          "Microphone stopped. Tap the microphone to try again.";
+
       }
-    }
+
+    };
 
 
-    interimTranscript =
-      newInterim;
+  /* =======================================================
+     MICROPHONE ERROR
+  ======================================================= */
 
+  recognition.onerror =
+    function(event) {
 
-    /*
-      Display both:
-
-      permanent final speech
-      +
-      temporary speech
-    */
-
-    const displayText =
-      (
-        finalTranscript +
-        " " +
-        interimTranscript
-      ).trim();
-
-
-    transcript.textContent =
-      displayText ||
-      "Listening...";
-
-
-    /*
-      Show live comparison while speaking.
-      The actual final score is calculated
-      when the user stops.
-    */
-
-    if (displayText.length > 0) {
-
-      compareSpeech(
-        displayText,
-        false
+      console.log(
+        "Speech recognition error:",
+        event.error
       );
-    }
-  };
 
 
-  /* ---------------------------------------------------
-     MICROPHONE ENDS
-  --------------------------------------------------- */
-
-  recognition.onend = function() {
-
-    isListening = false;
-
-    micButton.classList.remove(
-      "listening"
-    );
+      isListening =
+        false;
 
 
-    /*
-      IMPORTANT:
-
-      We DO NOT call recognition.start()
-      here.
-
-      Therefore the microphone NEVER
-      automatically turns itself back on.
-    */
-
-    micStatus.textContent =
-      finalTranscript.trim()
-        ? "Reading finished. Press Start Speaking to try again."
-        : "Microphone stopped. Press Start Speaking to begin.";
-
-
-    /*
-      Calculate the final score.
-    */
-
-    if (finalTranscript.trim()) {
-
-      compareSpeech(
-        finalTranscript.trim(),
-        true
+      micButton.classList.remove(
+        "listening"
       );
-    }
-  };
 
 
-  /* ---------------------------------------------------
-     SPEECH RECOGNITION ERROR
-  --------------------------------------------------- */
+      if (
+        event.error ===
+        "not-allowed"
+      ) {
 
-  recognition.onerror = function(event) {
+        micStatus.textContent =
+          "Microphone permission was denied. Please allow microphone access.";
 
-    console.log(
-      "Speech recognition error:",
-      event.error
-    );
-
-
-    isListening = false;
-
-    micButton.classList.remove(
-      "listening"
-    );
+      }
 
 
-    if (event.error === "not-allowed") {
+      else if (
+        event.error ===
+        "audio-capture"
+      ) {
 
-      micStatus.textContent =
-        "Microphone permission was blocked. Please allow microphone access.";
-    }
+        micStatus.textContent =
+          "The browser could not access your microphone.";
 
-    else if (event.error === "no-speech") {
+      }
 
-      micStatus.textContent =
-        "I didn't hear speech. Try speaking a little louder, then press Start Speaking again.";
-    }
 
-    else if (event.error === "audio-capture") {
+      else if (
+        event.error ===
+        "no-speech"
+      ) {
 
-      micStatus.textContent =
-        "The browser could not access the microphone. Check your microphone permission.";
-    }
+        micStatus.textContent =
+          "No speech was detected. Tap the microphone and try again.";
 
-    else {
+      }
 
-      micStatus.textContent =
-        "Speech recognition stopped. Press Start Speaking to try again.";
-    }
-  };
+
+      else {
+
+        micStatus.textContent =
+          "Microphone error. Please try again.";
+
+      }
+
+    };
+
 }
 
 
-/* =====================================================
+/* =========================================================
    START MICROPHONE
-===================================================== */
+========================================================= */
 
 function startRecognition() {
+
+  if (!recognition) {
+
+    setupSpeechRecognition();
+
+  }
+
 
   if (!recognition) {
     return;
   }
 
-
-  /*
-    Prevent starting twice.
-  */
 
   if (isListening) {
     return;
@@ -311,12 +713,17 @@ function startRecognition() {
 
 
   /*
-    Clear previous attempt.
+    New attempt = new transcript.
   */
 
-  finalTranscript = "";
+  finalTranscript =
+    "";
 
-  interimTranscript = "";
+  interimTranscript =
+    "";
+
+
+  finalizedResultIndexes.clear();
 
 
   transcript.textContent =
@@ -324,6 +731,11 @@ function startRecognition() {
 
 
   resultCard.classList.add(
+    "hidden"
+  );
+
+
+  wordInfo.classList.add(
     "hidden"
   );
 
@@ -336,14 +748,19 @@ function startRecognition() {
 
   catch (error) {
 
-    console.log(error);
+    console.log(
+      "Could not start recognition:",
+      error
+    );
+
   }
+
 }
 
 
-/* =====================================================
+/* =========================================================
    STOP MICROPHONE
-===================================================== */
+========================================================= */
 
 function stopRecognition() {
 
@@ -365,14 +782,19 @@ function stopRecognition() {
 
   catch (error) {
 
-    console.log(error);
+    console.log(
+      "Could not stop recognition:",
+      error
+    );
+
   }
+
 }
 
 
-/* =====================================================
+/* =========================================================
    MICROPHONE BUTTON
-===================================================== */
+========================================================= */
 
 if (micButton) {
 
@@ -381,13 +803,11 @@ if (micButton) {
     function() {
 
       /*
-        MANUAL TOGGLE ONLY
+        ONE CLICK = ON
 
-        Press once:
-        START
+        SECOND CLICK = OFF
 
-        Press again:
-        STOP
+        Nothing automatically restarts it.
       */
 
       if (isListening) {
@@ -399,29 +819,36 @@ if (micButton) {
       else {
 
         startRecognition();
+
       }
+
     }
   );
+
 }
 
 
-/* =====================================================
+/* =========================================================
    NORMALIZE WORDS
-===================================================== */
+========================================================= */
 
 function getWords(text) {
 
   return text
     .toLowerCase()
-    .replace(/[.,!?;:"'()]/g, "")
+    .replace(
+      /[.,!?;:"'()[\]{}]/g,
+      ""
+    )
     .split(/\s+/)
     .filter(Boolean);
+
 }
 
 
-/* =====================================================
+/* =========================================================
    WORD SIMILARITY
-===================================================== */
+========================================================= */
 
 function wordsAreSimilar(
   target,
@@ -436,26 +863,26 @@ function wordsAreSimilar(
 
 
   /*
-    Exact match
+    Exact match.
   */
 
-  if (target === spoken) {
+  if (
+    target === spoken
+  ) {
 
     return true;
+
   }
 
 
   /*
-    Small difference tolerance.
-
-    This allows tiny speech-recognition
-    variations without immediately
-    marking everything wrong.
+    Allow a very small recognition
+    difference for longer words.
   */
 
   if (
-    target.length > 4 &&
-    spoken.length > 3
+    target.length >= 5 &&
+    spoken.length >= 4
   ) {
 
     const distance =
@@ -464,29 +891,34 @@ function wordsAreSimilar(
         spoken
       );
 
+
     if (
       distance <= 1
     ) {
 
       return true;
+
     }
+
   }
 
 
   return false;
+
 }
 
 
-/* =====================================================
+/* =========================================================
    LEVENSHTEIN DISTANCE
-===================================================== */
+========================================================= */
 
 function levenshteinDistance(
   a,
   b
 ) {
 
-  const matrix = [];
+  const matrix =
+    [];
 
 
   for (
@@ -495,7 +927,9 @@ function levenshteinDistance(
     i++
   ) {
 
-    matrix[i] = [i];
+    matrix[i] =
+      [i];
+
   }
 
 
@@ -505,7 +939,9 @@ function levenshteinDistance(
     j++
   ) {
 
-    matrix[0][j] = j;
+    matrix[0][j] =
+      j;
+
   }
 
 
@@ -541,23 +977,28 @@ function levenshteinDistance(
             matrix[i][j - 1] + 1,
 
             matrix[i - 1][j - 1] + 1
+
           );
+
       }
+
     }
+
   }
 
 
   return matrix[b.length][a.length];
+
 }
 
 
-/* =====================================================
+/* =========================================================
    COMPARE SPEECH
-===================================================== */
+========================================================= */
 
 function compareSpeech(
   spokenText,
-  showFinalScore = false
+  showFinalScore
 ) {
 
   if (!currentParagraph) {
@@ -577,19 +1018,17 @@ function compareSpeech(
     );
 
 
-  let matched = 0;
+  let matched =
+    0;
+
+
+  wordResults.innerHTML =
+    "";
 
 
   /*
-    Clear previous highlighted words.
-  */
-
-  wordResults.innerHTML = "";
-
-
-  /*
-    Compare every expected word
-    against the corresponding spoken word.
+    Compare the expected paragraph
+    against what the microphone heard.
   */
 
   targetWords.forEach(
@@ -608,50 +1047,46 @@ function compareSpeech(
         );
 
 
-      wordElement.classList.add(
-        "word"
-      );
+      wordElement.className =
+        "word";
 
 
       wordElement.textContent =
         targetWord;
 
 
-      wordElement.dataset.word =
-        targetWord;
-
-
       /*
-        WRONG WORD
+        Correct word.
       */
 
       if (
-        !spokenWord ||
-        !wordsAreSimilar(
+        spokenWord &&
+        wordsAreSimilar(
           targetWord,
           spokenWord
         )
       ) {
 
-        wordElement.classList.add(
-          "wrong"
-        );
+        matched++;
+
       }
 
 
       /*
-        CORRECT WORD
+        Wrong / missing word.
       */
 
       else {
 
-        matched++;
+        wordElement.classList.add(
+          "wrong"
+        );
+
       }
 
 
       /*
-        Clicking a word will later
-        open pronunciation information.
+        Clickable word.
       */
 
       wordElement.addEventListener(
@@ -661,6 +1096,7 @@ function compareSpeech(
           showWordInfo(
             targetWord
           );
+
         }
       );
 
@@ -668,6 +1104,7 @@ function compareSpeech(
       wordResults.appendChild(
         wordElement
       );
+
     }
   );
 
@@ -677,29 +1114,34 @@ function compareSpeech(
 
     Example:
 
-    10 expected words
-    7 matched
+    20 expected words
+    13 correct
 
-    = 70 / 100
+    = 65/100
   */
 
-  let percentage = 0;
+  let score =
+    0;
 
 
-  if (targetWords.length > 0) {
+  if (
+    targetWords.length > 0
+  ) {
 
-    percentage =
+    score =
       Math.round(
         (
           matched /
           targetWords.length
-        ) * 100
+        ) *
+        100
       );
+
   }
 
 
   resultSummary.textContent =
-    `${percentage}/100 — ${percentage}% of the words matched the expected reading. Tap a highlighted word to practice it.`;
+    `${score}/100 — ${matched} of ${targetWords.length} words matched. Red words need more practice.`;
 
 
   resultCard.classList.remove(
@@ -708,24 +1150,28 @@ function compareSpeech(
 
 
   /*
-    Only create the final score
-    when the user actually stops.
+    Final score only gets shown
+    after the microphone is stopped.
   */
 
-  if (showFinalScore) {
+  if (
+    showFinalScore
+  ) {
 
-    updateScoreDisplay(
-      percentage
+    showFinalScoreDisplay(
+      score
     );
+
   }
+
 }
 
 
-/* =====================================================
+/* =========================================================
    SCORE DISPLAY
-===================================================== */
+========================================================= */
 
-function updateScoreDisplay(
+function showFinalScoreDisplay(
   score
 ) {
 
@@ -734,11 +1180,6 @@ function updateScoreDisplay(
       "scoreDisplay"
     );
 
-
-  /*
-    Create score element if it
-    doesn't already exist.
-  */
 
   if (!scoreDisplay) {
 
@@ -752,141 +1193,250 @@ function updateScoreDisplay(
       "scoreDisplay";
 
 
-    scoreDisplay.style.marginTop =
-      "12px";
+    scoreDisplay.style.margin =
+      "15px 0";
 
 
     scoreDisplay.style.padding =
-      "14px 18px";
+      "14px";
 
 
     scoreDisplay.style.borderRadius =
       "12px";
 
 
-    scoreDisplay.style.background =
-      "rgba(255,255,255,0.08)";
-
-
-    scoreDisplay.style.fontSize =
-      "24px";
-
-
-    scoreDisplay.style.fontWeight =
-      "700";
-
-
     scoreDisplay.style.textAlign =
       "center";
 
 
-    resultCard.appendChild(
-      scoreDisplay
+    scoreDisplay.style.fontSize =
+      "26px";
+
+
+    scoreDisplay.style.fontWeight =
+      "bold";
+
+
+    resultCard.insertBefore(
+      scoreDisplay,
+      wordResults
     );
+
   }
 
 
   scoreDisplay.textContent =
     `Score: ${score}/100`;
+
 }
 
 
-/* =====================================================
+/* =========================================================
    WORD INFORMATION
-===================================================== */
+========================================================= */
 
 function showWordInfo(
   word
 ) {
 
-  selectedWord =
+  selectedWordValue =
     word;
 
 
   /*
-    If your existing HTML already
-    has a word-info section, use it.
+    IMPORTANT:
+
+    Don't replace the entire wordInfo
+    element with text.
+
+    Your HTML contains buttons and
+    other elements inside it.
   */
 
-  const wordInfo =
-    document.getElementById(
-      "wordInfo"
-    );
+  selectedWord.textContent =
+    word;
 
-
-  if (wordInfo) {
-
-    wordInfo.textContent =
-      `Practice word: ${word}`;
-  }
-
-  else {
-
-    console.log(
-      "Selected word:",
-      word
-    );
-  }
-}
-
-
-/* =====================================================
-   START PRACTICE
-===================================================== */
-
-function startPractice(
-  paragraph
-) {
 
   /*
-    Stop an existing microphone
-    session before starting another
-    practice.
+    Give a few simple same-sound
+    examples for now.
+
+    This is NOT yet a real dictionary/
+    pronunciation AI system.
+
+    We'll upgrade this later.
   */
 
-  if (
-    recognition &&
-    isListening
-  ) {
-
-    stopRecognition();
-  }
-
-
-  finalTranscript = "";
-
-  interimTranscript = "";
-
-
-  currentParagraph =
-    paragraph;
-
-
-  if (paragraphText) {
-
-    paragraphText.textContent =
-      paragraph.text;
-  }
-
-
-  if (transcript) {
-
-    transcript.textContent =
-      "Press Start Speaking when you're ready.";
-  }
-
-
-  if (resultCard) {
-
-    resultCard.classList.add(
-      "hidden"
+  const examples =
+    getSimilarSoundExamples(
+      word
     );
-  }
+
+
+  similarWords.textContent =
+    examples;
+
+
+  wordInfo.classList.remove(
+    "hidden"
+  );
+
 }
 
 
-/* =====================================================
+/* =========================================================
+   CLOSE WORD INFORMATION
+========================================================= */
+
+if (closeWordInfo) {
+
+  closeWordInfo.addEventListener(
+    "click",
+    function() {
+
+      wordInfo.classList.add(
+        "hidden"
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   TEXT-TO-SPEECH PRONUNCIATION
+========================================================= */
+
+if (pronounceButton) {
+
+  pronounceButton.addEventListener(
+    "click",
+    function() {
+
+      if (
+        !selectedWordValue
+      ) {
+
+        return;
+
+      }
+
+
+      /*
+        Use the browser's built-in
+        English voice.
+
+        This gives us a working
+        pronunciation button without
+        needing a paid API yet.
+      */
+
+      if (
+        "speechSynthesis" in window
+      ) {
+
+        window.speechSynthesis.cancel();
+
+
+        const utterance =
+          new SpeechSynthesisUtterance(
+            selectedWordValue
+          );
+
+
+        utterance.lang =
+          "en-US";
+
+
+        utterance.rate =
+          0.75;
+
+
+        window.speechSynthesis.speak(
+          utterance
+        );
+
+      }
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   SIMPLE SOUND EXAMPLES
+========================================================= */
+
+function getSimilarSoundExamples(
+  word
+) {
+
+  const lower =
+    word.toLowerCase();
+
+
+  const examples = {
+
+    bee:
+      "be, sea, see",
+
+    be:
+      "bee, sea, see",
+
+    see:
+      "sea, C, see",
+
+    sea:
+      "see, C",
+
+    tree:
+      "three",
+
+    three:
+      "tree",
+
+    right:
+      "write, rite",
+
+    write:
+      "right, rite",
+
+    two:
+      "to, too",
+
+    to:
+      "two, too",
+
+    too:
+      "two, to",
+
+    hear:
+      "here",
+
+    here:
+      "hear",
+
+    night:
+      "knight",
+
+    knight:
+      "night"
+
+  };
+
+
+  return (
+    examples[lower] ||
+    "Pronunciation examples will be added here."
+  );
+
+}
+
+
+/* =========================================================
    INITIALIZE
-===================================================== */
+========================================================= */
 
 setupSpeechRecognition();
