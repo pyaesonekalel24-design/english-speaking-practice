@@ -1,1 +1,596 @@
+/* =========================
+   BASIC RESET
+========================= */
 
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Arial,
+    sans-serif;
+
+  background: #101522;
+  color: #ffffff;
+
+  min-height: 100vh;
+
+  overflow-x: hidden;
+}
+
+
+/* =========================
+   SCREENS
+========================= */
+
+.screen {
+  display: none;
+
+  min-height: 100vh;
+
+  padding: 24px;
+
+  align-items: center;
+  justify-content: center;
+}
+
+.screen.active {
+  display: flex;
+}
+
+
+/* =========================
+   HOME
+========================= */
+
+.home-card {
+  width: 100%;
+  max-width: 430px;
+
+  text-align: center;
+
+  padding: 42px 28px;
+
+  background: #192033;
+
+  border-radius: 28px;
+
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.35);
+}
+
+.logo-circle {
+  width: 82px;
+  height: 82px;
+
+  margin: 0 auto 22px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #273653;
+
+  font-size: 38px;
+}
+
+h1 {
+  font-size: 38px;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  font-size: 19px;
+  color: #9fb4d7;
+
+  margin-bottom: 20px;
+}
+
+.description {
+  color: #b8c2d3;
+
+  line-height: 1.6;
+
+  margin-bottom: 30px;
+}
+
+
+/* =========================
+   BUTTONS
+========================= */
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+}
+
+.primary-button {
+  width: 100%;
+
+  padding: 16px;
+
+  border-radius: 14px;
+
+  background: #5b8cff;
+  color: white;
+
+  font-size: 18px;
+  font-weight: 700;
+
+  transition: transform 0.15s;
+}
+
+.primary-button:active {
+  transform: scale(0.97);
+}
+
+.secondary-button {
+  margin-top: 20px;
+
+  padding: 12px 20px;
+
+  border-radius: 12px;
+
+  background: #273653;
+  color: white;
+}
+
+
+/* =========================
+   LEVEL SCREEN
+========================= */
+
+.level-card {
+  width: 100%;
+  max-width: 480px;
+
+  background: #192033;
+
+  border-radius: 26px;
+
+  padding: 30px;
+}
+
+.level-card h2 {
+  font-size: 28px;
+
+  margin-bottom: 8px;
+}
+
+.level-card > p {
+  color: #aebbd0;
+
+  margin-bottom: 24px;
+}
+
+.level-buttons {
+  display: flex;
+  flex-direction: column;
+
+  gap: 12px;
+}
+
+.level-button {
+  width: 100%;
+
+  text-align: left;
+
+  padding: 18px;
+
+  border-radius: 16px;
+
+  background: #222d44;
+
+  color: white;
+
+  border: 2px solid transparent;
+
+  transition: 0.15s;
+}
+
+.level-button:hover {
+  border-color: #5b8cff;
+}
+
+.level-button strong {
+  display: block;
+
+  font-size: 18px;
+
+  margin-bottom: 5px;
+}
+
+.level-button span {
+  color: #9daac0;
+
+  font-size: 14px;
+}
+
+
+/* =========================
+   PRACTICE HEADER
+========================= */
+
+.practiceScreen {
+  padding: 0;
+}
+
+.practice-header {
+  position: fixed;
+
+  top: 0;
+  left: 0;
+
+  width: 100%;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 15px 20px;
+
+  background: rgba(16, 21, 34, 0.95);
+
+  z-index: 20;
+
+  border-bottom: 1px solid #28344c;
+}
+
+.practice-header h1 {
+  font-size: 22px;
+
+  margin: 0;
+}
+
+#currentLevel {
+  color: #91a9d1;
+
+  font-size: 13px;
+}
+
+.small-button {
+  padding: 9px 14px;
+
+  border-radius: 10px;
+
+  background: #273653;
+
+  color: white;
+}
+
+
+/* =========================
+   PRACTICE MAIN
+========================= */
+
+.practice-main {
+  width: 100%;
+  max-width: 650px;
+
+  padding-top: 90px;
+  padding-bottom: 50px;
+}
+
+
+/* =========================
+   READING WINDOW
+========================= */
+
+.reading-window {
+  position: relative;
+
+  height: 260px;
+
+  overflow: hidden;
+
+  background: #f4f1e8;
+
+  color: #1b1d21;
+
+  border-radius: 22px;
+
+  padding: 35px 25px;
+
+  box-shadow:
+    0 15px 40px rgba(0, 0, 0, 0.3);
+}
+
+.reading-window::before {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  left: 0;
+
+  width: 100%;
+  height: 55px;
+
+  background:
+    linear-gradient(
+      to bottom,
+      #f4f1e8,
+      transparent
+    );
+
+  z-index: 2;
+
+  pointer-events: none;
+}
+
+.reading-window::after {
+  content: "";
+
+  position: absolute;
+
+  bottom: 0;
+  left: 0;
+
+  width: 100%;
+  height: 55px;
+
+  background:
+    linear-gradient(
+      to top,
+      #f4f1e8,
+      transparent
+    );
+
+  z-index: 2;
+
+  pointer-events: none;
+}
+
+.scrolling-text {
+  font-family: Georgia, serif;
+
+  font-size: 22px;
+
+  line-height: 1.8;
+
+  animation: scrollText 22s linear infinite;
+
+  padding-bottom: 100px;
+}
+
+@keyframes scrollText {
+
+  0% {
+    transform: translateY(100%);
+  }
+
+  100% {
+    transform: translateY(-100%);
+  }
+
+}
+
+
+/* =========================
+   MICROPHONE
+========================= */
+
+.mic-section {
+  text-align: center;
+
+  padding: 28px 0;
+}
+
+.mic-button {
+  width: 82px;
+  height: 82px;
+
+  border-radius: 50%;
+
+  background: #5b8cff;
+
+  color: white;
+
+  font-size: 34px;
+
+  box-shadow:
+    0 10px 30px rgba(91, 140, 255, 0.3);
+
+  transition: 0.2s;
+}
+
+.mic-button.listening {
+  transform: scale(1.08);
+
+  background: #ef5364;
+
+  box-shadow:
+    0 0 0 12px rgba(239, 83, 100, 0.15);
+}
+
+#micStatus {
+  color: #9facbf;
+
+  margin-top: 12px;
+
+  font-size: 14px;
+}
+
+
+/* =========================
+   TRANSCRIPT
+========================= */
+
+.transcript-card,
+.result-card,
+.word-info {
+  background: #192033;
+
+  border-radius: 20px;
+
+  padding: 20px;
+
+  margin-top: 15px;
+}
+
+.card-title {
+  color: #8fa4c5;
+
+  font-size: 13px;
+
+  text-transform: uppercase;
+
+  letter-spacing: 1px;
+
+  margin-bottom: 12px;
+}
+
+.transcript {
+  min-height: 70px;
+
+  color: #e7ebf2;
+
+  line-height: 1.7;
+}
+
+
+/* =========================
+   RESULT
+========================= */
+
+.result-card h3 {
+  margin-bottom: 8px;
+}
+
+#resultSummary {
+  color: #aebbd0;
+
+  margin-bottom: 15px;
+}
+
+.word-results {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 7px;
+}
+
+.word {
+  padding: 5px 8px;
+
+  border-radius: 7px;
+
+  background: #28354d;
+
+  cursor: pointer;
+}
+
+.word.wrong {
+  background: #672f3a;
+
+  color: #ff8e9a;
+
+  text-decoration: underline;
+}
+
+
+/* =========================
+   WORD INFORMATION
+========================= */
+
+.word-info {
+  position: relative;
+}
+
+.word-info h3 {
+  font-size: 28px;
+
+  margin-bottom: 10px;
+}
+
+.close-button {
+  position: absolute;
+
+  top: 12px;
+  right: 15px;
+
+  background: transparent;
+
+  color: #aab6c9;
+
+  font-size: 25px;
+}
+
+.pronounce-button {
+  width: 100%;
+
+  margin-top: 15px;
+
+  padding: 13px;
+
+  border-radius: 12px;
+
+  background: #273653;
+
+  color: white;
+
+  font-weight: 600;
+}
+
+.sound-example {
+  margin-top: 20px;
+
+  padding-top: 15px;
+
+  border-top: 1px solid #2d3a52;
+
+  color: #aebbd0;
+}
+
+.sound-example strong {
+  color: white;
+}
+
+
+/* =========================
+   HIDDEN
+========================= */
+
+.hidden {
+  display: none !important;
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 500px) {
+
+  .screen {
+    padding: 16px;
+  }
+
+  .home-card {
+    padding: 35px 22px;
+  }
+
+  .home-card h1 {
+    font-size: 34px;
+  }
+
+  .reading-window {
+    height: 280px;
+  }
+
+  .scrolling-text {
+    font-size: 20px;
+  }
+
+}
