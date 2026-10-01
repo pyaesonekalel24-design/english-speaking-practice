@@ -1,51 +1,23 @@
-/*
-=====================================================
- SPEAKUP
- Simple stable version
-
- Home
-   ↓
- Level
-   ↓
- Practice
-   ↓
- Manual microphone
-   ↓
- Whisper
-   ↓
- Transcript
-   ↓
- Word alignment
-   ↓
- Score
-=====================================================
-*/
+/* =====================================================
+   SPEAKUP
+   ===================================================== */
 
 
 /* =====================================================
-   WHISPER / TRANSFORMERS.JS
+   WHISPER
+   ===================================================== */
 
-   We use the stable Transformers.js 3.8.1 version.
-===================================================== */
+const WHISPER_MODEL =
+  "Xenova/whisper-tiny.en";
 
-import {
-  pipeline
-} from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1";
-
-
-/* =====================================================
-   WHISPER SETTINGS
-===================================================== */
-
-const WHISPER_MODEL = "Xenova/whisper-tiny.en";
-
+let pipelineFunction = null;
 let transcriber = null;
 let whisperLoading = false;
 
 
 /* =====================================================
    PASSAGES
-===================================================== */
+   ===================================================== */
 
 const passages = {
 
@@ -59,7 +31,6 @@ const passages = {
 
   ],
 
-
   medium: [
 
     "Last night, I went to a small restaurant near my house. The food was delicious, and the staff were very friendly. After dinner, I walked home slowly and enjoyed the cool evening air.",
@@ -69,7 +40,6 @@ const passages = {
     "I usually make a list before I go shopping. It helps me remember everything I need and prevents me from buying unnecessary things. It also saves me time and money."
 
   ],
-
 
   intermediate: [
 
@@ -86,7 +56,7 @@ const passages = {
 
 /* =====================================================
    STATE
-===================================================== */
+   ===================================================== */
 
 let currentLevel = "easy";
 let currentPassage = "";
@@ -104,25 +74,7 @@ let scrollAnimationId = null;
 
 /* =====================================================
    DOM
-===================================================== */
-
-const homeScreen =
-  document.getElementById("homeScreen");
-
-const levelScreen =
-  document.getElementById("levelScreen");
-
-const practiceScreen =
-  document.getElementById("practiceScreen");
-
-const startBtn =
-  document.getElementById("startBtn");
-
-const backHomeBtn =
-  document.getElementById("backHomeBtn");
-
-const backLevelsBtn =
-  document.getElementById("backLevelsBtn");
+   ===================================================== */
 
 const micBtn =
   document.getElementById("micBtn");
@@ -149,7 +101,9 @@ function showScreen(screenId) {
   document
     .querySelectorAll(".screen")
     .forEach(screen => {
+
       screen.classList.remove("active");
+
     });
 
 
@@ -157,61 +111,37 @@ function showScreen(screenId) {
     document.getElementById(screenId);
 
 
-  if (!target) {
-    console.error(
-      "Screen not found:",
-      screenId
-    );
+  if (target) {
 
-    return;
+    target.classList.add("active");
+
   }
 
-
-  target.classList.add("active");
-
 }
+
+
+/*
+  Keep this available because your HTML
+  can call showScreen().
+*/
+
+window.showScreen = showScreen;
 
 
 /* =====================================================
    HOME
 ===================================================== */
 
-startBtn.addEventListener(
-  "click",
-  () => {
+document
+  .getElementById("startBtn")
+  .addEventListener(
+    "click",
+    () => {
 
-    showScreen("levelScreen");
+      showScreen("levelScreen");
 
-  }
-);
-
-
-/* =====================================================
-   BACK TO HOME
-===================================================== */
-
-backHomeBtn.addEventListener(
-  "click",
-  () => {
-
-    showScreen("homeScreen");
-
-  }
-);
-
-
-/* =====================================================
-   BACK TO LEVELS
-===================================================== */
-
-backLevelsBtn.addEventListener(
-  "click",
-  () => {
-
-    leavePractice();
-
-  }
-);
+    }
+  );
 
 
 /* =====================================================
@@ -230,7 +160,7 @@ document
           button.dataset.level;
 
         console.log(
-          "Selected level:",
+          "Level selected:",
           currentLevel
         );
 
@@ -255,7 +185,7 @@ function startPractice() {
   if (!list) {
 
     console.error(
-      "No passages found for:",
+      "No passage list for:",
       currentLevel
     );
 
@@ -296,14 +226,9 @@ function startPractice() {
 
 
   /*
-    IMPORTANT:
+    Whisper is NOT loaded here.
 
-    We DO NOT load Whisper here.
-
-    This keeps the level buttons fast.
-
-    Whisper loads only when the
-    user actually presses the mic.
+    This is intentional.
   */
 
   whisperStatus.textContent =
@@ -314,8 +239,8 @@ function startPractice() {
 
 
   /*
-    Start passage animation after
-    practice screen is visible.
+    Start scrolling after the practice
+    screen becomes visible.
   */
 
   setTimeout(
@@ -324,7 +249,7 @@ function startPractice() {
       startPassageScroll();
 
     },
-    150
+    300
   );
 
 }
@@ -348,13 +273,15 @@ function startPassageScroll() {
 
 
   if (!viewport || !text) {
+
+    console.log(
+      "Passage elements not found."
+    );
+
     return;
+
   }
 
-
-  /*
-    Cancel previous animation.
-  */
 
   if (scrollAnimationId) {
 
@@ -362,23 +289,12 @@ function startPassageScroll() {
       scrollAnimationId
     );
 
-    scrollAnimationId = null;
-
   }
 
-
-  /*
-    Reset position.
-  */
 
   text.style.transform =
     "translateY(0px)";
 
-
-  /*
-    Wait one frame so the browser
-    calculates the real text height.
-  */
 
   requestAnimationFrame(
     () => {
@@ -390,17 +306,8 @@ function startPassageScroll() {
         text.scrollHeight;
 
 
-      /*
-        Start below the viewport.
-      */
-
       const startY =
         viewportHeight;
-
-
-      /*
-        End above the viewport.
-      */
 
       const endY =
         -textHeight;
@@ -409,10 +316,6 @@ function startPassageScroll() {
       text.style.transform =
         `translateY(${startY}px)`;
 
-
-      /*
-        Longer passage = longer scroll.
-      */
 
       const wordCount =
         currentPassage
@@ -424,7 +327,7 @@ function startPassageScroll() {
       const duration =
         Math.max(
           12000,
-          wordCount * 480
+          wordCount * 500
         );
 
 
@@ -433,12 +336,11 @@ function startPassageScroll() {
 
 
       function animate(
-        currentTime
+        now
       ) {
 
         const elapsed =
-          currentTime -
-          startTime;
+          now - startTime;
 
 
         const progress =
@@ -448,12 +350,9 @@ function startPassageScroll() {
           );
 
 
-        /*
-          Smooth movement.
-        */
-
         const eased =
-          progress * (2 - progress);
+          progress *
+          (2 - progress);
 
 
         const currentY =
@@ -483,10 +382,6 @@ function startPassageScroll() {
 
       }
 
-
-      /*
-        Start animation.
-      */
 
       scrollAnimationId =
         requestAnimationFrame(
@@ -574,13 +469,9 @@ function resetResults() {
 
 /* =====================================================
    LOAD WHISPER
-===================================================== */
+   ===================================================== */
 
 async function loadWhisper() {
-
-  /*
-    Already loaded?
-  */
 
   if (transcriber) {
 
@@ -595,10 +486,6 @@ async function loadWhisper() {
   }
 
 
-  /*
-    Already loading?
-  */
-
   if (whisperLoading) {
 
     return false;
@@ -610,30 +497,49 @@ async function loadWhisper() {
 
 
   whisperStatus.textContent =
-    "Loading Whisper for the first time...";
+    "Loading Whisper... first time may take a while.";
 
   whisperStatus.className =
     "whisperStatus loading";
 
 
-  console.log(
-    "Loading Whisper..."
-  );
-
-
   try {
 
     /*
-      No WebGPU.
+      IMPORTANT:
 
-      We deliberately use the normal
-      browser/WASM path first because
-      it is simpler and more reliable
-      for this version.
+      Transformers.js is imported HERE,
+      not at the top of the file.
+
+      Therefore it cannot break the
+      Home or Level screens.
+    */
+
+    if (!pipelineFunction) {
+
+      const transformers =
+        await import(
+          "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1"
+        );
+
+
+      pipelineFunction =
+        transformers.pipeline;
+
+    }
+
+
+    console.log(
+      "Transformers.js loaded."
+    );
+
+
+    /*
+      Load Whisper.
     */
 
     transcriber =
-      await pipeline(
+      await pipelineFunction(
         "automatic-speech-recognition",
         WHISPER_MODEL
       );
@@ -662,7 +568,7 @@ async function loadWhisper() {
   catch (error) {
 
     console.error(
-      "Whisper loading error:",
+      "WHISPER LOAD ERROR:",
       error
     );
 
@@ -675,8 +581,7 @@ async function loadWhisper() {
 
 
     micStatus.textContent =
-      "Whisper could not load. Check the status above.";
-
+      "Whisper could not load.";
 
     whisperLoading = false;
 
@@ -696,25 +601,17 @@ micBtn.addEventListener(
   "click",
   async () => {
 
-    /*
-      If already recording,
-      stop it.
-    */
-
     if (isRecording) {
 
       stopRecording();
 
-      return;
-
     }
 
+    else {
 
-    /*
-      Otherwise start.
-    */
+      await startRecording();
 
-    await startRecording();
+    }
 
   }
 );
@@ -729,8 +626,7 @@ async function startRecording() {
   try {
 
     /*
-      Load Whisper ONLY when the user
-      actually presses the microphone.
+      Load Whisper only now.
     */
 
     if (!transcriber) {
@@ -752,25 +648,17 @@ async function startRecording() {
     }
 
 
-    /*
-      Check microphone support.
-    */
-
     if (
       !navigator.mediaDevices ||
       !navigator.mediaDevices.getUserMedia
     ) {
 
       throw new Error(
-        "Microphone is not supported by this browser."
+        "Microphone is not supported."
       );
 
     }
 
-
-    /*
-      Ask for microphone.
-    */
 
     const stream =
       await navigator.mediaDevices
@@ -781,10 +669,6 @@ async function startRecording() {
 
     audioChunks = [];
 
-
-    /*
-      Choose a supported recording format.
-    */
 
     let options = {};
 
@@ -800,6 +684,7 @@ async function startRecording() {
 
     }
 
+
     else if (
       MediaRecorder.isTypeSupported(
         "audio/webm"
@@ -813,7 +698,7 @@ async function startRecording() {
 
 
     mediaRecorder =
-      Object.keys(options).length > 0
+      Object.keys(options).length
         ? new MediaRecorder(
             stream,
             options
@@ -853,10 +738,6 @@ async function startRecording() {
           );
 
 
-        /*
-          Turn microphone off.
-        */
-
         stream
           .getTracks()
           .forEach(
@@ -871,12 +752,9 @@ async function startRecording() {
 
         isRecording = false;
 
+
         updateRecordingUI();
 
-
-        /*
-          Send recording to Whisper.
-        */
 
         await processRecording(
           audioBlob
@@ -884,10 +762,6 @@ async function startRecording() {
 
       };
 
-
-    /*
-      Start recording.
-    */
 
     mediaRecorder.start();
 
@@ -915,13 +789,13 @@ async function startRecording() {
   catch (error) {
 
     console.error(
-      "Microphone error:",
+      "MICROPHONE ERROR:",
       error
     );
 
 
     micStatus.textContent =
-      "Microphone permission was denied or unavailable.";
+      "Microphone permission was denied.";
 
   }
 
@@ -953,6 +827,7 @@ function stopRecording() {
 
   isRecording = false;
 
+
   updateRecordingUI();
 
 }
@@ -979,7 +854,6 @@ function updateRecordingUI() {
       "Recording... tap to stop";
 
   }
-
 
   else {
 
@@ -1076,11 +950,6 @@ async function processRecording(
 
   try {
 
-    /*
-      Convert recording to
-      16 kHz mono audio.
-    */
-
     const audio =
       await decodeAudio(
         blob
@@ -1088,23 +957,18 @@ async function processRecording(
 
 
     console.log(
-      "Decoded audio samples:",
-      audio.length
+      "Audio decoded:",
+      audio.length,
+      "samples"
     );
 
-
-    /*
-      Send audio to Whisper.
-    */
 
     const result =
       await transcriber(
         audio,
         {
           language: "english",
-          task: "transcribe",
-          chunk_length_s: 30,
-          stride_length_s: 5
+          task: "transcribe"
         }
       );
 
@@ -1120,19 +984,10 @@ async function processRecording(
         .trim();
 
 
-    /*
-      Show transcript.
-    */
-
     showTranscript(
       transcript
     );
 
-
-    /*
-      Compare spoken words
-      with target words.
-    */
 
     compareSpeech(
       currentPassage,
@@ -1157,7 +1012,7 @@ async function processRecording(
   catch (error) {
 
     console.error(
-      "Transcription error:",
+      "TRANSCRIPTION ERROR:",
       error
     );
 
@@ -1170,7 +1025,7 @@ async function processRecording(
 
 
     micStatus.textContent =
-      "Something went wrong while processing the recording.";
+      "Something went wrong processing the recording.";
 
   }
 
@@ -1196,17 +1051,11 @@ async function decodeAudio(
   try {
 
     const audioBuffer =
-      await audioContext.decodeAudioData(
-        arrayBuffer
-      );
+      await audioContext
+        .decodeAudioData(
+          arrayBuffer
+        );
 
-
-    /*
-      Whisper expects 16 kHz audio.
-
-      Convert the browser recording
-      into mono 16 kHz.
-    */
 
     const targetSampleRate =
       16000;
@@ -1228,7 +1077,8 @@ async function decodeAudio(
 
 
     const source =
-      offlineContext.createBufferSource();
+      offlineContext
+        .createBufferSource();
 
 
     source.buffer =
@@ -1251,7 +1101,6 @@ async function decodeAudio(
     return rendered.getChannelData(0);
 
   }
-
 
   finally {
 
@@ -1291,7 +1140,7 @@ function showTranscript(
 
 
 /* =====================================================
-   WORD NORMALIZATION
+   WORD HELPERS
 ===================================================== */
 
 function normalizeWord(
@@ -1309,16 +1158,14 @@ function normalizeWord(
 }
 
 
-/* =====================================================
-   SPLIT WORDS
-===================================================== */
-
 function splitWords(
   text
 ) {
 
   if (!text) {
+
     return [];
+
   }
 
 
@@ -1402,7 +1249,7 @@ function alignWords(
         );
 
 
-      const substitutionCost =
+      const cost =
         target === spoken
           ? 0
           : 1;
@@ -1415,9 +1262,7 @@ function alignWords(
 
           dp[i][j - 1] + 1,
 
-          dp[i - 1][j - 1]
-            +
-          substitutionCost
+          dp[i - 1][j - 1] + cost
 
         );
 
@@ -1440,10 +1285,6 @@ function alignWords(
     i > 0 ||
     j > 0
   ) {
-
-    /*
-      Exact match.
-    */
 
     if (
       i > 0 &&
@@ -1477,10 +1318,6 @@ function alignWords(
     }
 
 
-    /*
-      Wrong word.
-    */
-
     if (
       i > 0 &&
       j > 0 &&
@@ -1509,10 +1346,6 @@ function alignWords(
     }
 
 
-    /*
-      Missing target word.
-    */
-
     if (
       i > 0 &&
       dp[i][j] ===
@@ -1538,14 +1371,8 @@ function alignWords(
     }
 
 
-    /*
-      Extra spoken word.
-    */
-
     if (
-      j > 0 &&
-      dp[i][j] ===
-      dp[i][j - 1] + 1
+      j > 0
     ) {
 
       alignment.unshift({
@@ -1563,47 +1390,6 @@ function alignWords(
       j--;
 
       continue;
-
-    }
-
-
-    /*
-      Safety fallback.
-    */
-
-    if (i > 0) {
-
-      alignment.unshift({
-
-        type: "missing",
-
-        target:
-          targetWords[i - 1],
-
-        spoken: null
-
-      });
-
-
-      i--;
-
-    }
-
-    else {
-
-      alignment.unshift({
-
-        type: "extra",
-
-        target: null,
-
-        spoken:
-          spokenWords[j - 1]
-
-      });
-
-
-      j--;
 
     }
 
@@ -1646,30 +1432,30 @@ function compareSpeech(
   let matched = 0;
 
 
-  for (
-    const item of alignment
-  ) {
+  alignment.forEach(
+    item => {
 
-    if (
-      item.type === "match"
-    ) {
+      if (
+        item.type === "match"
+      ) {
 
-      matched++;
+        matched++;
+
+      }
 
     }
-
-  }
+  );
 
 
   const score =
-    targetWords.length === 0
-      ? 0
-      : Math.round(
+    targetWords.length
+      ? Math.round(
           (
             matched /
             targetWords.length
           ) * 100
-        );
+        )
+      : 0;
 
 
   showScore(
@@ -1746,7 +1532,7 @@ function showScore(
 
 
 /* =====================================================
-   RENDER WORDS
+   WORD COMPARISON
 ===================================================== */
 
 function renderWordComparison(
@@ -1763,120 +1549,104 @@ function renderWordComparison(
     "";
 
 
-  for (
-    const item of alignment
-  ) {
+  alignment.forEach(
+    item => {
 
-    /*
-      Correct word.
-    */
+      if (
+        item.type === "match"
+      ) {
 
-    if (
-      item.type === "match"
-    ) {
-
-      const span =
-        document.createElement(
-          "span"
-        );
-
-
-      span.className =
-        "word correct";
-
-
-      span.textContent =
-        item.target;
-
-
-      container.appendChild(
-        span
-      );
-
-    }
-
-
-    /*
-      Wrong or missing word.
-    */
-
-    else if (
-      item.type === "wrong" ||
-      item.type === "missing"
-    ) {
-
-      const span =
-        document.createElement(
-          "span"
-        );
-
-
-      span.className =
-        "word wrong";
-
-
-      span.textContent =
-        item.target;
-
-
-      span.title =
-        item.spoken
-          ? `Whisper heard: ${item.spoken}`
-          : "Whisper did not hear this word";
-
-
-      span.addEventListener(
-        "click",
-        () => {
-
-          showWordInfo(
-            item.target
+        const span =
+          document.createElement(
+            "span"
           );
 
-        }
-      );
+
+        span.className =
+          "word correct";
 
 
-      container.appendChild(
-        span
-      );
-
-    }
+        span.textContent =
+          item.target;
 
 
-    /*
-      Extra spoken word.
-    */
+        container.appendChild(
+          span
+        );
 
-    else if (
-      item.type === "extra"
-    ) {
+      }
 
-      const span =
-        document.createElement(
-          "span"
+
+      else if (
+        item.type === "wrong" ||
+        item.type === "missing"
+      ) {
+
+        const span =
+          document.createElement(
+            "span"
+          );
+
+
+        span.className =
+          "word wrong";
+
+
+        span.textContent =
+          item.target;
+
+
+        span.title =
+          item.spoken
+            ? `Whisper heard: ${item.spoken}`
+            : "Whisper did not hear this word";
+
+
+        span.addEventListener(
+          "click",
+          () => {
+
+            showWordInfo(
+              item.target
+            );
+
+          }
         );
 
 
-      span.className =
-        "word extra";
+        container.appendChild(
+          span
+        );
+
+      }
 
 
-      span.textContent =
-        `[${item.spoken}]`;
+      else if (
+        item.type === "extra"
+      ) {
+
+        const span =
+          document.createElement(
+            "span"
+          );
 
 
-      span.title =
-        "Extra word detected";
+        span.className =
+          "word extra";
 
 
-      container.appendChild(
-        span
-      );
+        span.textContent =
+          `[${item.spoken}]`;
+
+
+        container.appendChild(
+          span
+        );
+
+      }
 
     }
-
-  }
+  );
 
 
   document
@@ -1913,23 +1683,19 @@ function showWordInfo(
     );
 
 
-  const selected =
-    document.getElementById(
+  document
+    .getElementById(
       "selectedWord"
-    );
-
-
-  const similar =
-    document.getElementById(
-      "similarWords"
-    );
-
-
-  selected.textContent =
+    )
+    .textContent =
     word;
 
 
-  similar.innerHTML =
+  document
+    .getElementById(
+      "similarWords"
+    )
+    .innerHTML =
     getSimilarWords(
       word
     );
@@ -2004,7 +1770,7 @@ function pronounceWord(
 
 
 /* =====================================================
-   SIMILAR SOUND WORDS
+   SIMILAR SOUNDS
 ===================================================== */
 
 function getSimilarWords(
@@ -2115,37 +1881,38 @@ document
    LEAVE PRACTICE
 ===================================================== */
 
-function leavePractice() {
+window.leavePractice =
+  function() {
 
-  if (isRecording) {
+    if (isRecording) {
 
-    stopRecording();
+      stopRecording();
 
-  }
+    }
 
 
-  if (scrollAnimationId) {
+    if (scrollAnimationId) {
 
-    cancelAnimationFrame(
-      scrollAnimationId
+      cancelAnimationFrame(
+        scrollAnimationId
+      );
+
+      scrollAnimationId = null;
+
+    }
+
+
+    showScreen(
+      "levelScreen"
     );
 
-    scrollAnimationId = null;
-
-  }
-
-
-  showScreen(
-    "levelScreen"
-  );
-
-}
+  };
 
 
 /* =====================================================
-   DEBUG MESSAGE
+   DONE
 ===================================================== */
 
 console.log(
-  "SpeakUp app loaded successfully."
+  "SpeakUp loaded successfully."
 );
