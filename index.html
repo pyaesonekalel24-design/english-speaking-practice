@@ -1,269 +1,110 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
-  <meta charset="UTF-8">
-
+  <meta charset="UTF-8" />
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-  >
-
-  <title>Solar Explorer</title>
-
-  <link rel="stylesheet" href="style.css">
-
+  />
+  <title>Solar Superman</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
-
   <div id="game">
 
-    <!-- LOADING -->
-
-    <div id="loading">
-
-      <div class="loadingTitle">
-        SOLAR EXPLORER
-      </div>
-
-      <div>
-        Loading universe...
-      </div>
-
+    <!-- START SCREEN -->
+    <div id="startScreen">
+      <h1>SOLAR SUPERMAN</h1>
+      <p>Fly through the real Solar System.</p>
+      <button id="startButton">START FLYING</button>
     </div>
-
 
     <!-- HUD -->
-
     <div id="hud">
-
-      <div class="title">
-        SOLAR EXPLORER
-      </div>
-
-
-      <div class="instructions desktopOnly">
-
-        <b>W A S D</b> — Fly<br>
-
-        <b>SPACE</b> — Up<br>
-
-        <b>SHIFT</b> — Down<br>
-
-        <b>MOUSE</b> — Look around
-
-      </div>
-
-
-      <div id="speed">
-        Speed: CHILL
-      </div>
-
-
-      <div id="location">
-        Distance from Sun: 1.20 AU
-      </div>
-
-
-      <!-- ENERGY -->
+      <div id="distanceDisplay">DISTANCE FROM SUN: -- AU</div>
 
       <div id="energyContainer">
-
-        <div id="energyBar">
-
-          <div id="energyFill"></div>
-
-        </div>
-
-        <div id="energyText">
-          100%
-        </div>
-
+        <div id="energyBar"></div>
       </div>
-
+      <div id="energyPercent">100%</div>
     </div>
 
-
-    <!-- CROSSHAIR -->
-
-    <div id="crosshair"></div>
-
-
-    <!-- PLANET INFO -->
-
-    <div
-      id="planetInfo"
-      class="hidden"
-    >
-
-      <div id="planetName">
-        Earth
-      </div>
-
-      <div id="planetDistance"></div>
-
-    </div>
-
-
-    <!-- START SCREEN -->
-
-    <div id="startScreen">
-
-      <h1>
-        SOLAR EXPLORER
-      </h1>
-
-      <p>
-        Fly freely through the Solar System.
-      </p>
-
-
-      <button id="startButton">
-        START FLYING
+    <!-- SPEED BUTTONS -->
+    <div id="speedControls">
+      <button class="speedButton active chill" data-speed="chill">
+        CHILL
       </button>
 
+      <button class="speedButton sonic" data-speed="sonic">
+        SONIC
+      </button>
 
-      <small class="desktopOnly">
-        WASD + Space + Shift + Mouse
-      </small>
-
-
-      <small class="mobileOnly">
-        Touch controls available in space
-      </small>
-
+      <button class="speedButton poop" data-speed="poop">
+        U NEED TO POOP
+      </button>
     </div>
 
+    <!-- DISPLAY / POLISH CONTROLS -->
+    <div id="displayControls">
+      <div class="displayTitle">DISPLAY</div>
+
+      <div class="displayRow">
+        <span>LABELS</span>
+        <button id="labelsOn" class="miniButton active">ON</button>
+        <button id="labelsOff" class="miniButton">OFF</button>
+      </div>
+
+      <div class="displayRow">
+        <span>ORBITS</span>
+        <button id="orbitsOn" class="miniButton active">ON</button>
+        <button id="orbitsOff" class="miniButton">OFF</button>
+      </div>
+
+      <button id="hideUIButton" class="hideUIButton">
+        FULL VIEW
+      </button>
+    </div>
+
+    <!-- THIS BUTTON STAYS WHEN UI IS HIDDEN -->
+    <button id="uiToggleButton">UI</button>
+
+    <!-- CROSSHAIR -->
+    <div id="crosshair">
+      <div></div>
+    </div>
+
+    <!-- PLANET INFO -->
+    <div id="planetInfo"></div>
+
+    <!-- PLANET LABELS -->
+    <div id="labelLayer"></div>
 
     <!-- MOBILE CONTROLS -->
-
     <div id="mobileControls">
 
-
       <!-- UP / DOWN -->
-
       <div id="verticalControls">
-
-        <button
-          id="upButton"
-          class="verticalButton"
-        >
-          ▲
-        </button>
-
-
-        <button
-          id="downButton"
-          class="verticalButton"
-        >
-          ▼
-        </button>
-
+        <button id="upButton">▲</button>
+        <button id="downButton">▼</button>
       </div>
 
-
-      <!-- MOVEMENT -->
-
+      <!-- MOVEMENT PAD -->
       <div id="movementPad">
+        <button id="moveForward">▲</button>
 
-        <button
-          id="forwardButton"
-          class="directionButton upArrow"
-        >
-          ▲
-        </button>
+        <div class="middleMovement">
+          <button id="moveLeft">◀</button>
+          <button id="moveRight">▶</button>
+        </div>
 
-
-        <button
-          id="leftButton"
-          class="directionButton leftArrow"
-        >
-          ◀
-        </button>
-
-
-        <button
-          id="rightButton"
-          class="directionButton rightArrow"
-        >
-          ▶
-        </button>
-
-
-        <button
-          id="backButton"
-          class="directionButton downArrow"
-        >
-          ▼
-        </button>
-
+        <button id="moveBackward">▼</button>
       </div>
-
-
-      <!-- SPEED -->
-
-      <div id="speedControls">
-
-        <button
-          id="chillButton"
-          class="speedButton chillSpeed active"
-        >
-
-          <span class="speedTitle">
-            CHILL
-          </span>
-
-          <span class="speedDescription">
-            Normal
-          </span>
-
-        </button>
-
-
-        <button
-          id="sonicButton"
-          class="speedButton sonicSpeed"
-        >
-
-          <span class="speedTitle">
-            SONIC
-          </span>
-
-          <span class="speedDescription">
-            2×
-          </span>
-
-        </button>
-
-
-        <button
-          id="poopButton"
-          class="speedButton poopSpeed"
-        >
-
-          <span class="speedTitle">
-            U NEED<br>TO POOP
-          </span>
-
-          <span class="speedDescription">
-            4×
-          </span>
-
-        </button>
-
-      </div>
-
 
     </div>
 
+    <!-- THREE.JS -->
+    <script type="module" src="app.js"></script>
   </div>
-
-
-  <script
-    type="module"
-    src="app.js"
-  ></script>
-
 </body>
 </html>
