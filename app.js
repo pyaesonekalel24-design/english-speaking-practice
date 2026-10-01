@@ -6,14 +6,17 @@ import * as THREE from
 // SCENE
 // ============================================================
 
-const scene = new THREE.Scene();
+const scene =
+  new THREE.Scene();
 
-scene.background = new THREE.Color(0x000000);
+scene.background =
+  new THREE.Color(0x000000);
 
-scene.fog = new THREE.FogExp2(
-  0x000000,
-  0.000015
-);
+scene.fog =
+  new THREE.FogExp2(
+    0x000000,
+    0.000015
+  );
 
 
 // ============================================================
@@ -59,7 +62,9 @@ renderer.setSize(
 
 document
   .getElementById("game")
-  .appendChild(renderer.domElement);
+  .appendChild(
+    renderer.domElement
+  );
 
 
 // ============================================================
@@ -72,7 +77,9 @@ const ambientLight =
     0.12
   );
 
-scene.add(ambientLight);
+scene.add(
+  ambientLight
+);
 
 
 // ============================================================
@@ -97,7 +104,9 @@ const sun =
     sunMaterial
   );
 
-scene.add(sun);
+scene.add(
+  sun
+);
 
 
 // Sun glow
@@ -122,7 +131,9 @@ const sunGlow =
     glowMaterial
   );
 
-scene.add(sunGlow);
+scene.add(
+  sunGlow
+);
 
 
 // Sun light
@@ -135,7 +146,9 @@ const sunLight =
     1
   );
 
-scene.add(sunLight);
+scene.add(
+  sunLight
+);
 
 
 // ============================================================
@@ -176,7 +189,9 @@ function createPlanet(
   mesh.position.x =
     distance;
 
-  scene.add(mesh);
+  scene.add(
+    mesh
+  );
 
   planets.push({
     name,
@@ -290,18 +305,23 @@ const rings =
 rings.rotation.x =
   Math.PI / 2;
 
-saturn.add(rings);
+saturn.add(
+  rings
+);
 
 
 // ============================================================
 // ORBITS
 // ============================================================
 
-function createOrbit(radius) {
+function createOrbit(
+  radius
+) {
 
   const points = [];
 
   const segments = 128;
+
 
   for (
     let i = 0;
@@ -325,11 +345,16 @@ function createOrbit(radius) {
           radius
       )
     );
+
   }
+
 
   const geometry =
     new THREE.BufferGeometry()
-      .setFromPoints(points);
+      .setFromPoints(
+        points
+      );
+
 
   const material =
     new THREE.LineBasicMaterial({
@@ -338,17 +363,24 @@ function createOrbit(radius) {
       opacity: 0.5
     });
 
+
   const orbit =
     new THREE.LineLoop(
       geometry,
       material
     );
 
-  scene.add(orbit);
+
+  scene.add(
+    orbit
+  );
+
 }
 
 
-for (const planet of planets) {
+for (
+  const planet of planets
+) {
 
   createOrbit(
     planet.distance
@@ -361,7 +393,8 @@ for (const planet of planets) {
 // STARS
 // ============================================================
 
-const starCount = 12000;
+const starCount =
+  12000;
 
 const starPositions =
   new Float32Array(
@@ -395,27 +428,33 @@ for (
         1
     );
 
+
   starPositions[i3] =
     radius *
     Math.sin(phi) *
     Math.cos(theta);
 
+
   starPositions[i3 + 1] =
     radius *
     Math.cos(phi);
+
 
   starPositions[i3 + 2] =
     radius *
     Math.sin(phi) *
     Math.sin(theta);
+
 }
 
 
 const starGeometry =
   new THREE.BufferGeometry();
 
+
 starGeometry.setAttribute(
   "position",
+
   new THREE.BufferAttribute(
     starPositions,
     3
@@ -437,7 +476,10 @@ const stars =
     starMaterial
   );
 
-scene.add(stars);
+
+scene.add(
+  stars
+);
 
 
 // ============================================================
@@ -453,15 +495,44 @@ const direction =
 let flying = false;
 
 
-// Base speed
+// ============================================================
+// SPEED SYSTEM
+// ============================================================
 
-let normalSpeed = 180;
+const CHILL_SPEED =
+  180;
+
+const SONIC_SPEED =
+  CHILL_SPEED * 2;
+
+const POOP_SPEED =
+  CHILL_SPEED * 4;
 
 
-// Speed limits
+// Default
 
-const MIN_SPEED = 30;
-const MAX_SPEED = 1000;
+let currentSpeedMode =
+  "chill";
+
+
+// Energy
+
+let energy = 100;
+
+
+// Energy drain per second
+
+const SONIC_DRAIN =
+  7;
+
+const POOP_DRAIN =
+  22;
+
+
+// Sun refill radius
+
+const SUN_REFILL_DISTANCE =
+  180;
 
 
 // ============================================================
@@ -475,7 +546,8 @@ document.addEventListener(
   "keydown",
   event => {
 
-    keys[event.code] = true;
+    keys[event.code] =
+      true;
 
   }
 );
@@ -485,7 +557,8 @@ document.addEventListener(
   "keyup",
   event => {
 
-    keys[event.code] = false;
+    keys[event.code] =
+      false;
 
   }
 );
@@ -496,6 +569,7 @@ document.addEventListener(
 // ============================================================
 
 let yaw = 0;
+
 let pitch = 0;
 
 
@@ -505,35 +579,44 @@ document.addEventListener(
 
     if (!flying) return;
 
+
     const sensitivity =
       0.002;
+
 
     yaw -=
       event.movementX *
       sensitivity;
 
+
     pitch -=
       event.movementY *
       sensitivity;
+
 
     const limit =
       Math.PI / 2 -
       0.05;
 
+
     pitch =
       Math.max(
         -limit,
+
         Math.min(
           limit,
           pitch
         )
       );
 
+
     camera.rotation.order =
       "YXZ";
 
+
     camera.rotation.y =
       yaw;
+
 
     camera.rotation.x =
       pitch;
@@ -564,7 +647,9 @@ startButton.addEventListener(
         "hidden"
       );
 
+
     flying = true;
+
 
     renderer.domElement
       .requestPointerLock?.();
@@ -581,8 +666,149 @@ renderer.domElement.addEventListener(
 
     if (!flying) return;
 
+
     renderer.domElement
       .requestPointerLock?.();
+
+  }
+);
+
+
+// ============================================================
+// SPEED MODE BUTTONS
+// ============================================================
+
+const chillButton =
+  document.getElementById(
+    "chillButton"
+  );
+
+const sonicButton =
+  document.getElementById(
+    "sonicButton"
+  );
+
+const poopButton =
+  document.getElementById(
+    "poopButton"
+  );
+
+
+function updateSpeedButtons() {
+
+  chillButton.classList.remove(
+    "active"
+  );
+
+  sonicButton.classList.remove(
+    "active"
+  );
+
+  poopButton.classList.remove(
+    "active"
+  );
+
+
+  if (
+    currentSpeedMode ===
+    "chill"
+  ) {
+
+    chillButton.classList.add(
+      "active"
+    );
+
+  }
+
+
+  if (
+    currentSpeedMode ===
+    "sonic"
+  ) {
+
+    sonicButton.classList.add(
+      "active"
+    );
+
+  }
+
+
+  if (
+    currentSpeedMode ===
+    "poop"
+  ) {
+
+    poopButton.classList.add(
+      "active"
+    );
+
+  }
+
+}
+
+
+function setSpeedMode(
+  mode
+) {
+
+  // Can't activate energy modes
+  // when completely empty
+
+  if (
+    energy <= 0 &&
+    mode !== "chill"
+  ) {
+
+    currentSpeedMode =
+      "chill";
+
+    updateSpeedButtons();
+
+    return;
+
+  }
+
+
+  currentSpeedMode =
+    mode;
+
+
+  updateSpeedButtons();
+
+}
+
+
+chillButton.addEventListener(
+  "click",
+  () => {
+
+    setSpeedMode(
+      "chill"
+    );
+
+  }
+);
+
+
+sonicButton.addEventListener(
+  "click",
+  () => {
+
+    setSpeedMode(
+      "sonic"
+    );
+
+  }
+);
+
+
+poopButton.addEventListener(
+  "click",
+  () => {
+
+    setSpeedMode(
+      "poop"
+    );
 
   }
 );
@@ -598,60 +824,74 @@ function bindMobileButton(
 ) {
 
   const button =
-    document.getElementById(id);
+    document.getElementById(
+      id
+    );
+
 
   if (!button) return;
 
 
-  const start = event => {
+  const start =
+    event => {
 
-    event.preventDefault();
+      event.preventDefault();
 
-    keys[key] = true;
+      keys[key] =
+        true;
 
-  };
+    };
 
 
-  const stop = event => {
+  const stop =
+    event => {
 
-    event.preventDefault();
+      event.preventDefault();
 
-    keys[key] = false;
+      keys[key] =
+        false;
 
-  };
+    };
 
 
   button.addEventListener(
     "touchstart",
     start,
-    { passive: false }
+    {
+      passive: false
+    }
   );
+
 
   button.addEventListener(
     "touchend",
     stop,
-    { passive: false }
+    {
+      passive: false
+    }
   );
+
 
   button.addEventListener(
     "touchcancel",
     stop,
-    { passive: false }
+    {
+      passive: false
+    }
   );
 
-
-  // Also supports mouse testing
-  // on desktop
 
   button.addEventListener(
     "mousedown",
     start
   );
 
+
   button.addEventListener(
     "mouseup",
     stop
   );
+
 
   button.addEventListener(
     "mouseleave",
@@ -661,22 +901,25 @@ function bindMobileButton(
 }
 
 
-// Movement buttons
+// Movement
 
 bindMobileButton(
   "forwardButton",
   "KeyW"
 );
 
+
 bindMobileButton(
   "backButton",
   "KeyS"
 );
 
+
 bindMobileButton(
   "leftButton",
   "KeyA"
 );
+
 
 bindMobileButton(
   "rightButton",
@@ -684,12 +927,13 @@ bindMobileButton(
 );
 
 
-// Vertical buttons
+// Vertical
 
 bindMobileButton(
   "upButton",
   "Space"
 );
+
 
 bindMobileButton(
   "downButton",
@@ -701,7 +945,8 @@ bindMobileButton(
 // MOBILE LOOK
 // ============================================================
 
-let lookTouch = null;
+let lookTouch =
+  null;
 
 
 renderer.domElement.addEventListener(
@@ -710,28 +955,39 @@ renderer.domElement.addEventListener(
 
     if (!flying) return;
 
-    // Ignore touches on buttons
 
     if (
       event.target.closest(
         "#mobileControls"
       )
     ) {
+
       return;
+
     }
 
 
     const touch =
       event.touches[0];
 
+
     lookTouch = {
-      id: touch.identifier,
-      x: touch.clientX,
-      y: touch.clientY
+
+      id:
+        touch.identifier,
+
+      x:
+        touch.clientX,
+
+      y:
+        touch.clientY
+
     };
 
   },
-  { passive: false }
+  {
+    passive: false
+  }
 );
 
 
@@ -743,7 +999,9 @@ renderer.domElement.addEventListener(
       !flying ||
       !lookTouch
     ) {
+
       return;
+
     }
 
 
@@ -763,6 +1021,7 @@ renderer.domElement.addEventListener(
       touch.clientX -
       lookTouch.x;
 
+
     const dy =
       touch.clientY -
       lookTouch.y;
@@ -775,6 +1034,7 @@ renderer.domElement.addEventListener(
     yaw -=
       dx *
       sensitivity;
+
 
     pitch -=
       dy *
@@ -789,6 +1049,7 @@ renderer.domElement.addEventListener(
     pitch =
       Math.max(
         -limit,
+
         Math.min(
           limit,
           pitch
@@ -799,8 +1060,10 @@ renderer.domElement.addEventListener(
     camera.rotation.order =
       "YXZ";
 
+
     camera.rotation.y =
       yaw;
+
 
     camera.rotation.x =
       pitch;
@@ -809,6 +1072,7 @@ renderer.domElement.addEventListener(
     lookTouch.x =
       touch.clientX;
 
+
     lookTouch.y =
       touch.clientY;
 
@@ -816,177 +1080,138 @@ renderer.domElement.addEventListener(
     event.preventDefault();
 
   },
-  { passive: false }
+  {
+    passive: false
+  }
 );
 
 
 renderer.domElement.addEventListener(
   "touchend",
-  event => {
+  () => {
 
-    if (!event.touches.length) {
-
-      lookTouch = null;
-
-    }
+    lookTouch =
+      null;
 
   }
 );
 
 
 // ============================================================
-// MOBILE SPEED / PINCH
+// ENERGY SYSTEM
 // ============================================================
 
-const zoomInButton =
+const energyFill =
   document.getElementById(
-    "zoomInButton"
-  );
-
-const zoomOutButton =
-  document.getElementById(
-    "zoomOutButton"
+    "energyFill"
   );
 
 
-zoomInButton.addEventListener(
-  "click",
-  () => {
+const energyText =
+  document.getElementById(
+    "energyText"
+  );
 
-    normalSpeed =
+
+function updateEnergy(
+  delta
+) {
+
+  const distance =
+    camera.position.length();
+
+
+  // -----------------------------------------
+  // REFILL NEAR SUN
+  // -----------------------------------------
+
+  if (
+    distance <
+    SUN_REFILL_DISTANCE
+  ) {
+
+    energy +=
+      28 *
+      delta;
+
+  }
+
+
+  // -----------------------------------------
+  // DRAIN
+  // -----------------------------------------
+
+  if (
+    currentSpeedMode ===
+    "sonic"
+  ) {
+
+    energy -=
+      SONIC_DRAIN *
+      delta;
+
+  }
+
+
+  if (
+    currentSpeedMode ===
+    "poop"
+  ) {
+
+    energy -=
+      POOP_DRAIN *
+      delta;
+
+  }
+
+
+  // Keep inside 0-100
+
+  energy =
+    Math.max(
+      0,
+
       Math.min(
-        MAX_SPEED,
-        normalSpeed * 1.35
-      );
+        100,
+        energy
+      )
+    );
+
+
+  // -----------------------------------------
+  // EMPTY ENERGY
+  // -----------------------------------------
+
+  if (
+    energy <= 0 &&
+    currentSpeedMode !==
+      "chill"
+  ) {
+
+    energy = 0;
+
+    currentSpeedMode =
+      "chill";
+
+    updateSpeedButtons();
 
   }
-);
 
 
-zoomOutButton.addEventListener(
-  "click",
-  () => {
+  // -----------------------------------------
+  // UI
+  // -----------------------------------------
 
-    normalSpeed =
-      Math.max(
-        MIN_SPEED,
-        normalSpeed / 1.35
-      );
-
-  }
-);
+  energyFill.style.width =
+    energy + "%";
 
 
-// Actual pinch gesture
+  energyText.textContent =
+    Math.round(
+      energy
+    ) + "%";
 
-let pinchDistance = null;
-
-
-renderer.domElement.addEventListener(
-  "touchstart",
-  event => {
-
-    if (
-      event.touches.length === 2
-    ) {
-
-      const a =
-        event.touches[0];
-
-      const b =
-        event.touches[1];
-
-      pinchDistance =
-        Math.hypot(
-          a.clientX -
-            b.clientX,
-
-          a.clientY -
-            b.clientY
-        );
-
-    }
-
-  },
-  { passive: true }
-);
-
-
-renderer.domElement.addEventListener(
-  "touchmove",
-  event => {
-
-    if (
-      event.touches.length !== 2 ||
-      pinchDistance === null
-    ) {
-      return;
-    }
-
-
-    const a =
-      event.touches[0];
-
-    const b =
-      event.touches[1];
-
-
-    const currentDistance =
-      Math.hypot(
-        a.clientX -
-          b.clientX,
-
-        a.clientY -
-          b.clientY
-      );
-
-
-    const difference =
-      currentDistance -
-      pinchDistance;
-
-
-    if (
-      Math.abs(difference) > 8
-    ) {
-
-      if (difference > 0) {
-
-        normalSpeed =
-          Math.min(
-            MAX_SPEED,
-            normalSpeed * 1.03
-          );
-
-      } else {
-
-        normalSpeed =
-          Math.max(
-            MIN_SPEED,
-            normalSpeed / 1.03
-          );
-
-      }
-
-
-      pinchDistance =
-        currentDistance;
-
-    }
-
-  },
-  { passive: true }
-);
-
-
-renderer.domElement.addEventListener(
-  "touchend",
-  () => {
-
-    pinchDistance = null;
-
-  }
-);
+}
 
 
 // ============================================================
@@ -1027,7 +1252,9 @@ function updatePlanets() {
 // PLAYER MOVEMENT
 // ============================================================
 
-function updatePlayer(delta) {
+function updatePlayer(
+  delta
+) {
 
   if (!flying) return;
 
@@ -1107,7 +1334,8 @@ function updatePlayer(delta) {
 
 
   if (
-    direction.lengthSq() > 0
+    direction.lengthSq() >
+    0
   ) {
 
     direction.normalize();
@@ -1127,10 +1355,35 @@ function updatePlayer(delta) {
     );
 
 
+    let speed =
+      CHILL_SPEED;
+
+
+    if (
+      currentSpeedMode ===
+      "sonic"
+    ) {
+
+      speed =
+        SONIC_SPEED;
+
+    }
+
+
+    if (
+      currentSpeedMode ===
+      "poop"
+    ) {
+
+      speed =
+        POOP_SPEED;
+
+    }
+
+
     camera.position.addScaledVector(
       velocity,
-      normalSpeed *
-        delta
+      speed * delta
     );
 
   } else {
@@ -1153,10 +1406,12 @@ const planetInfo =
     "planetInfo"
   );
 
+
 const planetName =
   document.getElementById(
     "planetName"
   );
+
 
 const planetDistance =
   document.getElementById(
@@ -1166,7 +1421,9 @@ const planetDistance =
 
 function checkNearbyPlanet() {
 
-  let closest = null;
+  let closest =
+    null;
+
 
   let closestDistance =
     Infinity;
@@ -1238,6 +1495,7 @@ const speedDisplay =
     "speed"
   );
 
+
 const locationDisplay =
   document.getElementById(
     "location"
@@ -1246,11 +1504,35 @@ const locationDisplay =
 
 function updateHUD() {
 
+  let speedName =
+    "CHILL";
+
+
+  if (
+    currentSpeedMode ===
+    "sonic"
+  ) {
+
+    speedName =
+      "SONIC";
+
+  }
+
+
+  if (
+    currentSpeedMode ===
+    "poop"
+  ) {
+
+    speedName =
+      "U NEED TO POOP";
+
+  }
+
+
   speedDisplay.textContent =
     "Speed: " +
-    Math.round(
-      normalSpeed
-    );
+    speedName;
 
 
   locationDisplay.textContent =
@@ -1311,9 +1593,19 @@ function animate() {
 
   updatePlanets();
 
-  updatePlayer(delta);
+
+  updatePlayer(
+    delta
+  );
+
+
+  updateEnergy(
+    delta
+  );
+
 
   checkNearbyPlanet();
+
 
   updateHUD();
 
@@ -1333,6 +1625,9 @@ document
   .classList.add(
     "hidden"
   );
+
+
+updateSpeedButtons();
 
 
 animate();
