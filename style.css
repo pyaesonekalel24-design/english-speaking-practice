@@ -1,3 +1,8 @@
+/* =========================================================
+   SOLAR EXPLORER
+   FULL STYLE SHEET
+   ========================================================= */
+
 * {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
@@ -6,353 +11,199 @@
 html,
 body {
   margin: 0;
-  padding: 0;
   width: 100%;
   height: 100%;
   overflow: hidden;
   background: #000;
-  font-family: Arial, Helvetica, sans-serif;
   color: white;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 body {
-  touch-action: none;
+  user-select: none;
 }
+
+button {
+  font-family: inherit;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: pointer;
+}
+
+
+/* =========================================================
+   GAME
+   ========================================================= */
 
 #game {
   position: relative;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
   overflow: hidden;
+  background: #000;
 }
 
-canvas {
-  display: block;
-}
 
 /* =========================================================
-   START SCREEN
-========================================================= */
+   LOADING
+   ========================================================= */
 
-#startScreen {
-  position: absolute;
+#loading {
+  position: fixed;
   inset: 0;
-  z-index: 100;
+
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
 
-  background:
-    radial-gradient(circle at center, rgba(20, 30, 60, 0.55), rgba(0, 0, 0, 0.95));
+  background: #000;
 
-  text-align: center;
-}
-
-#startScreen h1 {
-  margin: 0 0 10px;
-  font-size: clamp(30px, 6vw, 70px);
-  letter-spacing: 5px;
-  text-shadow: 0 0 25px rgba(255, 255, 255, 0.35);
-}
-
-#startScreen p {
-  margin: 0 0 30px;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 15px;
-}
-
-#startButton {
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  background: rgba(255, 255, 255, 0.08);
   color: white;
-  padding: 15px 28px;
-  border-radius: 999px;
-  font-size: 16px;
-  font-weight: bold;
-  letter-spacing: 2px;
-  cursor: pointer;
-  backdrop-filter: blur(10px);
 
-  transition:
-    transform 0.15s ease,
-    background 0.15s ease,
-    box-shadow 0.15s ease;
+  font-size: 18px;
+
+  z-index: 1000;
+
+  transition: opacity 0.5s ease;
 }
 
-#startButton:hover {
-  transform: scale(1.05);
-  background: rgba(255, 255, 255, 0.15);
-  box-shadow: 0 0 25px rgba(255, 255, 255, 0.15);
+.loadingTitle {
+  margin-bottom: 12px;
+
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: 6px;
 }
+
 
 /* =========================================================
    HUD
-========================================================= */
+   ========================================================= */
 
 #hud {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  z-index: 20;
+  position: fixed;
 
-  width: 190px;
+  top: 22px;
+  left: 22px;
+
+  width: 270px;
+
+  padding: 18px;
+
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 14px;
+
+  background: rgba(5, 8, 15, 0.72);
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  z-index: 20;
 
   pointer-events: none;
 }
 
-#distanceDisplay {
-  font-size: 11px;
-  letter-spacing: 1px;
-  margin-bottom: 8px;
+.title {
+  margin-bottom: 12px;
 
-  color: rgba(255, 255, 255, 0.75);
+  font-size: 20px;
+  font-weight: 700;
+
+  letter-spacing: 2px;
 }
 
+.instructions {
+  margin-bottom: 14px;
+
+  color: rgba(255, 255, 255, 0.72);
+
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+#speed {
+  margin-bottom: 6px;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  letter-spacing: 1px;
+}
+
+#location {
+  color: rgba(255, 255, 255, 0.65);
+
+  font-size: 11px;
+
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   ENERGY
+   ========================================================= */
+
 #energyContainer {
-  width: 100%;
-  height: 8px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
 
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 999px;
-  overflow: hidden;
-
-  backdrop-filter: blur(5px);
+  margin-top: 13px;
 }
 
 #energyBar {
+  position: relative;
+
+  width: 190px;
+  height: 8px;
+
+  overflow: hidden;
+
+  border-radius: 999px;
+
+  background: rgba(255, 255, 255, 0.16);
+}
+
+#energyFill {
   width: 100%;
   height: 100%;
-  background: white;
+
   border-radius: 999px;
 
-  transition: width 0.15s linear;
-}
-
-#energyPercent {
-  margin-top: 5px;
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.65);
-}
-
-/* =========================================================
-   SPEED CONTROLS
-========================================================= */
-
-#speedControls {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  z-index: 30;
-
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.speedButton {
-  min-width: 125px;
-
-  padding: 9px 12px;
-
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 999px;
-
-  background: rgba(0, 0, 0, 0.35);
-  color: rgba(255, 255, 255, 0.5);
-
-  font-size: 10px;
-  font-weight: bold;
-  letter-spacing: 1px;
-
-  cursor: pointer;
-  backdrop-filter: blur(10px);
+  background: #ffd43b;
 
   transition:
-    background 0.15s ease,
-    color 0.15s ease,
-    transform 0.15s ease,
-    box-shadow 0.15s ease;
+    width 0.15s linear,
+    background 0.2s ease;
 }
 
-.speedButton:hover {
-  transform: translateY(-1px);
+#energyText {
+  min-width: 38px;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  text-align: right;
 }
 
-.speedButton.active {
-  color: white;
-  transform: scale(1.02);
-}
-
-.speedButton.chill.active {
-  background: rgba(40, 180, 90, 0.75);
-  box-shadow: 0 0 18px rgba(40, 180, 90, 0.25);
-}
-
-.speedButton.sonic.active {
-  background: rgba(40, 120, 255, 0.8);
-  box-shadow: 0 0 18px rgba(40, 120, 255, 0.25);
-}
-
-.speedButton.poop.active {
-  background: rgba(255, 170, 30, 0.85);
-  box-shadow: 0 0 18px rgba(255, 170, 30, 0.3);
-  color: black;
-}
-
-/* =========================================================
-   DISPLAY CONTROLS
-========================================================= */
-
-#displayControls {
-  position: absolute;
-  left: 20px;
-  bottom: 25px;
-  z-index: 30;
-
-  width: 180px;
-
-  padding: 12px;
-
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 16px;
-
-  background: rgba(5, 5, 10, 0.55);
-  backdrop-filter: blur(14px);
-
-  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.3);
-}
-
-.displayTitle {
-  margin-bottom: 9px;
-
-  font-size: 9px;
-  font-weight: bold;
-  letter-spacing: 2px;
-
-  color: rgba(255, 255, 255, 0.45);
-}
-
-.displayRow {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-
-  margin-bottom: 7px;
-}
-
-.displayRow > span {
-  flex: 1;
-
-  font-size: 10px;
-  letter-spacing: 1px;
-
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.miniButton {
-  width: 38px;
-  height: 24px;
-
-  padding: 0;
-
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 7px;
-
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.35);
-
-  font-size: 8px;
-  font-weight: bold;
-
-  cursor: pointer;
-}
-
-.miniButton.active {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  border-color: rgba(255, 255, 255, 0.4);
-}
-
-.hideUIButton {
-  width: 100%;
-  margin-top: 4px;
-
-  height: 30px;
-
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 9px;
-
-  background: rgba(255, 255, 255, 0.08);
-  color: white;
-
-  font-size: 9px;
-  font-weight: bold;
-  letter-spacing: 1px;
-
-  cursor: pointer;
-
-  transition: background 0.15s ease;
-}
-
-.hideUIButton:hover {
-  background: rgba(255, 255, 255, 0.15);
-}
-
-/* Tiny UI button for cinematic mode */
-
-#uiToggleButton {
-  position: absolute;
-  right: 12px;
-  bottom: 12px;
-
-  z-index: 200;
-
-  width: 38px;
-  height: 38px;
-
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-
-  background: rgba(0, 0, 0, 0.45);
-  color: white;
-
-  font-size: 9px;
-  font-weight: bold;
-  letter-spacing: 1px;
-
-  cursor: pointer;
-
-  backdrop-filter: blur(10px);
-
-  opacity: 0;
-  pointer-events: none;
-
-  transition:
-    opacity 0.2s ease,
-    transform 0.15s ease;
-}
-
-#uiToggleButton:hover {
-  transform: scale(1.08);
-}
 
 /* =========================================================
    CROSSHAIR
-========================================================= */
+   ========================================================= */
 
 #crosshair {
-  position: absolute;
-  left: 50%;
+  position: fixed;
+
   top: 50%;
+  left: 50%;
 
   width: 18px;
   height: 18px;
 
   transform: translate(-50%, -50%);
 
-  z-index: 15;
+  z-index: 18;
 
   pointer-events: none;
 }
@@ -362,88 +213,110 @@ canvas {
   content: "";
 
   position: absolute;
-  background: rgba(255, 255, 255, 0.65);
+
+  background: rgba(255, 255, 255, 0.85);
 }
 
 #crosshair::before {
-  width: 1px;
-  height: 18px;
+  top: 8px;
+  left: 2px;
 
-  left: 50%;
-  top: 0;
+  width: 14px;
+  height: 1px;
 }
 
 #crosshair::after {
-  width: 18px;
-  height: 1px;
+  top: 2px;
+  left: 8px;
 
-  left: 0;
-  top: 50%;
+  width: 1px;
+  height: 14px;
 }
 
-#crosshair div {
+#crosshair span {
   position: absolute;
 
-  width: 4px;
-  height: 4px;
+  top: 7px;
+  left: 7px;
 
-  left: 50%;
-  top: 50%;
+  width: 3px;
+  height: 3px;
 
-  transform: translate(-50%, -50%);
-
-  border: 1px solid white;
   border-radius: 50%;
+
+  background: white;
 }
+
 
 /* =========================================================
    PLANET INFO
-========================================================= */
+   ========================================================= */
 
 #planetInfo {
-  position: absolute;
+  position: fixed;
+
   left: 50%;
-  bottom: 30px;
+  bottom: 13%;
 
   transform: translateX(-50%);
 
-  z-index: 20;
+  min-width: 170px;
 
-  padding: 9px 15px;
+  padding: 12px 18px;
 
-  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
 
-  background: rgba(0, 0, 0, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-
-  color: white;
-
-  font-size: 11px;
-  letter-spacing: 1px;
+  background: rgba(5, 8, 15, 0.82);
 
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 
-  opacity: 0;
-  transition: opacity 0.2s ease;
+  text-align: center;
+
+  z-index: 30;
 
   pointer-events: none;
+
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
 }
 
-#planetInfo.visible {
-  opacity: 1;
+#planetInfo.hidden {
+  opacity: 0;
+  transform: translateX(-50%) translateY(8px);
 }
+
+#planetName {
+  margin-bottom: 4px;
+
+  font-size: 17px;
+  font-weight: 700;
+
+  letter-spacing: 1px;
+}
+
+#planetDistance {
+  color: rgba(255, 255, 255, 0.65);
+
+  font-size: 11px;
+}
+
 
 /* =========================================================
-   PLANET LABELS
-========================================================= */
+   PLANET LABEL LAYER
+   ========================================================= */
 
 #labelLayer {
-  position: absolute;
+  position: fixed;
+
   inset: 0;
 
-  z-index: 12;
+  z-index: 17;
 
   pointer-events: none;
+
   overflow: hidden;
 }
 
@@ -453,286 +326,762 @@ canvas {
   display: flex;
   align-items: center;
 
-  transform: translate(-50%, -50%);
-
-  white-space: nowrap;
+  transform: translateY(-50%);
 
   pointer-events: none;
 
-  transition: opacity 0.15s ease;
+  white-space: nowrap;
 }
 
 .planetLabelText {
   padding: 5px 9px;
 
-  border-radius: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 6px;
 
-  background: rgba(0, 0, 0, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.68);
 
   color: white;
 
-  font-size: 10px;
-  font-weight: bold;
+  font-size: 11px;
+  font-weight: 700;
+
   letter-spacing: 1px;
 
-  backdrop-filter: blur(7px);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
 
-  text-shadow: 0 1px 4px black;
+  text-shadow: 0 1px 3px #000;
 }
 
 .planetLabelLine {
+  width: 35px;
   height: 1px;
 
-  width: 35px;
+  margin-left: 4px;
 
-  background: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.65);
+}
 
-  transform-origin: left center;
+
+/* =========================================================
+   DISPLAY CONTROLS
+   ========================================================= */
+
+#displayControls {
+  position: fixed;
+
+  top: 22px;
+  right: 22px;
+
+  width: 250px;
+
+  padding: 16px;
+
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 15px;
+
+  background: rgba(5, 8, 15, 0.82);
+
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+
+  z-index: 25;
+
+  /* IMPORTANT:
+     Hidden until the player starts flying.
+     This prevents the controls appearing through
+     the start screen. */
+  display: none;
+}
+
+.displayTitle {
+  margin-bottom: 12px;
+
+  color: rgba(255, 255, 255, 0.65);
+
+  font-size: 11px;
+  font-weight: 700;
+
+  letter-spacing: 2px;
+}
+
+.displayRow {
+  display: flex;
+  align-items: center;
+
+  min-height: 38px;
+
+  margin-bottom: 8px;
+}
+
+.displayRow > span {
+  flex: 1;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  letter-spacing: 1px;
+}
+
+.miniButton {
+  min-width: 50px;
+  height: 30px;
 
   margin-left: 5px;
+
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 7px;
+
+  background: rgba(255, 255, 255, 0.08);
+
+  color: rgba(255, 255, 255, 0.55);
+
+  font-size: 10px;
+  font-weight: 700;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.1s ease;
 }
+
+.miniButton:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.miniButton:active {
+  transform: scale(0.94);
+}
+
+.miniButton.active {
+  background: rgba(255, 255, 255, 0.18);
+
+  border-color: rgba(255, 255, 255, 0.5);
+
+  color: white;
+}
+
+.hideUIButton {
+  width: 100%;
+  height: 38px;
+
+  margin-top: 7px;
+
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 9px;
+
+  background: rgba(255, 255, 255, 0.1);
+
+  color: white;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  letter-spacing: 1px;
+
+  transition:
+    background 0.15s ease,
+    transform 0.1s ease;
+}
+
+.hideUIButton:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.hideUIButton:active {
+  transform: scale(0.97);
+}
+
+
+/* =========================================================
+   TINY UI BUTTON
+   ========================================================= */
+
+#uiToggleButton {
+  position: fixed;
+
+  top: 20px;
+  right: 20px;
+
+  width: 42px;
+  height: 42px;
+
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+
+  background: rgba(5, 8, 15, 0.8);
+
+  color: white;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  z-index: 40;
+
+  display: none;
+
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+#uiToggleButton:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+#uiToggleButton:active {
+  transform: scale(0.92);
+}
+
+
+/* =========================================================
+   START SCREEN
+   ========================================================= */
+
+#startScreen {
+  position: fixed;
+
+  inset: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(20, 25, 40, 0.2),
+      rgba(0, 0, 0, 0.82)
+    );
+
+  z-index: 100;
+
+  transition:
+    opacity 0.4s ease,
+    visibility 0.4s ease;
+}
+
+#startScreen h1 {
+  margin: 0 0 12px;
+
+  font-size: clamp(32px, 6vw, 68px);
+
+  font-weight: 800;
+
+  letter-spacing: 5px;
+
+  text-shadow:
+    0 0 20px rgba(255, 255, 255, 0.2),
+    0 0 50px rgba(255, 255, 255, 0.08);
+}
+
+#startScreen p {
+  margin: 0 0 28px;
+
+  color: rgba(255, 255, 255, 0.7);
+
+  font-size: 15px;
+}
+
+#startButton {
+  min-width: 210px;
+
+  padding: 15px 28px;
+
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 10px;
+
+  background: rgba(255, 255, 255, 0.1);
+
+  color: white;
+
+  font-size: 13px;
+  font-weight: 800;
+
+  letter-spacing: 2px;
+
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.12s ease;
+}
+
+#startButton:hover {
+  background: rgba(255, 255, 255, 0.18);
+
+  border-color: rgba(255, 255, 255, 0.65);
+}
+
+#startButton:active {
+  transform: scale(0.96);
+}
+
+#startScreen small {
+  margin-top: 18px;
+
+  color: rgba(255, 255, 255, 0.45);
+
+  font-size: 11px;
+}
+
 
 /* =========================================================
    MOBILE CONTROLS
-========================================================= */
+   ========================================================= */
 
 #mobileControls {
-  display: none;
+  position: fixed;
 
-  position: absolute;
   inset: 0;
 
-  z-index: 40;
+  z-index: 35;
 
   pointer-events: none;
 }
 
+
+/* =========================================================
+   VERTICAL CONTROLS
+   ========================================================= */
+
 #verticalControls {
   position: absolute;
-  left: 20px;
-  top: 50%;
 
-  transform: translateY(-50%);
-
-  width: 58px;
-
-  padding: 8px 5px;
-
-  border-radius: 30px;
-
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.13);
-
-  backdrop-filter: blur(10px);
+  left: 22px;
+  bottom: 34px;
 
   display: flex;
   flex-direction: column;
+
+  gap: 10px;
+
+  padding: 10px;
+
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 50px;
+
+  background: rgba(5, 8, 15, 0.55);
+
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+
+  pointer-events: auto;
+}
+
+.verticalButton {
+  width: 54px;
+  height: 54px;
+
+  border: 1px solid rgba(255, 220, 80, 0.5);
+  border-radius: 50%;
+
+  background: rgba(255, 215, 60, 0.18);
+
+  color: #ffe36e;
+
+  font-size: 20px;
+
+  box-shadow:
+    0 0 15px rgba(255, 215, 60, 0.08);
+
+  transition:
+    background 0.1s ease,
+    transform 0.1s ease;
+}
+
+.verticalButton:active {
+  background: rgba(255, 215, 60, 0.35);
+
+  transform: scale(0.92);
+}
+
+
+/* =========================================================
+   MOVEMENT PAD
+   ========================================================= */
+
+#movementPad {
+  position: absolute;
+
+  right: 22px;
+  bottom: 28px;
+
+  width: 170px;
+  height: 170px;
+
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 50%;
+
+  background: rgba(5, 8, 15, 0.42);
+
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+
+  pointer-events: auto;
+}
+
+.directionButton {
+  position: absolute;
+
+  width: 58px;
+  height: 58px;
+
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 50%;
+
+  background: rgba(255, 255, 255, 0.08);
+
+  color: white;
+
+  font-size: 20px;
+
+  transition:
+    background 0.1s ease,
+    transform 0.1s ease;
+}
+
+.directionButton:active {
+  background: rgba(255, 255, 255, 0.22);
+
+  transform: scale(0.92);
+}
+
+.upArrow {
+  top: 10px;
+  left: 56px;
+}
+
+.leftArrow {
+  top: 56px;
+  left: 10px;
+}
+
+.rightArrow {
+  top: 56px;
+  right: 10px;
+}
+
+.downArrow {
+  bottom: 10px;
+  left: 56px;
+}
+
+
+/* =========================================================
+   SPEED CONTROLS
+   ========================================================= */
+
+#speedControls {
+  position: absolute;
+
+  right: 22px;
+  top: 22px;
+
+  display: flex;
+
   gap: 7px;
 
   pointer-events: auto;
 }
 
-#movementPad {
-  position: absolute;
-  right: 20px;
-  bottom: 25px;
+.speedButton {
+  min-width: 82px;
 
-  width: 145px;
-  height: 145px;
+  padding: 9px 10px;
 
-  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 9px;
 
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.13);
+  background: rgba(5, 8, 15, 0.72);
 
-  backdrop-filter: blur(10px);
+  color: rgba(255, 255, 255, 0.55);
 
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 
-  gap: 4px;
-
-  pointer-events: auto;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    transform 0.1s ease;
 }
 
-.middleMovement {
-  display: flex;
-  gap: 15px;
+.speedButton:active {
+  transform: scale(0.95);
 }
 
-#mobileControls button {
-  width: 45px;
-  height: 45px;
-
-  border-radius: 50%;
-
-  border: 1px solid rgba(255, 255, 255, 0.25);
-
-  background: rgba(255, 205, 60, 0.2);
-
+.speedButton.active {
   color: white;
-
-  font-size: 18px;
-
-  pointer-events: auto;
-
-  user-select: none;
-  -webkit-user-select: none;
-
-  touch-action: none;
 }
 
-#mobileControls button:active {
-  background: rgba(255, 205, 60, 0.55);
-  transform: scale(0.94);
+.speedButton#chillButton.active {
+  border-color: rgba(80, 220, 120, 0.7);
+
+  background: rgba(50, 190, 100, 0.22);
+
+  color: #83f2a2;
 }
+
+.speedButton#sonicButton.active {
+  border-color: rgba(70, 160, 255, 0.75);
+
+  background: rgba(60, 130, 230, 0.23);
+
+  color: #8bc5ff;
+}
+
+.speedButton#poopButton.active {
+  border-color: rgba(255, 190, 60, 0.8);
+
+  background: rgba(255, 170, 30, 0.22);
+
+  color: #ffd56a;
+}
+
+.speedTitle {
+  display: block;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  letter-spacing: 0.5px;
+}
+
+.speedDescription {
+  display: block;
+
+  margin-top: 2px;
+
+  font-size: 9px;
+
+  opacity: 0.7;
+}
+
 
 /* =========================================================
-   CINEMATIC / FULL VIEW
-========================================================= */
+   DESKTOP / MOBILE VISIBILITY
+   ========================================================= */
 
-#game.cinematic #hud,
-#game.cinematic #speedControls,
-#game.cinematic #displayControls,
-#game.cinematic #crosshair,
-#game.cinematic #planetInfo,
-#game.cinematic #mobileControls,
-#game.cinematic #labelLayer {
-  display: none !important;
+.mobileOnly {
+  display: none;
 }
 
-#game.cinematic #uiToggleButton {
-  opacity: 1;
-  pointer-events: auto;
-}
 
 /* =========================================================
-   DESKTOP
-========================================================= */
+   SMALL SCREENS
+   ========================================================= */
 
-@media (min-width: 769px) {
-  #uiToggleButton {
-    display: block;
+@media (max-width: 700px) {
+
+  .desktopOnly {
+    display: none !important;
   }
-}
 
-/* =========================================================
-   MOBILE
-========================================================= */
-
-@media (max-width: 768px) {
-  #mobileControls {
+  .mobileOnly {
     display: block;
   }
 
   #hud {
-    top: 14px;
-    left: 14px;
-    width: 150px;
+    top: 12px;
+    left: 12px;
+
+    width: 205px;
+
+    padding: 12px;
   }
 
-  #distanceDisplay {
-    font-size: 9px;
+  .title {
+    font-size: 15px;
+
+    letter-spacing: 1.5px;
   }
 
-  #speedControls {
-    top: 14px;
-    right: 14px;
+  #location {
+    font-size: 10px;
   }
 
-  .speedButton {
-    min-width: 112px;
-    padding: 8px 9px;
-    font-size: 8px;
+  #energyBar {
+    width: 130px;
   }
 
   #displayControls {
-    left: 88px;
-    bottom: 18px;
+    top: 12px;
+    right: 12px;
 
-    width: 155px;
+    width: 220px;
 
-    padding: 9px;
-  }
-
-  .displayRow {
-    margin-bottom: 5px;
-  }
-
-  .displayRow > span {
-    font-size: 9px;
+    padding: 13px;
   }
 
   .miniButton {
-    width: 34px;
-    height: 22px;
+    min-width: 45px;
   }
 
-  .hideUIButton {
-    height: 27px;
+  #speedControls {
+    top: 12px;
+    right: 12px;
+
+    gap: 5px;
+  }
+
+  .speedButton {
+    min-width: 70px;
+
+    padding: 7px 7px;
+  }
+
+  #startScreen h1 {
+    font-size: 34px;
+
+    letter-spacing: 3px;
+  }
+
+  #startScreen p {
+    padding: 0 25px;
+
+    font-size: 13px;
+  }
+
+  #startButton {
+    min-width: 190px;
+
+    padding: 14px 22px;
   }
 
   #planetInfo {
-    bottom: 175px;
-    font-size: 9px;
-  }
+    bottom: 28%;
 
-  .planetLabelText {
-    font-size: 8px;
-    padding: 4px 7px;
-  }
-
-  .planetLabelLine {
-    width: 25px;
-  }
-
-  #uiToggleButton {
-    right: 10px;
-    bottom: 10px;
+    min-width: 150px;
   }
 }
 
-/* Small phones */
+
+/* =========================================================
+   VERY SMALL PHONES
+   ========================================================= */
+
 @media (max-width: 430px) {
+
+  #hud {
+    width: 175px;
+  }
+
+  #energyBar {
+    width: 105px;
+  }
+
   #displayControls {
-    left: 80px;
-    bottom: 12px;
-    width: 145px;
+    width: 205px;
   }
 
   #movementPad {
     right: 12px;
-    bottom: 12px;
+    bottom: 18px;
 
-    width: 125px;
-    height: 125px;
+    width: 150px;
+    height: 150px;
+  }
+
+  .directionButton {
+    width: 50px;
+    height: 50px;
+  }
+
+  .upArrow {
+    top: 8px;
+    left: 50px;
+  }
+
+  .leftArrow {
+    top: 50px;
+    left: 8px;
+  }
+
+  .rightArrow {
+    top: 50px;
+    right: 8px;
+  }
+
+  .downArrow {
+    bottom: 8px;
+    left: 50px;
   }
 
   #verticalControls {
     left: 12px;
+    bottom: 24px;
+
+    padding: 8px;
   }
 
-  #mobileControls button {
-    width: 39px;
-    height: 39px;
+  .verticalButton {
+    width: 50px;
+    height: 50px;
   }
 
-  .middleMovement {
-    gap: 10px;
+  #speedControls {
+    right: 8px;
+
+    gap: 4px;
+  }
+
+  .speedButton {
+    min-width: 62px;
   }
 }
-* {
-  box-sizing: border-box;
+
+
+/* =========================================================
+   HIDE MOBILE CONTROLS ON DESKTOP
+   ========================================================= */
+
+@media (min-width: 701px) {
+
+  #mobileControls {
+    display: none;
+  }
 }
 
 
-html,
-body {
+/* =========================================================
+   FULL VIEW MODE SUPPORT
+   ========================================================= */
 
-  margin: 0;
+body.fullView #hud,
+body.fullView #crosshair,
+body.fullView #planetInfo,
+body.fullView #labelLayer,
+body.fullView #displayControls,
+body.fullView #mobileControls {
+  display: none !important;
+}
 
-  width: 100%;
-  height: 
+body.fullView #uiToggleButton {
+  display: block !important;
+}
+
+
+/* =========================================================
+   HIDDEN ORBITS
+   ========================================================= */
+
+body.orbitsHidden .orbitLine {
+  visible: false;
+}
+
+
+/* =========================================================
+   LABELS HIDDEN
+   ========================================================= */
+
+body.labelsHidden #labelLayer {
+  display: none !important;
+}
