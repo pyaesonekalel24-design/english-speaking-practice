@@ -2,94 +2,61 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
+  <meta name="theme-color" content="#111827">
 
-  <title>SpeakUp English</title>
+  <title>SpeakUp</title>
 
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-  <!-- =========================
-       HOME SCREEN
-  ========================== -->
-
+  <!-- HOME -->
   <section id="homeScreen" class="screen active">
 
-    <div class="home-card">
+    <div class="logo">Speak<span>Up</span></div>
 
-      <div class="logo-circle">
-        🎙️
-      </div>
+    <p class="tagline">
+      Read it. Speak it. Improve it.
+    </p>
 
-      <h1>SpeakUp</h1>
-
-      <p class="subtitle">
-        English speaking practice
-      </p>
-
-      <p class="description">
-        Read the passage aloud and see what the microphone understands.
-      </p>
-
-      <button id="startButton" class="primary-button">
-        Start Practice
-      </button>
-
-    </div>
+    <button id="startBtn" class="primaryBtn">
+      Start Practice
+    </button>
 
   </section>
 
 
-  <!-- =========================
-       LEVEL SCREEN
-  ========================== -->
-
+  <!-- LEVEL -->
   <section id="levelScreen" class="screen">
 
-    <div class="level-card">
+    <button class="backBtn" onclick="showScreen('homeScreen')">
+      ← Back
+    </button>
 
-      <h2>Choose your level</h2>
+    <h1>Choose your level</h1>
 
-      <p>
-        Choose a difficulty for today's reading.
-      </p>
+    <p class="subtitle">
+      Pick a level and start speaking.
+    </p>
 
-      <div class="level-buttons">
+    <div class="levelContainer">
 
-        <button
-          class="level-button"
-          data-level="easy"
-        >
-          <strong>Easy</strong>
-          <span>Short and simple</span>
-        </button>
+      <button class="levelBtn" data-level="easy">
+        <strong>Easy</strong>
+        <span>Short and simple sentences</span>
+      </button>
 
-        <button
-          class="level-button"
-          data-level="medium"
-        >
-          <strong>Medium</strong>
-          <span>Everyday English</span>
-        </button>
+      <button class="levelBtn" data-level="medium">
+        <strong>Medium</strong>
+        <span>Everyday English</span>
+      </button>
 
-        <button
-          class="level-button"
-          data-level="intermediate"
-        >
-          <strong>Intermediate</strong>
-          <span>Longer and more complex</span>
-        </button>
-
-      </div>
-
-      <button id="backHomeButton" class="secondary-button">
-        ← Back
+      <button class="levelBtn" data-level="intermediate">
+        <strong>Intermediate</strong>
+        <span>Longer and more challenging</span>
       </button>
 
     </div>
@@ -97,132 +64,125 @@
   </section>
 
 
-  <!-- =========================
-       PRACTICE SCREEN
-  ========================== -->
-
+  <!-- PRACTICE -->
   <section id="practiceScreen" class="screen">
 
-    <header class="practice-header">
+    <div class="topBar">
 
-      <div>
-        <h1>SpeakUp</h1>
-        <span id="currentLevel">Easy</span>
-      </div>
-
-      <button id="homeButton" class="small-button">
-        Home
+      <button class="backBtn" onclick="showScreen('levelScreen')">
+        ← Levels
       </button>
 
-    </header>
-
-
-    <main class="practice-main">
-
-      <!-- Scrolling paragraph -->
-
-      <div class="reading-window">
-
-        <div id="paragraphText" class="scrolling-text">
-        </div>
-
+      <div id="levelLabel">
+        Easy
       </div>
 
+    </div>
 
-      <!-- Microphone -->
 
-      <div class="mic-section">
+    <div class="practiceHeader">
 
-        <button
-          id="micButton"
-          class="mic-button"
-          aria-label="Start microphone"
-        >
-          🎙️
-        </button>
+      <h1>Read aloud</h1>
 
-        <p id="micStatus">
-          Tap the microphone and start reading.
-        </p>
+      <p>
+        Read the passage naturally.
+      </p>
 
+    </div>
+
+
+    <!-- PASSAGE -->
+    <div class="passageBox">
+
+      <div id="passageText" class="passageText">
+        Your passage will appear here.
       </div>
 
+    </div>
 
-      <!-- User transcript -->
 
-      <div class="transcript-card">
+    <!-- MICROPHONE -->
+    <div class="micArea">
 
-        <div class="card-title">
-          What the microphone heard
-        </div>
+      <button id="micBtn" class="micBtn">
 
-        <div
-          id="transcript"
-          class="transcript"
-        >
-          Your speech will appear here...
-        </div>
+        <span id="micIcon">🎙️</span>
 
+      </button>
+
+      <div id="micStatus">
+        Tap the microphone to start
       </div>
 
-
-      <!-- Results -->
-
-      <div
-        id="resultCard"
-        class="result-card hidden"
-      >
-
-        <h3>Reading check</h3>
-
-        <p id="resultSummary"></p>
-
-        <div
-          id="wordResults"
-          class="word-results"
-        ></div>
-
+      <div id="recordingTimer">
+        00:00
       </div>
 
+    </div>
 
-      <!-- Word information -->
 
-      <div
-        id="wordInfo"
-        class="word-info hidden"
-      >
+    <!-- TRANSCRIPT -->
+    <div id="transcriptSection" class="resultSection hidden">
 
-        <button
-          id="closeWordInfo"
-          class="close-button"
-        >
-          ×
-        </button>
+      <h2>What Whisper heard</h2>
 
-        <h3 id="selectedWord"></h3>
-
-        <p>
-          Tap the button below to hear the word.
-        </p>
-
-        <button
-          id="pronounceButton"
-          class="pronounce-button"
-        >
-          🔊 Hear pronunciation
-        </button>
-
-        <div class="sound-example">
-
-          <strong>Similar sound examples</strong>
-
-          <p id="similarWords"></p>
-
-        </div>
-
+      <div id="transcriptBox" class="transcriptBox">
+        Nothing yet.
       </div>
 
-    </main>
+    </div>
+
+
+    <!-- SCORE -->
+    <div id="scoreCard" class="scoreCard hidden">
+
+      <div class="scoreNumber">
+        <span id="score">0</span>
+        <small>/100</small>
+      </div>
+
+      <div id="scoreMessage">
+        Keep practicing!
+      </div>
+
+    </div>
+
+
+    <!-- WORD RESULT -->
+    <div id="wordResultSection" class="resultSection hidden">
+
+      <h2>Check your words</h2>
+
+      <p class="hint">
+        Words in red are words Whisper didn't match.
+        Tap one to practice it.
+      </p>
+
+      <div id="wordComparison" class="wordComparison"></div>
+
+    </div>
+
+
+    <!-- WORD INFO -->
+    <div id="wordInfo" class="wordInfo hidden">
+
+      <div class="selectedWord" id="selectedWord">
+        word
+      </div>
+
+      <button id="pronounceBtn" class="pronounceBtn">
+        🔊 Hear pronunciation
+      </button>
+
+      <div id="similarWords" class="similarWords"></div>
+
+    </div>
+
+
+    <!-- START AGAIN -->
+    <button id="againBtn" class="primaryBtn hidden">
+      Start Again
+    </button>
 
   </section>
 
