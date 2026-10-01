@@ -144,8 +144,6 @@ canvas {
   width: 190px;
 
   margin-top: 12px;
-
-  pointer-events: none;
 }
 
 
@@ -155,7 +153,8 @@ canvas {
 
   height: 10px;
 
-  border: 1px solid
+  border:
+    1px solid
     rgba(255,255,255,0.45);
 
   background:
@@ -403,7 +402,7 @@ canvas {
 
 
 /* ========================= */
-/* MOBILE CONTROLS */
+/* MOBILE */
 /* ========================= */
 
 #mobileControls {
@@ -422,21 +421,6 @@ canvas {
 
 #mobileControls button {
 
-  border:
-    1px solid
-    rgba(255,255,255,0.28);
-
-  background:
-    rgba(20,25,40,0.45);
-
-  color: white;
-
-  backdrop-filter:
-    blur(6px);
-
-  -webkit-backdrop-filter:
-    blur(6px);
-
   user-select: none;
 
   -webkit-user-select: none;
@@ -452,17 +436,13 @@ canvas {
 
 #mobileControls button:active {
 
-  background:
-    rgba(255,255,255,0.25);
-
   transform:
     scale(0.94);
 }
 
 
 /* ========================= */
-/* UP / DOWN CONTROLS */
-/* DIFFERENT DESIGN */
+/* UP / DOWN */
 /* ========================= */
 
 #verticalControls {
@@ -505,28 +485,28 @@ canvas {
 
 .verticalButton {
 
-  position: relative;
-
   width: 58px;
   height: 58px;
 
   border-radius: 50%;
 
-  font-size: 20px;
-
   border:
     1px solid
-    rgba(255,210,100,0.45) !important;
+    rgba(255,210,100,0.45);
 
   background:
-    rgba(80,55,15,0.35) !important;
+    rgba(80,55,15,0.35);
+
+  color: white;
+
+  font-size: 20px;
 }
 
 
 .verticalButton:active {
 
   background:
-    rgba(255,190,60,0.28) !important;
+    rgba(255,190,60,0.28);
 }
 
 
@@ -565,9 +545,31 @@ canvas {
   width: 58px;
   height: 58px;
 
+  border:
+    1px solid
+    rgba(255,255,255,0.28);
+
   border-radius: 15px;
 
+  background:
+    rgba(20,25,40,0.45);
+
+  color: white;
+
   font-size: 24px;
+
+  backdrop-filter:
+    blur(6px);
+
+  -webkit-backdrop-filter:
+    blur(6px);
+}
+
+
+.directionButton:active {
+
+  background:
+    rgba(255,255,255,0.25);
 }
 
 
@@ -642,20 +644,100 @@ canvas {
   align-items: center;
 
   justify-content: center;
+
+  color: white;
+
+  transition:
+    0.18s ease;
+
+  opacity: 0.65;
 }
 
 
-.speedButton.active {
+/* CHILL */
 
-  border-color:
-    rgba(255,255,255,0.8);
+.chillSpeed {
+
+  border:
+    1px solid
+    rgba(90,255,130,0.35);
 
   background:
-    rgba(255,255,255,0.18);
+    rgba(20,70,35,0.25);
+}
+
+
+.chillSpeed.active {
+
+  opacity: 1;
+
+  border-color:
+    rgba(90,255,130,0.95);
+
+  background:
+    rgba(35,150,65,0.45);
 
   box-shadow:
-    0 0 12px
-    rgba(255,255,255,0.12);
+    0 0 16px
+    rgba(70,255,120,0.35);
+}
+
+
+/* SONIC */
+
+.sonicSpeed {
+
+  border:
+    1px solid
+    rgba(80,180,255,0.35);
+
+  background:
+    rgba(20,55,90,0.25);
+}
+
+
+.sonicSpeed.active {
+
+  opacity: 1;
+
+  border-color:
+    rgba(80,190,255,0.95);
+
+  background:
+    rgba(30,100,170,0.45);
+
+  box-shadow:
+    0 0 16px
+    rgba(60,170,255,0.35);
+}
+
+
+/* POOP */
+
+.poopSpeed {
+
+  border:
+    1px solid
+    rgba(255,190,60,0.35);
+
+  background:
+    rgba(90,60,15,0.25);
+}
+
+
+.poopSpeed.active {
+
+  opacity: 1;
+
+  border-color:
+    rgba(255,200,70,0.95);
+
+  background:
+    rgba(160,105,20,0.45);
+
+  box-shadow:
+    0 0 16px
+    rgba(255,190,50,0.35);
 }
 
 
@@ -677,7 +759,7 @@ canvas {
 
   font-size: 9px;
 
-  opacity: 0.55;
+  opacity: 0.6;
 }
 
 
