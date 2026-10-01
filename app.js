@@ -1,2075 +1,1400 @@
-import * as THREE from
-  "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
 
+/* =========================================================
+   BASIC SETUP
+========================================================= */
 
-// ============================================================
-// REAL SOLAR SYSTEM SCALE
-// ============================================================
-//
+const scene = new THREE.Scene();
+
+scene.background = new THREE.Color(0x000000);
+
+const camera = new THREE.PerspectiveCamera(
+  75,
+  window.innerWidth / window.innerHeight,
+  0.001,
+  1000000
+);
+
+camera.position.set(0, 20, 1200);
+
+const renderer = new THREE.WebGLRenderer({
+  antialias: true,
+});
+
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+
+document.getElementById("game").appendChild(renderer.domElement);
+
+/* =========================================================
+   LIGHTING
+========================================================= */
+
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.12);
+scene.add(ambientLight);
+
+const sunLight = new THREE.PointLight(0xffffff, 3, 0, 1);
+scene.add(sunLight);
+
+/* =========================================================
+   SCALE
+========================================================= */
+
 // 1 game unit = 150,000 km
-//
-// 1 AU ≈ 149,600,000 km
-//
-// Therefore:
 // 1 AU ≈ 1000 game units
-//
-// Planet radii use their real approximate equatorial radii.
-// Distances use mean orbital distances.
-//
-// This means the game is physically scaled.
-// ============================================================
 
-const AU =
-  1000;
+const KM_PER_UNIT = 150000;
+const AU_IN_UNITS = 149597870 / KM_PER_UNIT;
 
+/* =========================================================
+   SUN
+========================================================= */
 
-// ============================================================
-// SIMULATION SPEED
-// ============================================================
-//
-// Real Solar System movement is obviously too slow to watch.
-//
-// 30 Earth days pass every real-world second.
-//
-// The ratios between orbital periods remain realistic.
-// ============================================================
+const SUN_RADIUS = 695700 / KM_PER_UNIT;
 
-const SIMULATION_DAYS_PER_SECOND =
-  30;
-
-
-// ============================================================
-// SCENE
-// ============================================================
-
-const scene =
-  new THREE.Scene();
-
-scene.background =
-  new THREE.Color(0x000000);
-
-scene.fog =
-  new THREE.FogExp2(
-    0x000000,
-    0.000015
-  );
-
-
-// ============================================================
-// CAMERA
-// ============================================================
-
-const camera =
-  new THREE.PerspectiveCamera(
-    75,
-    window.innerWidth /
-      window.innerHeight,
-    0.001,
-    1000000
-  );
-
-
-// Start around 1.2 AU from Sun.
-// This puts the player in the Earth/Mars region.
-
-camera.position.set(
-  0,
-  20,
-  1200
+const sunGeometry = new THREE.SphereGeometry(
+  SUN_RADIUS,
+  48,
+  48
 );
 
+const sunMaterial = new THREE.MeshBasicMaterial({
+  color: 0xffcc33,
+});
 
-// ============================================================
-// RENDERER
-// ============================================================
-
-const renderer =
-  new THREE.WebGLRenderer({
-    antialias: true
-  });
-
-renderer.setPixelRatio(
-  Math.min(
-    window.devicePixelRatio,
-    2
-  )
+const sun = new THREE.Mesh(
+  sunGeometry,
+  sunMaterial
 );
 
-renderer.setSize(
-  window.innerWidth,
-  window.innerHeight
-);
+scene.add(sun);
 
-document
-  .getElementById("game")
-  .appendChild(
-    renderer.domElement
-  );
+sunLight.position.copy(sun.position);
 
+/* =========================================================
+   PLANET DATA
+   NASA-based real values
+========================================================= */
 
-// ============================================================
-// LIGHT
-// ============================================================
+const planetData = [
+  {
+    name: "Mercury",
+    radius: 2439.7 / KM_PER_UNIT,
+    distance: 0.3871,
+    orbitDays: 87.97,
+    rotationDays: 58.646,
+    eccentricity: 0.2056,
+    color: 0x9a8f83,
+  },
 
-const ambientLight =
-  new THREE.AmbientLight(
-    0xffffff,
-    0.12
-  );
+  {
+    name: "Venus",
+    radius: 6051.8 / KM_PER_UNIT,
+    distance: 0.7233,
+    orbitDays: 224.70,
+    rotationDays: -243.025,
+    eccentricity: 0.0068,
+    color: 0xd8b26a,
+  },
 
-scene.add(
-  ambientLight
-);
+  {
+    name: "Earth",
+    radius: 6371.0 / KM_PER_UNIT,
+    distance: 1.0000,
+    orbitDays: 365.256,
+    rotationDays: 0.9973,
+    eccentricity: 0.0167,
+    color: 0x2f6fff,
+  },
 
+  {
+    name: "Mars",
+    radius: 3389.5 / KM_PER_UNIT,
+    distance: 1.5237,
+    orbitDays: 686.98,
+    rotationDays: 1.026,
+    eccentricity: 0.0934,
+    color: 0xb84a32,
+  },
 
-// ============================================================
-// SUN
-// ============================================================
-//
-// Real radius ≈ 695,700 km
-// At our scale ≈ 4.65 units
-// ============================================================
+  {
+    name: "Jupiter",
+    radius: 69911 / KM_PER_UNIT,
+    distance: 5.2028,
+    orbitDays: 4332.59,
+    rotationDays: 0.4135,
+    eccentricity: 0.0489,
+    color: 0xc99b6d,
+  },
 
-const SUN_RADIUS =
-  4.65;
+  {
+    name: "Saturn",
+    radius: 58232 / KM_PER_UNIT,
+    distance: 9.5388,
+    orbitDays: 10759.22,
+    rotationDays: 0.4440,
+    eccentricity: 0.0565,
+    color: 0xd8c39a,
+  },
 
+  {
+    name: "Uranus",
+    radius: 25362 / KM_PER_UNIT,
+    distance: 19.1914,
+    orbitDays: 30688.5,
+    rotationDays: -0.7183,
+    eccentricity: 0.0463,
+    color: 0x8bd3e6,
+  },
 
-const sunGeometry =
-  new THREE.SphereGeometry(
-    SUN_RADIUS,
-    64,
-    64
-  );
+  {
+    name: "Neptune",
+    radius: 24622 / KM_PER_UNIT,
+    distance: 30.0611,
+    orbitDays: 60182,
+    rotationDays: 0.6713,
+    eccentricity: 0.0095,
+    color: 0x4169e1,
+  },
+];
 
+/* =========================================================
+   PLANETS
+========================================================= */
 
-const sunMaterial =
-  new THREE.MeshBasicMaterial({
-    color: 0xffcc55
-  });
+const planets = [];
 
+for (let i = 0; i < planetData.length; i++) {
+  const data = planetData[i];
 
-const sun =
-  new THREE.Mesh(
-    sunGeometry,
-    sunMaterial
-  );
-
-
-scene.add(
-  sun
-);
-
-
-// Sun glow
-
-const glowGeometry =
-  new THREE.SphereGeometry(
-    SUN_RADIUS * 1.35,
+  const geometry = new THREE.SphereGeometry(
+    data.radius,
     32,
     32
   );
 
-
-const glowMaterial =
-  new THREE.MeshBasicMaterial({
-    color: 0xffaa33,
-    transparent: true,
-    opacity: 0.12
+  const material = new THREE.MeshStandardMaterial({
+    color: data.color,
+    roughness: 1,
+    metalness: 0,
   });
 
-
-const sunGlow =
-  new THREE.Mesh(
-    glowGeometry,
-    glowMaterial
+  const mesh = new THREE.Mesh(
+    geometry,
+    material
   );
 
-
-scene.add(
-  sunGlow
-);
-
-
-// Sun light
-
-const sunLight =
-  new THREE.PointLight(
-    0xffffff,
-    2.5,
-    0,
-    1
-  );
-
-
-scene.add(
-  sunLight
-);
-
-
-// ============================================================
-// PLANET DATA
-// ============================================================
-//
-// Distances:
-// NASA mean orbital distances.
-//
-// Radii:
-// NASA planetary size data.
-//
-// Periods:
-// NASA orbital / rotational data.
-//
-// Eccentricity:
-// Used to make the orbit elliptical instead
-// of perfectly circular.
-// ============================================================
-
-const planetData = [
-
-  {
-    name: "Mercury",
-
-    radius: 0.0163,
-
-    distance: 0.3871 * AU,
-
-    orbitDays: 87.97,
-
-    rotationDays: 58.646,
-
-    eccentricity: 0.2056,
-
-    color: 0xaaaaaa
-  },
-
-
-  {
-    name: "Venus",
-
-    radius: 0.0405,
-
-    distance: 0.7233 * AU,
-
-    orbitDays: 224.70,
-
-    rotationDays: -243.025,
-
-    eccentricity: 0.0068,
-
-    color: 0xd9a066
-  },
-
-
-  {
-    name: "Earth",
-
-    radius: 0.0426,
-
-    distance: 1.0000 * AU,
-
-    orbitDays: 365.256,
-
-    rotationDays: 0.9973,
-
-    eccentricity: 0.0167,
-
-    color: 0x3377ff
-  },
-
-
-  {
-    name: "Mars",
-
-    radius: 0.0227,
-
-    distance: 1.5237 * AU,
-
-    orbitDays: 686.98,
-
-    rotationDays: 1.026,
-
-    eccentricity: 0.0934,
-
-    color: 0xcc4422
-  },
-
-
-  {
-    name: "Jupiter",
-
-    radius: 0.4673,
-
-    distance: 5.2028 * AU,
-
-    orbitDays: 4332.59,
-
-    rotationDays: 0.4135,
-
-    eccentricity: 0.0489,
-
-    color: 0xc9905c
-  },
-
-
-  {
-    name: "Saturn",
-
-    radius: 0.3893,
-
-    distance: 9.5388 * AU,
-
-    orbitDays: 10759.22,
-
-    rotationDays: 0.4440,
-
-    eccentricity: 0.0565,
-
-    color: 0xd8c18a
-  },
-
-
-  {
-    name: "Uranus",
-
-    radius: 0.1695,
-
-    distance: 19.1914 * AU,
-
-    orbitDays: 30688.5,
-
-    rotationDays: -0.7183,
-
-    eccentricity: 0.0463,
-
-    color: 0x66ccdd
-  },
-
-
-  {
-    name: "Neptune",
-
-    radius: 0.1646,
-
-    distance: 30.0611 * AU,
-
-    orbitDays: 60182,
-
-    rotationDays: 0.6713,
-
-    eccentricity: 0.0095,
-
-    color: 0x3366dd
-  }
-
-];
-
-
-const planets = [];
-
-
-// ============================================================
-// CREATE PLANET
-// ============================================================
-
-function createPlanet(
-  data
-) {
-
-  const geometry =
-    new THREE.SphereGeometry(
-      data.radius,
-      32,
-      32
-    );
-
-
-  const material =
-    new THREE.MeshStandardMaterial({
-      color: data.color,
-      roughness: 0.8,
-      metalness: 0
-    });
-
-
-  const mesh =
-    new THREE.Mesh(
-      geometry,
-      material
-    );
-
-
-  scene.add(
-    mesh
-  );
-
+  scene.add(mesh);
 
   const planet = {
-
     ...data,
-
     mesh,
-
-    orbitAngle:
-      Math.random() *
-      Math.PI *
-      2
-
+    angle: Math.random() * Math.PI * 2,
+    orbit: null,
+    label: null,
+    labelLine: null,
+    labelOffset: new THREE.Vector2(),
   };
 
-
-  planets.push(
-    planet
+  planet.orbit = createOrbit(
+    data.distance,
+    data.eccentricity
   );
 
+  scene.add(planet.orbit);
 
-  return planet;
+  createPlanetLabel(planet);
 
+  planets.push(planet);
 }
 
+/* =========================================================
+   SATURN RINGS
+========================================================= */
 
-// Create planets
+const saturn = planets.find(
+  (planet) => planet.name === "Saturn"
+);
 
-for (
-  const data of planetData
-) {
-
-  createPlanet(
-    data
-  );
-
-}
-
-
-// ============================================================
-// SATURN RINGS
-// ============================================================
-
-const saturn =
-  planets.find(
-    planet =>
-      planet.name ===
-      "Saturn"
-  );
-
-
-const ringGeometry =
-  new THREE.RingGeometry(
-    0.42,
-    0.65,
+if (saturn) {
+  const ringGeometry = new THREE.RingGeometry(
+    saturn.radius * 1.35,
+    saturn.radius * 2.3,
     64
   );
 
-
-const ringMaterial =
-  new THREE.MeshBasicMaterial({
-    color: 0xc8b98a,
+  const ringMaterial = new THREE.MeshBasicMaterial({
+    color: 0xbba989,
     side: THREE.DoubleSide,
     transparent: true,
-    opacity: 0.65
+    opacity: 0.65,
   });
 
-
-const rings =
-  new THREE.Mesh(
+  const rings = new THREE.Mesh(
     ringGeometry,
     ringMaterial
   );
 
+  rings.rotation.x = Math.PI / 2;
 
-rings.rotation.x =
-  Math.PI / 2;
+  saturn.mesh.add(rings);
+}
 
+/* =========================================================
+   EARTH MOON
+========================================================= */
 
-saturn.mesh.add(
-  rings
+const earth = planets.find(
+  (planet) => planet.name === "Earth"
 );
 
+let moon = null;
 
-// ============================================================
-// ORBITS
-// ============================================================
+if (earth) {
+  const moonRadius = 1737.4 / KM_PER_UNIT;
+  const moonDistance = 384400 / KM_PER_UNIT;
 
-function createOrbit(
-  planet
-) {
-
-  const points = [];
-
-  const segments =
-    256;
-
-
-  const a =
-    planet.distance;
-
-
-  const b =
-    a *
-    Math.sqrt(
-      1 -
-      planet.eccentricity *
-      planet.eccentricity
-    );
-
-
-  const focusOffset =
-    a *
-    planet.eccentricity;
-
-
-  for (
-    let i = 0;
-    i <= segments;
-    i++
-  ) {
-
-    const angle =
-      (i / segments) *
-      Math.PI *
-      2;
-
-
-    const x =
-      a *
-      Math.cos(angle) -
-      focusOffset;
-
-
-    const z =
-      b *
-      Math.sin(angle);
-
-
-    points.push(
-      new THREE.Vector3(
-        x,
-        0,
-        z
-      )
-    );
-
-  }
-
-
-  const geometry =
-    new THREE.BufferGeometry()
-      .setFromPoints(
-        points
-      );
-
-
-  const material =
-    new THREE.LineBasicMaterial({
-      color: 0x333333,
-      transparent: true,
-      opacity: 0.5
-    });
-
-
-  const orbit =
-    new THREE.LineLoop(
-      geometry,
-      material
-    );
-
-
-  scene.add(
-    orbit
-  );
-
-}
-
-
-for (
-  const planet of planets
-) {
-
-  createOrbit(
-    planet
-  );
-
-}
-
-
-// ============================================================
-// EARTH + MOON
-// ============================================================
-
-const earth =
-  planets.find(
-    planet =>
-      planet.name ===
-      "Earth"
-  );
-
-
-// Moon:
-// radius ≈ 1,737 km
-// mean distance ≈ 384,400 km
-//
-// At our scale:
-// radius ≈ 0.0116 units
-// distance ≈ 2.57 units
-// ============================================================
-
-const MOON_RADIUS =
-  0.0116;
-
-
-const MOON_DISTANCE =
-  2.569;
-
-
-const MOON_ORBIT_DAYS =
-  27.321661;
-
-
-const moonGeometry =
-  new THREE.SphereGeometry(
-    MOON_RADIUS,
+  const moonGeometry = new THREE.SphereGeometry(
+    moonRadius,
     24,
     24
   );
 
-
-const moonMaterial =
-  new THREE.MeshStandardMaterial({
+  const moonMaterial = new THREE.MeshStandardMaterial({
     color: 0xaaaaaa,
-    roughness: 1
+    roughness: 1,
   });
 
-
-const moon =
-  new THREE.Mesh(
+  const moonMesh = new THREE.Mesh(
     moonGeometry,
     moonMaterial
   );
 
+  scene.add(moonMesh);
 
-scene.add(
-  moon
-);
+  moon = {
+    name: "Moon",
+    mesh: moonMesh,
+    distance: moonDistance,
+    orbitDays: 27.321661,
+    angle: 0,
+    orbit: createMoonOrbit(moonDistance),
+    label: null,
+    labelLine: null,
+    labelOffset: new THREE.Vector2(0, -45),
+  };
 
+  scene.add(moon.orbit);
 
-let moonAngle = 0;
+  createPlanetLabel(moon);
+}
 
+/* =========================================================
+   ORBIT CREATION
+========================================================= */
 
-// Moon orbit line
+function createOrbit(aAU, eccentricity) {
+  const points = [];
 
-const moonOrbitPoints = [];
+  const a = aAU * AU_IN_UNITS;
+  const b = a * Math.sqrt(1 - eccentricity * eccentricity);
 
-const moonOrbitSegments =
-  96;
+  const focusOffset = a * eccentricity;
 
+  for (let i = 0; i <= 256; i++) {
+    const angle = (i / 256) * Math.PI * 2;
 
-for (
-  let i = 0;
-  i <= moonOrbitSegments;
-  i++
-) {
+    const x = a * Math.cos(angle) - focusOffset;
+    const z = b * Math.sin(angle);
 
-  const angle =
-    (i / moonOrbitSegments) *
-    Math.PI *
-    2;
+    points.push(
+      new THREE.Vector3(x, 0, z)
+    );
+  }
 
+  const geometry =
+    new THREE.BufferGeometry().setFromPoints(points);
 
-  moonOrbitPoints.push(
-    new THREE.Vector3(
-      Math.cos(angle) *
-        MOON_DISTANCE,
+  const material =
+    new THREE.LineBasicMaterial({
+      color: 0x555555,
+      transparent: true,
+      opacity: 0.35,
+    });
+
+  return new THREE.LineLoop(
+    geometry,
+    material
+  );
+}
+
+function createMoonOrbit(radius) {
+  const points = [];
+
+  for (let i = 0; i <= 128; i++) {
+    const angle =
+      (i / 128) * Math.PI * 2;
+
+    points.push(
+      new THREE.Vector3(
+        Math.cos(angle) * radius,
+        0,
+        Math.sin(angle) * radius
+      )
+    );
+  }
+
+  const geometry =
+    new THREE.BufferGeometry().setFromPoints(points);
+
+  const material =
+    new THREE.LineBasicMaterial({
+      color: 0x666666,
+      transparent: true,
+      opacity: 0.4,
+    });
+
+  return new THREE.LineLoop(
+    geometry,
+    material
+  );
+}
+
+/* =========================================================
+   LABEL SYSTEM
+========================================================= */
+
+const labelLayer =
+  document.getElementById("labelLayer");
+
+const labelItems = [];
+
+function createPlanetLabel(object) {
+  const label = document.createElement("div");
+
+  label.className = "planetLabel";
+
+  const text = document.createElement("div");
+
+  text.className = "planetLabelText";
+  text.textContent = object.name;
+
+  const line = document.createElement("div");
+
+  line.className = "planetLabelLine";
+
+  label.appendChild(text);
+  label.appendChild(line);
+
+  labelLayer.appendChild(label);
+
+  object.label = label;
+  object.labelLine = line;
+
+  if (!object.labelOffset) {
+    const index = labelItems.length;
+
+    const angle =
+      (index / 8) * Math.PI * 2;
+
+    object.labelOffset =
+      new THREE.Vector2(
+        Math.cos(angle) * 35,
+        Math.sin(angle) * 35
+      );
+  }
+
+  labelItems.push(object);
+}
+
+const tempProjected =
+  new THREE.Vector3();
+
+function updateLabels() {
+  if (!labelsVisible) {
+    return;
+  }
+
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+
+  for (const object of labelItems) {
+    if (!object.mesh.visible) {
+      object.label.style.display = "none";
+      continue;
+    }
+
+    const worldPosition =
+      new THREE.Vector3();
+
+    object.mesh.getWorldPosition(
+      worldPosition
+    );
+
+    tempProjected.copy(worldPosition);
+
+    tempProjected.project(camera);
+
+    // Behind camera
+    if (tempProjected.z > 1) {
+      object.label.style.display = "none";
+      continue;
+    }
+
+    let x =
+      (tempProjected.x * 0.5 + 0.5) *
+      width;
+
+    let y =
+      (-tempProjected.y * 0.5 + 0.5) *
+      height;
+
+    const offset =
+      object.labelOffset ||
+      new THREE.Vector2(30, 30);
+
+    const targetX = x;
+    const targetY = y;
+
+    x += offset.x;
+    y += offset.y;
+
+    // Keep label on screen
+    x = THREE.MathUtils.clamp(
+      x,
+      70,
+      width - 70
+    );
+
+    y = THREE.MathUtils.clamp(
+      y,
+      25,
+      height - 25
+    );
+
+    object.label.style.display = "flex";
+
+    object.label.style.left =
+      `${x}px`;
+
+    object.label.style.top =
+      `${y}px`;
+
+    // Draw pointer line back toward planet
+    const dx = targetX - x;
+    const dy = targetY - y;
+
+    const length =
+      Math.sqrt(dx * dx + dy * dy);
+
+    const angle =
+      Math.atan2(dy, dx);
+
+    object.labelLine.style.width =
+      `${Math.min(Math.max(length, 15), 150)}px`;
+
+    object.labelLine.style.transform =
+      `rotate(${angle}rad)`;
+  }
+}
+
+/* =========================================================
+   SIMULATION
+========================================================= */
+
+const SIMULATION_DAYS_PER_SECOND = 30;
+
+let simulationDays = 0;
+
+function updatePlanets(delta) {
+  simulationDays +=
+    delta *
+    SIMULATION_DAYS_PER_SECOND;
+
+  for (const planet of planets) {
+    const a =
+      planet.distance * AU_IN_UNITS;
+
+    const e =
+      planet.eccentricity;
+
+    const b =
+      a * Math.sqrt(1 - e * e);
+
+    const focusOffset =
+      a * e;
+
+    const angularSpeed =
+      (Math.PI * 2) /
+      planet.orbitDays;
+
+    planet.angle +=
+      angularSpeed *
+      delta *
+      SIMULATION_DAYS_PER_SECOND;
+
+    const x =
+      a * Math.cos(planet.angle) -
+      focusOffset;
+
+    const z =
+      b * Math.sin(planet.angle);
+
+    planet.mesh.position.set(
+      x,
+      0,
+      z
+    );
+
+    /* Planet rotation */
+
+    const rotationDirection =
+      planet.rotationDays < 0
+        ? -1
+        : 1;
+
+    const rotationSpeed =
+      (Math.PI * 2) /
+      Math.abs(planet.rotationDays);
+
+    planet.mesh.rotation.y +=
+      rotationSpeed *
+      delta *
+      SIMULATION_DAYS_PER_SECOND *
+      rotationDirection;
+  }
+
+  /* Moon */
+
+  if (earth && moon) {
+    moon.angle +=
+      (Math.PI * 2 / moon.orbitDays) *
+      delta *
+      SIMULATION_DAYS_PER_SECOND;
+
+    const earthPosition =
+      earth.mesh.position;
+
+    moon.mesh.position.set(
+      earthPosition.x +
+        Math.cos(moon.angle) *
+          moon.distance,
 
       0,
 
-      Math.sin(angle) *
-        MOON_DISTANCE
-    )
-  );
-
-}
-
-
-const moonOrbitGeometry =
-  new THREE.BufferGeometry()
-    .setFromPoints(
-      moonOrbitPoints
+      earthPosition.z +
+        Math.sin(moon.angle) *
+          moon.distance
     );
 
-
-const moonOrbitMaterial =
-  new THREE.LineBasicMaterial({
-    color: 0x444444,
-    transparent: true,
-    opacity: 0.35
-  });
-
-
-const moonOrbit =
-  new THREE.LineLoop(
-    moonOrbitGeometry,
-    moonOrbitMaterial
-  );
-
-
-scene.add(
-  moonOrbit
-);
-
-
-// ============================================================
-// STARS
-// ============================================================
-
-const starCount =
-  12000;
-
-
-const starPositions =
-  new Float32Array(
-    starCount * 3
-  );
-
-
-for (
-  let i = 0;
-  i < starCount;
-  i++
-) {
-
-  const i3 =
-    i * 3;
-
-
-  const radius =
-    3000 +
-    Math.random() *
-      5000;
-
-
-  const theta =
-    Math.random() *
-    Math.PI *
-    2;
-
-
-  const phi =
-    Math.acos(
-      2 *
-        Math.random() -
-        1
-    );
-
-
-  starPositions[i3] =
-    radius *
-    Math.sin(phi) *
-    Math.cos(theta);
-
-
-  starPositions[i3 + 1] =
-    radius *
-    Math.cos(phi);
-
-
-  starPositions[i3 + 2] =
-    radius *
-    Math.sin(phi) *
-    Math.sin(theta);
-
+    moon.mesh.rotation.y =
+      moon.angle;
+  }
 }
 
+/* =========================================================
+   PLAYER MOVEMENT
+========================================================= */
 
-const starGeometry =
-  new THREE.BufferGeometry();
+const CHILL_SPEED = 180;
+const SONIC_SPEED = 360;
+const POOP_SPEED = 720;
 
+let currentSpeedMode = "chill";
 
-starGeometry.setAttribute(
-  "position",
+const keys = {
+  forward: false,
+  backward: false,
+  left: false,
+  right: false,
+  up: false,
+  down: false,
+};
 
-  new THREE.BufferAttribute(
-    starPositions,
-    3
-  )
-);
+function getCurrentSpeed() {
+  if (currentSpeedMode === "sonic") {
+    return SONIC_SPEED;
+  }
 
+  if (currentSpeedMode === "poop") {
+    return POOP_SPEED;
+  }
 
-const starMaterial =
-  new THREE.PointsMaterial({
-    color: 0xffffff,
-    size: 2,
-    sizeAttenuation: true
-  });
+  return CHILL_SPEED;
+}
 
+function updatePlayer(delta) {
+  const speed =
+    getCurrentSpeed();
 
-const stars =
-  new THREE.Points(
-    starGeometry,
-    starMaterial
-  );
+  const direction =
+    new THREE.Vector3();
 
+  const forward =
+    new THREE.Vector3();
 
-scene.add(
-  stars
-);
+  camera.getWorldDirection(forward);
 
+  const right =
+    new THREE.Vector3();
 
-// ============================================================
-// PLAYER
-// ============================================================
+  right.crossVectors(
+    forward,
+    camera.up
+  ).normalize();
 
-const velocity =
-  new THREE.Vector3();
+  if (keys.forward) {
+    direction.add(forward);
+  }
 
+  if (keys.backward) {
+    direction.sub(forward);
+  }
 
-const direction =
-  new THREE.Vector3();
+  if (keys.right) {
+    direction.sub(right);
+  }
 
+  if (keys.left) {
+    direction.add(right);
+  }
 
-let flying =
-  false;
+  if (keys.up) {
+    direction.y += 1;
+  }
 
+  if (keys.down) {
+    direction.y -= 1;
+  }
 
-// ============================================================
-// SPEED SYSTEM
-// ============================================================
+  const isMoving =
+    direction.lengthSq() > 0;
 
-const CHILL_SPEED =
-  180;
+  if (isMoving) {
+    direction.normalize();
 
+    camera.position.addScaledVector(
+      direction,
+      speed * delta
+    );
+  }
 
-const SONIC_SPEED =
-  CHILL_SPEED * 2;
+  return isMoving;
+}
 
+/* =========================================================
+   KEYBOARD CONTROLS
+========================================================= */
 
-const POOP_SPEED =
-  CHILL_SPEED * 4;
-
-
-let currentSpeedMode =
-  "chill";
-
-
-let energy =
-  100;
-
-
-const SONIC_DRAIN =
-  7;
-
-
-const POOP_DRAIN =
-  22;
-
-
-const SUN_REFILL_DISTANCE =
-  180;
-
-
-// ============================================================
-// KEYBOARD
-// ============================================================
-
-const keys = {};
-
-
-document.addEventListener(
+window.addEventListener(
   "keydown",
-  event => {
+  (event) => {
+    if (event.code === "KeyW") {
+      keys.forward = true;
+    }
 
-    keys[event.code] =
-      true;
+    if (event.code === "KeyS") {
+      keys.backward = true;
+    }
 
+    if (event.code === "KeyA") {
+      keys.left = true;
+    }
+
+    if (event.code === "KeyD") {
+      keys.right = true;
+    }
+
+    if (event.code === "Space") {
+      keys.up = true;
+      event.preventDefault();
+    }
+
+    if (event.code === "ShiftLeft") {
+      keys.down = true;
+    }
   }
 );
 
+window.addEventListener(
+  "keyup",
+  (event) => {
+    if (event.code === "KeyW") {
+      keys.forward = false;
+    }
+
+    if (event.code === "KeyS") {
+      keys.backward = false;
+    }
+
+    if (event.code === "KeyA") {
+      keys.left = false;
+    }
+
+    if (event.code === "KeyD") {
+      keys.right = false;
+    }
+
+    if (event.code === "Space") {
+      keys.up = false;
+    }
+
+    if (event.code === "ShiftLeft") {
+      keys.down = false;
+    }
+  }
+);
+
+/* =========================================================
+   MOUSE LOOK
+========================================================= */
+
+let isPointerLocked = false;
+
+renderer.domElement.addEventListener(
+  "click",
+  () => {
+    if (!isMobile()) {
+      renderer.domElement.requestPointerLock();
+    }
+  }
+);
 
 document.addEventListener(
-  "keyup",
-  event => {
-
-    keys[event.code] =
-      false;
-
+  "pointerlockchange",
+  () => {
+    isPointerLocked =
+      document.pointerLockElement ===
+      renderer.domElement;
   }
 );
-
-
-// ============================================================
-// MOUSE LOOK
-// ============================================================
-
-let yaw =
-  0;
-
-
-let pitch =
-  0;
-
 
 document.addEventListener(
   "mousemove",
-  event => {
+  (event) => {
+    if (!isPointerLocked) {
+      return;
+    }
 
-    if (!flying) return;
+    const sensitivity = 0.002;
 
+    camera.rotation.order = "YXZ";
 
-    const sensitivity =
-      0.002;
-
-
-    yaw -=
+    camera.rotation.y -=
       event.movementX *
       sensitivity;
 
-
-    pitch -=
+    camera.rotation.x -=
       event.movementY *
       sensitivity;
 
-
-    const limit =
-      Math.PI / 2 -
-      0.05;
-
-
-    pitch =
-      Math.max(
-        -limit,
-
-        Math.min(
-          limit,
-          pitch
-        )
-      );
-
-
-    camera.rotation.order =
-      "YXZ";
-
-
-    camera.rotation.y =
-      yaw;
-
-
     camera.rotation.x =
-      pitch;
-
-  }
-);
-
-
-// ============================================================
-// START
-// ============================================================
-
-const startButton =
-  document.getElementById(
-    "startButton"
-  );
-
-
-startButton.addEventListener(
-  "click",
-  () => {
-
-    document
-      .getElementById(
-        "startScreen"
-      )
-      .classList.add(
-        "hidden"
+      THREE.MathUtils.clamp(
+        camera.rotation.x,
+        -Math.PI / 2,
+        Math.PI / 2
       );
-
-
-    flying =
-      true;
-
-
-    renderer.domElement
-      .requestPointerLock?.();
-
   }
 );
 
-
-// Desktop click
-
-renderer.domElement.addEventListener(
-  "click",
-  () => {
-
-    if (!flying) return;
-
-
-    renderer.domElement
-      .requestPointerLock?.();
-
-  }
-);
-
-
-// ============================================================
-// SPEED BUTTONS
-// ============================================================
-
-const chillButton =
-  document.getElementById(
-    "chillButton"
-  );
-
-
-const sonicButton =
-  document.getElementById(
-    "sonicButton"
-  );
-
-
-const poopButton =
-  document.getElementById(
-    "poopButton"
-  );
-
-
-function updateSpeedButtons() {
-
-  chillButton.classList.remove(
-    "active"
-  );
-
-
-  sonicButton.classList.remove(
-    "active"
-  );
-
-
-  poopButton.classList.remove(
-    "active"
-  );
-
-
-  if (
-    currentSpeedMode ===
-    "chill"
-  ) {
-
-    chillButton.classList.add(
-      "active"
-    );
-
-  }
-
-
-  if (
-    currentSpeedMode ===
-    "sonic"
-  ) {
-
-    sonicButton.classList.add(
-      "active"
-    );
-
-  }
-
-
-  if (
-    currentSpeedMode ===
-    "poop"
-  ) {
-
-    poopButton.classList.add(
-      "active"
-    );
-
-  }
-
-}
-
-
-function setSpeedMode(
-  mode
-) {
-
-  if (
-    energy <= 0 &&
-    mode !== "chill"
-  ) {
-
-    currentSpeedMode =
-      "chill";
-
-
-    updateSpeedButtons();
-
-
-    return;
-
-  }
-
-
-  currentSpeedMode =
-    mode;
-
-
-  updateSpeedButtons();
-
-}
-
-
-chillButton.addEventListener(
-  "click",
-  () => {
-
-    setSpeedMode(
-      "chill"
-    );
-
-  }
-);
-
-
-sonicButton.addEventListener(
-  "click",
-  () => {
-
-    setSpeedMode(
-      "sonic"
-    );
-
-  }
-);
-
-
-poopButton.addEventListener(
-  "click",
-  () => {
-
-    setSpeedMode(
-      "poop"
-    );
-
-  }
-);
-
-
-// ============================================================
-// MOBILE BUTTON HELPER
-// ============================================================
-
-function bindMobileButton(
-  id,
-  key
-) {
-
-  const button =
-    document.getElementById(
-      id
-    );
-
-
-  if (!button) return;
-
-
-  const start =
-    event => {
-
-      event.preventDefault();
-
-
-      keys[key] =
-        true;
-
-    };
-
-
-  const stop =
-    event => {
-
-      event.preventDefault();
-
-
-      keys[key] =
-        false;
-
-    };
-
-
-  button.addEventListener(
-    "touchstart",
-    start,
-    {
-      passive: false
-    }
-  );
-
-
-  button.addEventListener(
-    "touchend",
-    stop,
-    {
-      passive: false
-    }
-  );
-
-
-  button.addEventListener(
-    "touchcancel",
-    stop,
-    {
-      passive: false
-    }
-  );
-
-
-  button.addEventListener(
-    "mousedown",
-    start
-  );
-
-
-  button.addEventListener(
-    "mouseup",
-    stop
-  );
-
-
-  button.addEventListener(
-    "mouseleave",
-    stop
-  );
-
-}
-
-
-// Movement
-
-bindMobileButton(
-  "forwardButton",
-  "KeyW"
-);
-
-
-bindMobileButton(
-  "backButton",
-  "KeyS"
-);
-
-
-bindMobileButton(
-  "leftButton",
-  "KeyA"
-);
-
-
-bindMobileButton(
-  "rightButton",
-  "KeyD"
-);
-
-
-// Vertical
-
-bindMobileButton(
-  "upButton",
-  "Space"
-);
-
-
-bindMobileButton(
-  "downButton",
-  "ShiftLeft"
-);
-
-
-// ============================================================
-// MOBILE LOOK
-// ============================================================
-
-let lookTouch =
-  null;
-
+/* =========================================================
+   MOBILE TOUCH LOOK
+========================================================= */
+
+let touchLookActive = false;
+let lastTouchX = 0;
+let lastTouchY = 0;
 
 renderer.domElement.addEventListener(
   "touchstart",
-  event => {
-
-    if (!flying) return;
-
-
-    if (
-      event.target.closest(
-        "#mobileControls"
-      )
-    ) {
-
+  (event) => {
+    if (event.touches.length !== 1) {
       return;
-
     }
-
 
     const touch =
       event.touches[0];
 
+    touchLookActive = true;
 
-    lookTouch = {
-
-      id:
-        touch.identifier,
-
-      x:
-        touch.clientX,
-
-      y:
-        touch.clientY
-
-    };
-
+    lastTouchX = touch.clientX;
+    lastTouchY = touch.clientY;
   },
-  {
-    passive: false
-  }
+  { passive: false }
 );
-
 
 renderer.domElement.addEventListener(
   "touchmove",
-  event => {
-
-    if (
-      !flying ||
-      !lookTouch
-    ) {
-
+  (event) => {
+    if (!touchLookActive) {
       return;
-
     }
 
+    if (event.touches.length !== 1) {
+      return;
+    }
 
     const touch =
-      [...event.touches]
-        .find(
-          t =>
-            t.identifier ===
-            lookTouch.id
-        );
-
-
-    if (!touch) return;
-
+      event.touches[0];
 
     const dx =
       touch.clientX -
-      lookTouch.x;
-
+      lastTouchX;
 
     const dy =
       touch.clientY -
-      lookTouch.y;
+      lastTouchY;
 
+    lastTouchX =
+      touch.clientX;
 
-    const sensitivity =
-      0.004;
+    lastTouchY =
+      touch.clientY;
 
-
-    yaw -=
-      dx *
-      sensitivity;
-
-
-    pitch -=
-      dy *
-      sensitivity;
-
-
-    const limit =
-      Math.PI / 2 -
-      0.05;
-
-
-    pitch =
-      Math.max(
-        -limit,
-
-        Math.min(
-          limit,
-          pitch
-        )
-      );
-
+    const sensitivity = 0.004;
 
     camera.rotation.order =
       "YXZ";
 
+    camera.rotation.y -=
+      dx * sensitivity;
 
-    camera.rotation.y =
-      yaw;
-
+    camera.rotation.x -=
+      dy * sensitivity;
 
     camera.rotation.x =
-      pitch;
-
-
-    lookTouch.x =
-      touch.clientX;
-
-
-    lookTouch.y =
-      touch.clientY;
-
+      THREE.MathUtils.clamp(
+        camera.rotation.x,
+        -Math.PI / 2,
+        Math.PI / 2
+      );
 
     event.preventDefault();
-
   },
-  {
-    passive: false
-  }
+  { passive: false }
 );
-
 
 renderer.domElement.addEventListener(
   "touchend",
   () => {
-
-    lookTouch =
-      null;
-
+    touchLookActive = false;
   }
 );
 
+/* =========================================================
+   MOBILE MOVEMENT BUTTONS
+========================================================= */
 
-// ============================================================
-// ENERGY
-// ============================================================
+function bindHoldButton(
+  elementId,
+  keyName
+) {
+  const element =
+    document.getElementById(elementId);
 
-const energyFill =
-  document.getElementById(
-    "energyFill"
+  const start = (event) => {
+    event.preventDefault();
+    keys[keyName] = true;
+  };
+
+  const stop = (event) => {
+    event.preventDefault();
+    keys[keyName] = false;
+  };
+
+  element.addEventListener(
+    "touchstart",
+    start,
+    { passive: false }
   );
 
-
-const energyText =
-  document.getElementById(
-    "energyText"
+  element.addEventListener(
+    "touchend",
+    stop,
+    { passive: false }
   );
 
+  element.addEventListener(
+    "touchcancel",
+    stop,
+    { passive: false }
+  );
+
+  element.addEventListener(
+    "mousedown",
+    start
+  );
+
+  element.addEventListener(
+    "mouseup",
+    stop
+  );
+
+  element.addEventListener(
+    "mouseleave",
+    stop
+  );
+}
+
+bindHoldButton(
+  "moveForward",
+  "forward"
+);
+
+bindHoldButton(
+  "moveBackward",
+  "backward"
+);
+
+bindHoldButton(
+  "moveLeft",
+  "left"
+);
+
+bindHoldButton(
+  "moveRight",
+  "right"
+);
+
+bindHoldButton(
+  "upButton",
+  "up"
+);
+
+bindHoldButton(
+  "downButton",
+  "down"
+);
+
+/* =========================================================
+   SPEED SYSTEM
+========================================================= */
+
+const speedButtons =
+  document.querySelectorAll(
+    ".speedButton"
+  );
+
+speedButtons.forEach(
+  (button) => {
+    button.addEventListener(
+      "click",
+      () => {
+        currentSpeedMode =
+          button.dataset.speed;
+
+        updateSpeedButtons();
+      }
+    );
+  }
+);
+
+function updateSpeedButtons() {
+  speedButtons.forEach(
+    (button) => {
+      button.classList.toggle(
+        "active",
+        button.dataset.speed ===
+          currentSpeedMode
+      );
+    }
+  );
+}
+
+/* =========================================================
+   ENERGY SYSTEM
+========================================================= */
+
+let energy = 100;
 
 function updateEnergy(
   delta,
   isMoving
 ) {
+  const sunDistance =
+    camera.position.length();
 
+  const refillDistance = 180;
+
+  if (
+    sunDistance <=
+    refillDistance
+  ) {
+    energy +=
+      30 * delta;
+  }
+
+  if (
+    isMoving &&
+    currentSpeedMode === "sonic"
+  ) {
+    energy -=
+      4 * delta;
+  }
+
+  if (
+    isMoving &&
+    currentSpeedMode === "poop"
+  ) {
+    energy -=
+      12 * delta;
+  }
+
+  energy =
+    THREE.MathUtils.clamp(
+      energy,
+      0,
+      100
+    );
+
+  if (energy <= 0) {
+    currentSpeedMode = "chill";
+    updateSpeedButtons();
+  }
+
+  document.getElementById(
+    "energyBar"
+  ).style.width =
+    `${energy}%`;
+
+  document.getElementById(
+    "energyPercent"
+  ).textContent =
+    `${Math.round(energy)}%`;
+}
+
+/* =========================================================
+   DISTANCE FROM SUN
+========================================================= */
+
+function updateDistanceDisplay() {
   const distance =
     camera.position.length();
 
+  const au =
+    distance / AU_IN_UNITS;
 
-  // Sun charging
-
-  if (
-    distance <
-    SUN_REFILL_DISTANCE
-  ) {
-
-    energy +=
-      28 *
-      delta;
-
-  }
-
-
-  // Only drain while actually moving
-
-  if (
-    isMoving &&
-    currentSpeedMode ===
-      "sonic"
-  ) {
-
-    energy -=
-      SONIC_DRAIN *
-      delta;
-
-  }
-
-
-  if (
-    isMoving &&
-    currentSpeedMode ===
-      "poop"
-  ) {
-
-    energy -=
-      POOP_DRAIN *
-      delta;
-
-  }
-
-
-  energy =
-    Math.max(
-      0,
-
-      Math.min(
-        100,
-        energy
-      )
-    );
-
-
-  // Empty = automatically Chill
-
-  if (
-    energy <= 0 &&
-    currentSpeedMode !==
-      "chill"
-  ) {
-
-    energy =
-      0;
-
-
-    currentSpeedMode =
-      "chill";
-
-
-    updateSpeedButtons();
-
-  }
-
-
-  energyFill.style.width =
-    energy + "%";
-
-
-  energyText.textContent =
-    Math.round(
-      energy
-    ) + "%";
-
+  document.getElementById(
+    "distanceDisplay"
+  ).textContent =
+    `DISTANCE FROM SUN: ${au.toFixed(3)} AU`;
 }
 
-
-// ============================================================
-// PLANET ORBITS + ROTATION
-// ============================================================
-
-function updatePlanets(
-  delta
-) {
-
-  const daysPassed =
-    delta *
-    SIMULATION_DAYS_PER_SECOND;
-
-
-  for (
-    const planet of planets
-  ) {
-
-    // -----------------------------------------
-    // ORBIT
-    // -----------------------------------------
-
-    const degreesPerDay =
-      360 /
-      planet.orbitDays;
-
-
-    const orbitRadians =
-      THREE.MathUtils.degToRad(
-        degreesPerDay
-      ) *
-      daysPassed;
-
-
-    planet.orbitAngle +=
-      orbitRadians;
-
-
-    const a =
-      planet.distance;
-
-
-    const e =
-      planet.eccentricity;
-
-
-    const b =
-      a *
-      Math.sqrt(
-        1 -
-        e *
-        e
-      );
-
-
-    const focusOffset =
-      a *
-      e;
-
-
-    planet.mesh.position.x =
-      a *
-      Math.cos(
-        planet.orbitAngle
-      ) -
-      focusOffset;
-
-
-    planet.mesh.position.z =
-      b *
-      Math.sin(
-        planet.orbitAngle
-      );
-
-
-    // -----------------------------------------
-    // ROTATION
-    // -----------------------------------------
-
-    const rotationDays =
-      planet.rotationDays;
-
-
-    const rotationRadians =
-      (
-        Math.PI *
-        2 *
-        daysPassed
-      ) /
-      Math.abs(
-        rotationDays
-      );
-
-
-    if (
-      rotationDays > 0
-    ) {
-
-      planet.mesh.rotation.y +=
-        rotationRadians;
-
-    } else {
-
-      planet.mesh.rotation.y -=
-        rotationRadians;
-
-    }
-
-  }
-
-
-  // ==========================================================
-  // MOON ORBIT
-  // ==========================================================
-
-  const moonDegreesPerDay =
-    360 /
-    MOON_ORBIT_DAYS;
-
-
-  const moonOrbitRadians =
-    THREE.MathUtils.degToRad(
-      moonDegreesPerDay
-    ) *
-    daysPassed;
-
-
-  moonAngle +=
-    moonOrbitRadians;
-
-
-  moon.position.x =
-    earth.mesh.position.x +
-    Math.cos(
-      moonAngle
-    ) *
-      MOON_DISTANCE;
-
-
-  moon.position.y =
-    earth.mesh.position.y;
-
-
-  moon.position.z =
-    earth.mesh.position.z +
-    Math.sin(
-      moonAngle
-    ) *
-      MOON_DISTANCE;
-
-
-  // Moon synchronous rotation
-
-  moon.rotation.y =
-    moonAngle;
-
-}
-
-
-// ============================================================
-// PLAYER MOVEMENT
-// ============================================================
-
-function updatePlayer(
-  delta
-) {
-
-  if (!flying) {
-
-    return false;
-
-  }
-
-
-  direction.set(
-    0,
-    0,
-    0
-  );
-
-
-  if (
-    keys["KeyW"]
-  ) {
-
-    direction.z -= 1;
-
-  }
-
-
-  if (
-    keys["KeyS"]
-  ) {
-
-    direction.z += 1;
-
-  }
-
-
-  if (
-    keys["KeyA"]
-  ) {
-
-    direction.x -= 1;
-
-  }
-
-
-  if (
-    keys["KeyD"]
-  ) {
-
-    direction.x += 1;
-
-  }
-
-
-  if (
-    keys["Space"]
-  ) {
-
-    direction.y += 1;
-
-  }
-
-
-  if (
-    keys["ShiftLeft"] ||
-    keys["ShiftRight"]
-  ) {
-
-    direction.y -= 1;
-
-  }
-
-
-  const isMoving =
-    direction.lengthSq() >
-    0;
-
-
-  if (isMoving) {
-
-    direction.normalize();
-
-
-    const movement =
-      direction.clone();
-
-
-    movement.applyQuaternion(
-      camera.quaternion
-    );
-
-
-    velocity.copy(
-      movement
-    );
-
-
-    let speed =
-      CHILL_SPEED;
-
-
-    if (
-      currentSpeedMode ===
-      "sonic"
-    ) {
-
-      speed =
-        SONIC_SPEED;
-
-    }
-
-
-    if (
-      currentSpeedMode ===
-      "poop"
-    ) {
-
-      speed =
-        POOP_SPEED;
-
-    }
-
-
-    camera.position.addScaledVector(
-      velocity,
-      speed *
-      delta
-    );
-
-  } else {
-
-    velocity.multiplyScalar(
-      0.92
-    );
-
-  }
-
-
-  return isMoving;
-
-}
-
-
-// ============================================================
-// PLANET DETECTION
-// ============================================================
+/* =========================================================
+   PLANET PROXIMITY
+========================================================= */
 
 const planetInfo =
   document.getElementById(
     "planetInfo"
   );
 
+function updatePlanetInfo() {
+  let closest = null;
+  let closestDistance = Infinity;
 
-const planetName =
-  document.getElementById(
-    "planetName"
-  );
-
-
-const planetDistance =
-  document.getElementById(
-    "planetDistance"
-  );
-
-
-function checkNearbyPlanet() {
-
-  let closest =
-    null;
-
-
-  let closestDistance =
-    Infinity;
-
-
-  for (
-    const planet of planets
-  ) {
-
+  for (const planet of planets) {
     const distance =
       camera.position.distanceTo(
         planet.mesh.position
       );
 
-
     if (
       distance <
       closestDistance
     ) {
-
-      closestDistance =
-        distance;
-
-
-      closest =
-        planet;
-
+      closestDistance = distance;
+      closest = planet;
     }
-
   }
-
-
-  // Moon can also be detected
-
-  const moonDistance =
-    camera.position.distanceTo(
-      moon.position
-    );
-
 
   if (
-    moonDistance <
-    closestDistance
+    moon &&
+    camera.position.distanceTo(
+      moon.mesh.position
+    ) < closestDistance
   ) {
+    closest =
+      moon;
 
     closestDistance =
-      moonDistance;
-
-
-    closest =
-      {
-        name: "Moon"
-      };
-
+      camera.position.distanceTo(
+        moon.mesh.position
+      );
   }
-
 
   if (
     closest &&
     closestDistance < 15
   ) {
-
-    planetInfo.classList.remove(
-      "hidden"
-    );
-
-
-    planetName.textContent =
-      closest.name;
-
-
-    planetDistance.textContent =
-      Math.round(
-        closestDistance *
-        100
-      ) /
-      100 +
-      " units away";
-
-  } else {
+    planetInfo.textContent =
+      `YOU ARE NEAR ${closest.name.toUpperCase()}`;
 
     planetInfo.classList.add(
-      "hidden"
+      "visible"
+    );
+  } else {
+    planetInfo.classList.remove(
+      "visible"
+    );
+  }
+}
+
+/* =========================================================
+   DISPLAY SETTINGS
+========================================================= */
+
+let labelsVisible = true;
+let orbitsVisible = true;
+let uiVisible = true;
+
+const game =
+  document.getElementById(
+    "game"
+  );
+
+function updateLabelVisibility() {
+  labelLayer.style.display =
+    labelsVisible
+      ? "block"
+      : "none";
+}
+
+function updateOrbitVisibility() {
+  for (const planet of planets) {
+    if (planet.orbit) {
+      planet.orbit.visible =
+        orbitsVisible;
+    }
+  }
+
+  if (moon && moon.orbit) {
+    moon.orbit.visible =
+      orbitsVisible;
+  }
+}
+
+/* LABEL ON */
+
+document
+  .getElementById("labelsOn")
+  .addEventListener(
+    "click",
+    () => {
+      labelsVisible = true;
+
+      document
+        .getElementById("labelsOn")
+        .classList.add("active");
+
+      document
+        .getElementById("labelsOff")
+        .classList.remove("active");
+
+      updateLabelVisibility();
+    }
+  );
+
+/* LABEL OFF */
+
+document
+  .getElementById("labelsOff")
+  .addEventListener(
+    "click",
+    () => {
+      labelsVisible = false;
+
+      document
+        .getElementById("labelsOff")
+        .classList.add("active");
+
+      document
+        .getElementById("labelsOn")
+        .classList.remove("active");
+
+      updateLabelVisibility();
+    }
+  );
+
+/* ORBITS ON */
+
+document
+  .getElementById("orbitsOn")
+  .addEventListener(
+    "click",
+    () => {
+      orbitsVisible = true;
+
+      document
+        .getElementById("orbitsOn")
+        .classList.add("active");
+
+      document
+        .getElementById("orbitsOff")
+        .classList.remove("active");
+
+      updateOrbitVisibility();
+    }
+  );
+
+/* ORBITS OFF */
+
+document
+  .getElementById("orbitsOff")
+  .addEventListener(
+    "click",
+    () => {
+      orbitsVisible = false;
+
+      document
+        .getElementById("orbitsOff")
+        .classList.add("active");
+
+      document
+        .getElementById("orbitsOn")
+        .classList.remove("active");
+
+      updateOrbitVisibility();
+    }
+  );
+
+/* =========================================================
+   FULL VIEW / UI OFF
+========================================================= */
+
+const uiToggleButton =
+  document.getElementById(
+    "uiToggleButton"
+  );
+
+function setUIVisible(visible) {
+  uiVisible = visible;
+
+  if (visible) {
+    game.classList.remove(
+      "cinematic"
     );
 
-  }
+    uiToggleButton.style.opacity =
+      "0";
 
+    uiToggleButton.style.pointerEvents =
+      "none";
+
+    /*
+      Restore whatever orbit state
+      the player selected.
+    */
+    updateOrbitVisibility();
+    updateLabelVisibility();
+
+  } else {
+    game.classList.add(
+      "cinematic"
+    );
+
+    uiToggleButton.style.opacity =
+      "1";
+
+    uiToggleButton.style.pointerEvents =
+      "auto";
+
+    /*
+      Full view means:
+      no orbit lines
+      no labels
+      no HUD
+      no controls
+      no crosshair
+    */
+
+    for (const planet of planets) {
+      if (planet.orbit) {
+        planet.orbit.visible = false;
+      }
+    }
+
+    if (moon && moon.orbit) {
+      moon.orbit.visible = false;
+    }
+  }
 }
 
-
-// ============================================================
-// HUD
-// ============================================================
-
-const speedDisplay =
-  document.getElementById(
-    "speed"
+document
+  .getElementById("hideUIButton")
+  .addEventListener(
+    "click",
+    () => {
+      setUIVisible(false);
+    }
   );
 
+uiToggleButton.addEventListener(
+  "click",
+  () => {
+    setUIVisible(true);
+  }
+);
 
-const locationDisplay =
-  document.getElementById(
-    "location"
+/* =========================================================
+   START GAME
+========================================================= */
+
+document
+  .getElementById("startButton")
+  .addEventListener(
+    "click",
+    () => {
+      document.getElementById(
+        "startScreen"
+      ).style.display = "none";
+
+      setUIVisible(true);
+    }
   );
 
+/* =========================================================
+   MOBILE CHECK
+========================================================= */
 
-function updateHUD() {
-
-  let speedName =
-    "CHILL";
-
-
-  if (
-    currentSpeedMode ===
-    "sonic"
-  ) {
-
-    speedName =
-      "SONIC";
-
-  }
-
-
-  if (
-    currentSpeedMode ===
-    "poop"
-  ) {
-
-    speedName =
-      "U NEED TO POOP";
-
-  }
-
-
-  speedDisplay.textContent =
-    "Speed: " +
-    speedName;
-
-
-  const distanceAU =
-    camera.position.length() /
-    AU;
-
-
-  locationDisplay.textContent =
-    "Distance from Sun: " +
-    distanceAU.toFixed(2) +
-    " AU";
-
+function isMobile() {
+  return (
+    "ontouchstart" in window ||
+    navigator.maxTouchPoints > 0
+  );
 }
 
-
-// ============================================================
-// RESIZE
-// ============================================================
+/* =========================================================
+   RESIZE
+========================================================= */
 
 window.addEventListener(
   "resize",
   () => {
-
     camera.aspect =
       window.innerWidth /
       window.innerHeight;
 
-
     camera.updateProjectionMatrix();
-
 
     renderer.setSize(
       window.innerWidth,
       window.innerHeight
     );
-
   }
 );
 
-
-// ============================================================
-// GAME LOOP
-// ============================================================
+/* =========================================================
+   ANIMATION LOOP
+========================================================= */
 
 const clock =
   new THREE.Clock();
 
-
 function animate() {
-
   requestAnimationFrame(
     animate
   );
-
 
   const delta =
     Math.min(
@@ -2077,48 +1402,26 @@ function animate() {
       0.05
     );
 
-
-  updatePlanets(
-    delta
-  );
-
-
   const isMoving =
-    updatePlayer(
-      delta
-    );
+    updatePlayer(delta);
 
+  updatePlanets(delta);
 
   updateEnergy(
     delta,
     isMoving
   );
 
+  updateDistanceDisplay();
 
-  checkNearbyPlanet();
+  updatePlanetInfo();
 
-
-  updateHUD();
-
+  updateLabels();
 
   renderer.render(
     scene,
     camera
   );
-
 }
-
-
-document
-  .getElementById(
-    "loading"
-  )
-  .classList.add(
-    "hidden"
-  );
-
-
-updateSpeedButtons();
-
 
 animate();
