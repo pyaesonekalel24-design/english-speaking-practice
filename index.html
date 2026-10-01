@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+
   <meta charset="UTF-8">
 
   <meta
@@ -12,6 +13,7 @@
   <title>Solar Explorer</title>
 
   <link rel="stylesheet" href="style.css">
+
 </head>
 
 <body>
@@ -44,14 +46,19 @@
 
       <div class="instructions desktopOnly">
 
-        <b>W A S D</b> — Fly<br>
+        <b>W A S D</b> — Fly / Walk<br>
 
-        <b>SPACE</b> — Up<br>
+        <b>SPACE</b> — Up / Jump<br>
 
         <b>SHIFT</b> — Down<br>
 
         <b>MOUSE</b> — Look around
 
+      </div>
+
+
+      <div id="modeDisplay">
+        Mode: SPACE FLIGHT
       </div>
 
 
@@ -61,11 +68,11 @@
 
 
       <div id="location">
-        Distance from Sun: 0
+        Distance from Sun: 1.20 AU
       </div>
 
 
-      <!-- ENERGY BAR -->
+      <!-- ENERGY -->
 
       <div id="energyContainer">
 
@@ -86,11 +93,12 @@
 
     <!-- CROSSHAIR -->
 
-    <div id="crosshair">
+    <div id="crosshair"></div>
 
-      <span></span>
 
-    </div>
+    <!-- PLANET LABELS -->
+
+    <div id="labelLayer"></div>
 
 
     <!-- PLANET INFO -->
@@ -109,88 +117,22 @@
     </div>
 
 
-    <!-- ================================================= -->
-    <!-- PLANET LABELS -->
-    <!-- ================================================= -->
+    <!-- MARS LANDING MESSAGE -->
 
-    <div id="labelLayer"></div>
+    <div
+      id="marsMessage"
+      class="hidden"
+    >
 
-
-    <!-- ================================================= -->
-    <!-- DISPLAY CONTROLS -->
-    <!-- ================================================= -->
-
-    <div id="displayControls">
-
-      <div class="displayTitle">
-        DISPLAY
+      <div id="marsMessageTitle">
+        MARS
       </div>
 
-
-      <div class="displayRow">
-
-        <span>
-          LABELS
-        </span>
-
-        <button
-          id="labelsOn"
-          class="miniButton active"
-        >
-          ON
-        </button>
-
-        <button
-          id="labelsOff"
-          class="miniButton"
-        >
-          OFF
-        </button>
-
+      <div id="marsMessageText">
+        Approach the surface
       </div>
-
-
-      <div class="displayRow">
-
-        <span>
-          ORBITS
-        </span>
-
-        <button
-          id="orbitsOn"
-          class="miniButton active"
-        >
-          ON
-        </button>
-
-        <button
-          id="orbitsOff"
-          class="miniButton"
-        >
-          OFF
-        </button>
-
-      </div>
-
-
-      <button
-        id="hideUIButton"
-        class="hideUIButton"
-      >
-        FULL VIEW
-      </button>
 
     </div>
-
-
-    <!-- ================================================= -->
-    <!-- SMALL UI BUTTON -->
-    <!-- ONLY APPEARS IN FULL VIEW -->
-    <!-- ================================================= -->
-
-    <button id="uiToggleButton">
-      UI
-    </button>
 
 
     <!-- START SCREEN -->
@@ -223,9 +165,7 @@
     </div>
 
 
-    <!-- ========================= -->
     <!-- MOBILE CONTROLS -->
-    <!-- ========================= -->
 
     <div id="mobileControls">
 
@@ -290,13 +230,13 @@
       </div>
 
 
-      <!-- SPEED SELECTOR -->
+      <!-- SPEED -->
 
       <div id="speedControls">
 
         <button
           id="chillButton"
-          class="speedButton active"
+          class="speedButton chillSpeed active"
         >
 
           <span class="speedTitle">
@@ -312,7 +252,7 @@
 
         <button
           id="sonicButton"
-          class="speedButton"
+          class="speedButton sonicSpeed"
         >
 
           <span class="speedTitle">
@@ -328,7 +268,7 @@
 
         <button
           id="poopButton"
-          class="speedButton"
+          class="speedButton poopSpeed"
         >
 
           <span class="speedTitle">
@@ -342,6 +282,7 @@
         </button>
 
       </div>
+
 
     </div>
 
