@@ -2,23 +2,32 @@
   box-sizing: border-box;
 }
 
+
 html,
 body {
+
   margin: 0;
+
   width: 100%;
   height: 100%;
 
   overflow: hidden;
 
   background: #000;
+
   color: white;
 
-  font-family: Arial, Helvetica, sans-serif;
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
 
   touch-action: none;
 }
 
+
 #game {
+
   position: relative;
 
   width: 100%;
@@ -27,7 +36,9 @@ body {
   overflow: hidden;
 }
 
+
 canvas {
+
   display: block;
 
   width: 100%;
@@ -40,6 +51,7 @@ canvas {
 /* ========================= */
 
 #loading {
+
   position: absolute;
 
   inset: 0;
@@ -47,19 +59,25 @@ canvas {
   z-index: 30;
 
   display: flex;
+
   flex-direction: column;
 
   align-items: center;
+
   justify-content: center;
 
   background: #000;
 
   font-size: 14px;
+
   letter-spacing: 2px;
 }
 
+
 .loadingTitle {
+
   font-size: 28px;
+
   font-weight: bold;
 
   margin-bottom: 12px;
@@ -71,6 +89,7 @@ canvas {
 /* ========================= */
 
 #hud {
+
   position: absolute;
 
   top: 20px;
@@ -84,10 +103,13 @@ canvas {
 
   line-height: 1.6;
 
-  text-shadow: 0 2px 5px #000;
+  text-shadow:
+    0 2px 5px #000;
 }
 
+
 .title {
+
   font-size: 18px;
 
   font-weight: bold;
@@ -97,15 +119,90 @@ canvas {
   margin-bottom: 10px;
 }
 
+
 .instructions {
+
   opacity: 0.8;
 
   margin-bottom: 12px;
 }
 
+
 #speed,
 #location {
+
   opacity: 0.75;
+}
+
+
+/* ========================= */
+/* ENERGY */
+/* ========================= */
+
+#energyContainer {
+
+  width: 190px;
+
+  margin-top: 12px;
+
+  pointer-events: none;
+}
+
+
+#energyLabel {
+
+  font-size: 10px;
+
+  letter-spacing: 2px;
+
+  opacity: 0.8;
+
+  margin-bottom: 4px;
+}
+
+
+#energyBar {
+
+  width: 100%;
+
+  height: 10px;
+
+  border: 1px solid
+    rgba(255,255,255,0.45);
+
+  background:
+    rgba(0,0,0,0.5);
+
+  overflow: hidden;
+}
+
+
+#energyFill {
+
+  width: 100%;
+
+  height: 100%;
+
+  background:
+    linear-gradient(
+      90deg,
+      #ff7b00,
+      #ffd000,
+      #fff3a0
+    );
+
+  transition:
+    width 0.15s linear;
+}
+
+
+#energyText {
+
+  font-size: 10px;
+
+  margin-top: 3px;
+
+  opacity: 0.7;
 }
 
 
@@ -114,6 +211,7 @@ canvas {
 /* ========================= */
 
 #crosshair {
+
   position: absolute;
 
   left: 50%;
@@ -122,23 +220,29 @@ canvas {
   width: 18px;
   height: 18px;
 
-  transform: translate(-50%, -50%);
+  transform:
+    translate(-50%, -50%);
 
   pointer-events: none;
 
   z-index: 8;
 }
 
+
 #crosshair::before,
 #crosshair::after {
+
   content: "";
 
   position: absolute;
 
-  background: rgba(255, 255, 255, 0.8);
+  background:
+    rgba(255,255,255,0.8);
 }
 
+
 #crosshair::before {
+
   width: 18px;
   height: 1px;
 
@@ -146,7 +250,9 @@ canvas {
   top: 8px;
 }
 
+
 #crosshair::after {
+
   width: 1px;
   height: 18px;
 
@@ -160,6 +266,7 @@ canvas {
 /* ========================= */
 
 #startScreen {
+
   position: absolute;
 
   inset: 0;
@@ -179,41 +286,57 @@ canvas {
   background:
     radial-gradient(
       circle at center,
-      rgba(20, 25, 50, 0.45),
-      rgba(0, 0, 0, 0.92)
+      rgba(20,25,50,0.45),
+      rgba(0,0,0,0.92)
     );
 }
 
+
 #startScreen h1 {
+
   margin: 0 0 10px;
 
-  font-size: clamp(38px, 8vw, 82px);
+  font-size:
+    clamp(38px, 8vw, 82px);
 
   letter-spacing: 8px;
 }
 
-#startScreen p {
-  margin: 0 0 30px;
 
-  color: rgba(255, 255, 255, 0.7);
+#startScreen p {
+
+  margin:
+    0 0 30px;
+
+  color:
+    rgba(255,255,255,0.7);
 
   font-size: 17px;
 }
 
+
 #startScreen small {
+
   margin-top: 18px;
 
-  color: rgba(255, 255, 255, 0.5);
+  color:
+    rgba(255,255,255,0.5);
 }
 
-#startButton {
-  padding: 14px 28px;
 
-  border: 1px solid rgba(255, 255, 255, 0.7);
+#startButton {
+
+  padding:
+    14px 28px;
+
+  border:
+    1px solid
+    rgba(255,255,255,0.7);
 
   border-radius: 4px;
 
-  background: rgba(255, 255, 255, 0.08);
+  background:
+    rgba(255,255,255,0.08);
 
   color: white;
 
@@ -226,8 +349,11 @@ canvas {
   transition: 0.2s;
 }
 
+
 #startButton:hover {
-  background: rgba(255, 255, 255, 0.2);
+
+  background:
+    rgba(255,255,255,0.2);
 }
 
 
@@ -236,33 +362,44 @@ canvas {
 /* ========================= */
 
 #planetInfo {
+
   position: absolute;
 
   left: 50%;
+
   bottom: 40px;
 
-  transform: translateX(-50%);
+  transform:
+    translateX(-50%);
 
   z-index: 10;
 
-  padding: 10px 18px;
+  padding:
+    10px 18px;
 
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border:
+    1px solid
+    rgba(255,255,255,0.2);
 
-  background: rgba(0, 0, 0, 0.55);
+  background:
+    rgba(0,0,0,0.55);
 
   text-align: center;
 
   pointer-events: none;
 }
 
+
 #planetName {
+
   font-size: 18px;
 
   font-weight: bold;
 }
 
+
 #planetDistance {
+
   margin-top: 3px;
 
   font-size: 12px;
@@ -270,7 +407,9 @@ canvas {
   opacity: 0.7;
 }
 
+
 .hidden {
+
   display: none !important;
 }
 
@@ -280,6 +419,7 @@ canvas {
 /* ========================= */
 
 #mobileControls {
+
   display: none;
 
   position: absolute;
@@ -292,18 +432,22 @@ canvas {
 }
 
 
-/* Every mobile button */
-
 #mobileControls button {
-  border: 1px solid rgba(255, 255, 255, 0.28);
 
-  background: rgba(20, 25, 40, 0.45);
+  border:
+    1px solid
+    rgba(255,255,255,0.28);
+
+  background:
+    rgba(20,25,40,0.45);
 
   color: white;
 
-  backdrop-filter: blur(6px);
+  backdrop-filter:
+    blur(6px);
 
-  -webkit-backdrop-filter: blur(6px);
+  -webkit-backdrop-filter:
+    blur(6px);
 
   user-select: none;
 
@@ -311,15 +455,20 @@ canvas {
 
   touch-action: none;
 
-  -webkit-tap-highlight-color: transparent;
+  -webkit-tap-highlight-color:
+    transparent;
 
   cursor: pointer;
 }
 
-#mobileControls button:active {
-  background: rgba(255, 255, 255, 0.25);
 
-  transform: scale(0.94);
+#mobileControls button:active {
+
+  background:
+    rgba(255,255,255,0.25);
+
+  transform:
+    scale(0.94);
 }
 
 
@@ -328,6 +477,7 @@ canvas {
 /* ========================= */
 
 .verticalButton {
+
   position: absolute;
 
   left: 25px;
@@ -342,11 +492,15 @@ canvas {
   pointer-events: auto;
 }
 
+
 #upButton {
+
   top: 38%;
 }
 
+
 #downButton {
+
   top: 54%;
 }
 
@@ -356,9 +510,11 @@ canvas {
 /* ========================= */
 
 #movementPad {
+
   position: absolute;
 
   right: 25px;
+
   bottom: 35px;
 
   width: 170px;
@@ -368,9 +524,8 @@ canvas {
 }
 
 
-/* Four movement buttons */
-
 .directionButton {
+
   position: absolute;
 
   width: 58px;
@@ -381,67 +536,123 @@ canvas {
   font-size: 24px;
 }
 
+
 .upArrow {
+
   left: 56px;
+
   top: 0;
 }
 
+
 .leftArrow {
+
   left: 0;
+
   top: 56px;
 }
+
 
 .rightArrow {
+
   right: 0;
+
   top: 56px;
 }
 
+
 .downArrow {
+
   left: 56px;
+
   bottom: 0;
 }
 
 
 /* ========================= */
-/* SPEED / ZOOM */
+/* SPEED BUTTONS */
 /* ========================= */
 
-#zoomControls {
+#speedControls {
+
   position: absolute;
 
   right: 25px;
-  top: 30px;
+
+  top: 25px;
 
   display: flex;
 
-  align-items: center;
+  flex-direction: column;
 
-  gap: 8px;
+  gap: 7px;
 
   pointer-events: auto;
+}
 
-  font-size: 10px;
+
+.speedButton {
+
+  width: 125px;
+
+  min-height: 47px;
+
+  padding: 6px 9px;
+
+  border-radius: 9px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+}
+
+
+.speedButton.active {
+
+  border-color:
+    rgba(255,255,255,0.8);
+
+  background:
+    rgba(255,255,255,0.18);
+
+  box-shadow:
+    0 0 12px
+    rgba(255,255,255,0.12);
+}
+
+
+.speedTitle {
+
+  font-size: 11px;
+
+  font-weight: bold;
 
   letter-spacing: 1px;
 
-  opacity: 0.8;
+  text-align: center;
 }
 
-#zoomControls button {
-  width: 42px;
-  height: 42px;
 
-  border-radius: 50%;
+.speedDescription {
 
-  font-size: 25px;
+  margin-top: 2px;
+
+  font-size: 9px;
+
+  opacity: 0.55;
 }
 
 
 /* ========================= */
-/* MOBILE MODE */
+/* MOBILE */
 /* ========================= */
 
 .mobileOnly {
+
   display: none;
 }
 
@@ -449,25 +660,35 @@ canvas {
 @media (max-width: 800px) {
 
   .desktopOnly {
+
     display: none;
   }
 
+
   .mobileOnly {
+
     display: block;
   }
+
 
   #mobileControls {
+
     display: block;
   }
 
+
   #hud {
+
     top: 12px;
+
     left: 12px;
 
     font-size: 11px;
   }
 
+
   .title {
+
     font-size: 14px;
 
     letter-spacing: 2px;
@@ -475,17 +696,31 @@ canvas {
     margin-bottom: 4px;
   }
 
+
+  #energyContainer {
+
+    width: 145px;
+
+    margin-top: 8px;
+  }
+
+
   #planetInfo {
+
     bottom: 15px;
   }
 
+
   #startScreen h1 {
+
     font-size: 38px;
 
     letter-spacing: 4px;
   }
 
+
   #startScreen p {
+
     font-size: 14px;
   }
 
@@ -493,24 +728,47 @@ canvas {
 
 
 /* ========================= */
-/* VERY SMALL PHONES */
+/* SMALL PHONES */
 /* ========================= */
 
 @media (max-width: 400px) {
 
   .verticalButton {
+
     left: 15px;
 
     width: 54px;
     height: 54px;
   }
 
+
   #movementPad {
+
     right: 15px;
+
     bottom: 20px;
 
-    transform: scale(0.9);
-    transform-origin: bottom right;
+    transform:
+      scale(0.9);
+
+    transform-origin:
+      bottom right;
+  }
+
+
+  #speedControls {
+
+    right: 15px;
+
+    top: 15px;
+  }
+
+
+  .speedButton {
+
+    width: 112px;
+
+    min-height: 43px;
   }
 
 }
