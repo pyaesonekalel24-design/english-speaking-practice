@@ -1114,7 +1114,8 @@ const energyText =
 
 
 function updateEnergy(
-  delta
+  delta,
+  isMoving
 ) {
 
   const distance =
@@ -1139,11 +1140,13 @@ function updateEnergy(
 
   // -----------------------------------------
   // DRAIN
+  // ONLY WHILE ACTUALLY MOVING
   // -----------------------------------------
 
   if (
+    isMoving &&
     currentSpeedMode ===
-    "sonic"
+      "sonic"
   ) {
 
     energy -=
@@ -1154,8 +1157,9 @@ function updateEnergy(
 
 
   if (
+    isMoving &&
     currentSpeedMode ===
-    "poop"
+      "poop"
   ) {
 
     energy -=
@@ -1256,7 +1260,11 @@ function updatePlayer(
   delta
 ) {
 
-  if (!flying) return;
+  if (!flying) {
+
+    return false;
+
+  }
 
 
   direction.set(
@@ -1333,10 +1341,11 @@ function updatePlayer(
   }
 
 
-  if (
-    direction.lengthSq() >
-    0
-  ) {
+  const isMoving =
+    direction.lengthSq() > 0;
+
+
+  if (isMoving) {
 
     direction.normalize();
 
@@ -1393,6 +1402,9 @@ function updatePlayer(
     );
 
   }
+
+
+  return isMoving;
 
 }
 
@@ -1594,13 +1606,15 @@ function animate() {
   updatePlanets();
 
 
-  updatePlayer(
-    delta
-  );
+  const isMoving =
+    updatePlayer(
+      delta
+    );
 
 
   updateEnergy(
-    delta
+    delta,
+    isMoving
   );
 
 
