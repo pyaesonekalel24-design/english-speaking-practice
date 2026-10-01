@@ -149,18 +149,6 @@ canvas {
 }
 
 
-#energyLabel {
-
-  font-size: 10px;
-
-  letter-spacing: 2px;
-
-  opacity: 0.8;
-
-  margin-bottom: 4px;
-}
-
-
 #energyBar {
 
   width: 100%;
@@ -473,35 +461,72 @@ canvas {
 
 
 /* ========================= */
-/* UP / DOWN */
+/* UP / DOWN CONTROLS */
+/* DIFFERENT DESIGN */
 /* ========================= */
 
-.verticalButton {
+#verticalControls {
 
   position: absolute;
 
-  left: 25px;
+  left: 20px;
 
-  width: 62px;
-  height: 62px;
+  top: 50%;
 
-  border-radius: 50%;
+  transform:
+    translateY(-50%);
 
-  font-size: 24px;
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 12px;
+
+  padding: 8px;
+
+  border:
+    1px solid
+    rgba(255,255,255,0.18);
+
+  border-radius: 22px;
+
+  background:
+    rgba(5,10,20,0.55);
+
+  backdrop-filter:
+    blur(10px);
+
+  -webkit-backdrop-filter:
+    blur(10px);
 
   pointer-events: auto;
 }
 
 
-#upButton {
+.verticalButton {
 
-  top: 38%;
+  position: relative;
+
+  width: 58px;
+  height: 58px;
+
+  border-radius: 50%;
+
+  font-size: 20px;
+
+  border:
+    1px solid
+    rgba(255,210,100,0.45) !important;
+
+  background:
+    rgba(80,55,15,0.35) !important;
 }
 
 
-#downButton {
+.verticalButton:active {
 
-  top: 54%;
+  background:
+    rgba(255,190,60,0.28) !important;
 }
 
 
@@ -521,6 +546,15 @@ canvas {
   height: 170px;
 
   pointer-events: auto;
+
+  border:
+    1px solid
+    rgba(255,255,255,0.12);
+
+  border-radius: 50%;
+
+  background:
+    rgba(10,15,25,0.25);
 }
 
 
@@ -733,12 +767,20 @@ canvas {
 
 @media (max-width: 400px) {
 
+  #verticalControls {
+
+    left: 10px;
+
+    padding: 6px;
+
+    gap: 8px;
+  }
+
+
   .verticalButton {
 
-    left: 15px;
-
-    width: 54px;
-    height: 54px;
+    width: 50px;
+    height: 50px;
   }
 
 
