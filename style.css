@@ -1,931 +1,208 @@
 * {
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
 }
 
-
+html,
 body {
-
-  font-family:
-    Arial,
-    Helvetica,
-    sans-serif;
-
-  background: #f4f7fb;
-
-  color: #111827;
-
-  min-height: 100vh;
-
-}
-
-
-
-/* =================================
-   SCREEN
-================================= */
-
-.screen {
-
-  display: none;
-
-  min-height: 100vh;
-
+  margin: 0;
   width: 100%;
-
-  padding: 24px;
-
-}
-
-
-.screen.active {
-
-  display: flex;
-
-}
-
-
-
-/* =================================
-   HOME
-================================= */
-
-#homeScreen {
-
-  justify-content: center;
-
-  align-items: center;
-
-  text-align: center;
-
-}
-
-
-.logo {
-
-  font-size: 58px;
-
-  font-weight: 800;
-
-  letter-spacing: -3px;
-
-}
-
-
-.logo span {
-
-  color: #2563eb;
-
-}
-
-
-.tagline {
-
-  margin-top: 12px;
-
-  color: #6b7280;
-
-  font-size: 18px;
-
-  margin-bottom: 42px;
-
-}
-
-
-
-/* =================================
-   BUTTON
-================================= */
-
-.primaryBtn {
-
-  border: none;
-
-  background: #2563eb;
-
-  color: white;
-
-  padding: 16px 30px;
-
-  border-radius: 14px;
-
-  font-size: 17px;
-
-  font-weight: 700;
-
-  cursor: pointer;
-
-  transition: 0.2s;
-
-}
-
-
-.primaryBtn:hover {
-
-  transform: translateY(-2px);
-
-  background: #1d4ed8;
-
-}
-
-
-.primaryBtn:active {
-
-  transform: scale(0.97);
-
-}
-
-
-
-.backBtn {
-
-  border: none;
-
-  background: transparent;
-
-  color: #374151;
-
-  font-size: 16px;
-
-  cursor: pointer;
-
-  width: fit-content;
-
-}
-
-
-
-/* =================================
-   LEVEL
-================================= */
-
-#levelScreen {
-
-  justify-content: center;
-
-  align-items: center;
-
-}
-
-
-.levelPage {
-
-  width: 100%;
-
-  max-width: 700px;
-
-}
-
-
-.levelPage h1 {
-
-  font-size: 36px;
-
-  margin-top: 15px;
-
-  margin-bottom: 8px;
-
-}
-
-
-.subtitle {
-
-  color: #6b7280;
-
-  margin-bottom: 30px;
-
-}
-
-
-.levelContainer {
-
-  display: flex;
-
-  flex-direction: column;
-
-  gap: 14px;
-
-}
-
-
-.levelBtn {
-
-  width: 100%;
-
-  text-align: left;
-
-  border: 2px solid #e5e7eb;
-
-  background: white;
-
-  padding: 22px;
-
-  border-radius: 16px;
-
-  cursor: pointer;
-
-  transition: 0.2s;
-
-}
-
-
-.levelBtn:hover {
-
-  border-color: #2563eb;
-
-  transform: translateY(-2px);
-
-}
-
-
-.levelBtn strong {
-
-  display: block;
-
-  font-size: 20px;
-
-  margin-bottom: 6px;
-
-}
-
-
-.levelBtn span {
-
-  color: #6b7280;
-
-}
-
-
-
-/* =================================
-   PRACTICE
-================================= */
-
-#practiceScreen {
-
-  justify-content: flex-start;
-
-  align-items: center;
-
-}
-
-
-.practicePage {
-
-  width: 100%;
-
-  max-width: 800px;
-
-}
-
-
-.topBar {
-
-  display: flex;
-
-  justify-content: space-between;
-
-  align-items: center;
-
-}
-
-
-#levelLabel {
-
-  background: #e5edff;
-
-  color: #2563eb;
-
-  padding: 7px 13px;
-
-  border-radius: 20px;
-
-  font-size: 13px;
-
-  font-weight: 700;
-
-}
-
-
-.practiceHeader {
-
-  margin-top: 10px;
-
-  margin-bottom: 20px;
-
-}
-
-
-.practiceHeader h1 {
-
-  font-size: 34px;
-
-}
-
-
-.practiceHeader p {
-
-  color: #6b7280;
-
-  margin-top: 6px;
-
-}
-
-
-
-/* =================================
-   SCROLLING PASSAGE
-================================= */
-
-.passageViewport {
-
-  position: relative;
-
-  width: 100%;
-
-  height: 270px;
-
+  height: 100%;
   overflow: hidden;
-
-  background: white;
-
-  border-radius: 20px;
-
-  box-shadow:
-    0 5px 25px rgba(0, 0, 0, 0.06);
-
+  background: #000;
+  color: white;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
-
-/*
-  Fade at top
-*/
-
-.passageViewport::before {
-
-  content: "";
-
-  position: absolute;
-
-  z-index: 5;
-
-  top: 0;
-
-  left: 0;
-
+#game {
+  position: relative;
   width: 100%;
-
-  height: 55px;
-
-  background:
-    linear-gradient(
-      to bottom,
-      white,
-      transparent
-    );
-
-  pointer-events: none;
-
+  height: 100%;
+  overflow: hidden;
 }
 
-
-/*
-  Fade at bottom
-*/
-
-.passageViewport::after {
-
-  content: "";
-
-  position: absolute;
-
-  z-index: 5;
-
-  bottom: 0;
-
-  left: 0;
-
+canvas {
+  display: block;
   width: 100%;
-
-  height: 55px;
-
-  background:
-    linear-gradient(
-      to top,
-      white,
-      transparent
-    );
-
-  pointer-events: none;
-
+  height: 100%;
 }
 
-
-.passageTrack {
-
+#loading {
   position: absolute;
-
-  width: 100%;
-
-  padding: 30px;
-
-  transform: translateY(270px);
-
-}
-
-
-.passageTrack.scrolling {
-
-  animation-name: passageScroll;
-
-  animation-timing-function: linear;
-
-  animation-iteration-count: 1;
-
-  animation-fill-mode: forwards;
-
-}
-
-
-@keyframes passageScroll {
-
-  from {
-
-    transform:
-      translateY(270px);
-
-  }
-
-  to {
-
-    transform:
-      translateY(
-        calc(-100% - 30px)
-      );
-
-  }
-
-}
-
-
-.passageText {
-
-  font-size: 25px;
-
-  line-height: 1.9;
-
-  font-weight: 500;
-
-}
-
-
-.scrollHint {
-
-  text-align: center;
-
-  font-size: 13px;
-
-  color: #9ca3af;
-
-  margin-top: 8px;
-
-}
-
-
-
-/* =================================
-   WHISPER STATUS
-================================= */
-
-.whisperStatus {
-
-  margin-top: 18px;
-
-  text-align: center;
-
-  font-size: 13px;
-
-  color: #6b7280;
-
-}
-
-
-.whisperStatus.loading {
-
-  color: #2563eb;
-
-}
-
-
-.whisperStatus.ready {
-
-  color: #059669;
-
-}
-
-
-.whisperStatus.error {
-
-  color: #dc2626;
-
-}
-
-
-
-/* =================================
-   MICROPHONE
-================================= */
-
-.micArea {
-
-  text-align: center;
-
-  margin: 25px 0;
-
-}
-
-
-.micBtn {
-
-  width: 82px;
-
-  height: 82px;
-
-  border-radius: 50%;
-
-  border: none;
-
-  background: #111827;
-
+  inset: 0;
+  z-index: 20;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  background: #000;
   color: white;
 
-  font-size: 32px;
+  font-size: 14px;
+  letter-spacing: 2px;
+}
+
+.loadingTitle {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+
+#hud {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 10;
+
+  pointer-events: none;
+
+  font-size: 13px;
+  line-height: 1.6;
+  text-shadow: 0 2px 5px #000;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: bold;
+  letter-spacing: 3px;
+  margin-bottom: 10px;
+}
+
+.instructions {
+  opacity: 0.8;
+  margin-bottom: 12px;
+}
+
+#speed,
+#location {
+  opacity: 0.7;
+}
+
+#crosshair {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+
+  width: 18px;
+  height: 18px;
+
+  transform: translate(-50%, -50%);
+
+  pointer-events: none;
+  z-index: 8;
+}
+
+#crosshair::before,
+#crosshair::after {
+  content: "";
+
+  position: absolute;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+#crosshair::before {
+  width: 18px;
+  height: 1px;
+  left: 0;
+  top: 8px;
+}
+
+#crosshair::after {
+  width: 1px;
+  height: 18px;
+  left: 8px;
+  top: 0;
+}
+
+#startScreen {
+  position: absolute;
+  inset: 0;
+
+  z-index: 15;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+
+  background:
+    radial-gradient(circle at center, rgba(20, 25, 50, 0.45), rgba(0, 0, 0, 0.92));
+}
+
+#startScreen h1 {
+  margin: 0 0 10px;
+
+  font-size: clamp(38px, 8vw, 82px);
+  letter-spacing: 8px;
+}
+
+#startScreen p {
+  margin: 0 0 30px;
+
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 17px;
+}
+
+#startScreen small {
+  margin-top: 18px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+#startButton {
+  padding: 14px 28px;
+
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 4px;
+
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+
+  font-size: 15px;
+  letter-spacing: 2px;
 
   cursor: pointer;
 
   transition: 0.2s;
-
 }
 
-
-.micBtn:hover {
-
-  transform: scale(1.05);
-
+#startButton:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
 
+#planetInfo {
+  position: absolute;
 
-.micBtn.recording {
+  left: 50%;
+  bottom: 40px;
 
-  background: #dc2626;
+  transform: translateX(-50%);
 
-  animation: pulse 1.2s infinite;
+  z-index: 10;
 
-}
+  padding: 10px 18px;
 
-
-@keyframes pulse {
-
-  0% {
-
-    box-shadow:
-      0 0 0 0
-      rgba(220, 38, 38, 0.5);
-
-  }
-
-  70% {
-
-    box-shadow:
-      0 0 0 18px
-      rgba(220, 38, 38, 0);
-
-  }
-
-  100% {
-
-    box-shadow:
-      0 0 0 0
-      rgba(220, 38, 38, 0);
-
-  }
-
-}
-
-
-#micStatus {
-
-  margin-top: 12px;
-
-  color: #6b7280;
-
-}
-
-
-#recordingTimer {
-
-  margin-top: 5px;
-
-  font-size: 14px;
-
-  color: #9ca3af;
-
-}
-
-
-
-/* =================================
-   RESULTS
-================================= */
-
-.resultSection {
-
-  margin-top: 20px;
-
-}
-
-
-.resultSection h2 {
-
-  font-size: 20px;
-
-  margin-bottom: 10px;
-
-}
-
-
-.hint {
-
-  color: #6b7280;
-
-  font-size: 14px;
-
-  margin-bottom: 15px;
-
-}
-
-
-.transcriptBox {
-
-  background: white;
-
-  padding: 20px;
-
-  border-radius: 15px;
-
-  line-height: 1.8;
-
-  font-size: 18px;
-
-}
-
-
-
-/* =================================
-   SCORE
-================================= */
-
-.scoreCard {
-
-  margin-top: 20px;
-
-  background: white;
-
-  border-radius: 18px;
-
-  padding: 25px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.55);
 
   text-align: center;
 
+  pointer-events: none;
 }
 
-
-.scoreNumber {
-
-  font-size: 54px;
-
-  font-weight: 800;
-
+#planetName {
+  font-size: 18px;
+  font-weight: bold;
 }
 
-
-.scoreNumber small {
-
-  font-size: 22px;
-
-  color: #9ca3af;
-
+#planetDistance {
+  margin-top: 3px;
+  font-size: 12px;
+  opacity: 0.7;
 }
-
-
-#scoreMessage {
-
-  margin-top: 8px;
-
-  color: #6b7280;
-
-}
-
-
-
-/* =================================
-   WORD COMPARISON
-================================= */
-
-.wordComparison {
-
-  background: white;
-
-  border-radius: 18px;
-
-  padding: 20px;
-
-  line-height: 2.2;
-
-  font-size: 20px;
-
-}
-
-
-.word {
-
-  display: inline-block;
-
-  margin-right: 7px;
-
-  cursor: pointer;
-
-}
-
-
-.word.correct {
-
-  color: #111827;
-
-}
-
-
-.word.wrong {
-
-  color: #dc2626;
-
-  font-weight: 700;
-
-  text-decoration: underline;
-
-}
-
-
-.word.extra {
-
-  color: #2563eb;
-
-  font-weight: 600;
-
-}
-
-
-
-/* =================================
-   WORD INFO
-================================= */
-
-.wordInfo {
-
-  background: #111827;
-
-  color: white;
-
-  margin-top: 20px;
-
-  padding: 22px;
-
-  border-radius: 18px;
-
-}
-
-
-.selectedWord {
-
-  font-size: 30px;
-
-  font-weight: 800;
-
-  margin-bottom: 15px;
-
-}
-
-
-.pronounceBtn {
-
-  border: none;
-
-  background: white;
-
-  color: #111827;
-
-  padding: 12px 17px;
-
-  border-radius: 10px;
-
-  cursor: pointer;
-
-  font-weight: 700;
-
-}
-
-
-.similarWords {
-
-  margin-top: 15px;
-
-  color: #d1d5db;
-
-}
-
-
-
-/* =================================
-   HIDDEN
-================================= */
 
 .hidden {
-
   display: none !important;
-
-}
-
-
-
-/* =================================
-   AGAIN
-================================= */
-
-#againBtn {
-
-  display: block;
-
-  margin: 25px auto;
-
-}
-
-
-
-/* =================================
-   MOBILE
-================================= */
-
-@media (max-width: 600px) {
-
-  .screen {
-
-    padding: 18px;
-
-  }
-
-
-  .logo {
-
-    font-size: 48px;
-
-  }
-
-
-  .practiceHeader h1 {
-
-    font-size: 28px;
-
-  }
-
-
-  .passageViewport {
-
-    height: 250px;
-
-  }
-
-
-  .passageText {
-
-    font-size: 21px;
-
-    line-height: 1.8;
-
-  }
-
-
-  .passageTrack {
-
-    padding: 25px;
-
-  }
-
-
-  .wordComparison {
-
-    font-size: 18px;
-
-  }
-
 }
