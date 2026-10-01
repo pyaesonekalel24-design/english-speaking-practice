@@ -1,2051 +1,807 @@
 ```javascript
-import * as THREE from
-  "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
 
+const AU = 1000; // About 1 AU per 1,000 game units.
+const SIMULATION_DAYS_PER_SECOND = 30;
+const STAR_COUNT = 12000;
 
-// ============================================================
-// REAL SOLAR SYSTEM SCALE
-// ============================================================
+const canvas = document.getElementById("space");
+const loadingScreen = document.getElementById("loadingScreen");
+const startScreen = document.getElementById("startScreen");
+const errorScreen = document.getElementById("errorScreen");
+const gameUI = document.getElementById("gameUI");
+const labelContainer = document.getElementById("planetLabels");
+const lineGroup = document.getElementById("labelLineGroup");
 
-const AU =
-  1000;
-
-
-// ============================================================
-// SIMULATION SPEED
-// ============================================================
-
-const SIMULATION_DAYS_PER_SECOND =
-  30;
-
-
-// ============================================================
-// SCENE
-// ============================================================
-
-const scene =
-  new THREE.Scene();
-
-scene.background =
-  new THREE.Color(0x000000);
-
-scene.fog =
-  new THREE.FogExp2(
-    0x000000,
-    0.000015
-  );
-
-
-// ============================================================
-// CAMERA
-// ============================================================
-
-const camera =
-  new THREE.PerspectiveCamera(
-    75,
-    window.innerWidth /
-      window.innerHeight,
-    0.001,
-    1000000
-  );
-
-camera.position.set(
-  0,
-  20,
-  1200
-);
-
-
-// ============================================================
-// RENDERER
-// ============================================================
-
+let scene;
+let camera;
 let renderer;
+let clock;
+let started = false;
+let simulationDays = 0;
+let energy = 100;
+let selectedSpeed = "chill";
+let targetBody = null;
+let yaw = 0;
+let pitch = 0;
+let dragging = false;
+let lastPointerX = 0;
+let lastPointerY = 0;
+let labelUpdateTimer = 0;
 
-try {
+const speedModes = {
+  chill: { speed: 180, drain: 0 },
+  sonic: { speed: 360, drain: 2.5 },
+  poop: { speed: 720, drain: 9 }
+};
 
-  renderer =
-    new THREE.WebGLRenderer({
-      antialias: true
-    });
-
-} catch (error) {
-
-  console.error(
-    "Three.js WebGL error:",
-    error
-  );
-
-  const loading =
-    document.getElementById(
-      "loading"
-    );
-
-  if (loading) {
-
-    loading.innerHTML = `
-      <div class="loadingTitle">
-        SOLAR EXPLORER
-      </div>
-
-      <div>
-        WebGL could not start.<br>
-        Please try another browser or enable hardware acceleration.
-      </div>
-    `;
-
-  }
-
-  throw error;
-}
-
-
-renderer.setPixelRatio(
-  Math.min(
-    window.devicePixelRatio,
-    2
-  )
-);
-
-renderer.setSize(
-  window.innerWidth,
-  window.innerHeight
-);
-
-document
-  .getElementById("game")
-  .appendChild(
-    renderer.domElement
-  );
-
-
-// ============================================================
-// IMPORTANT
-// Hide loading screen immediately after Three.js starts.
-// This prevents the game getting permanently stuck on
-// "Loading universe..." if a later setup section has an error.
-// ============================================================
-
-const loadingScreen =
-  document.getElementById(
-    "loading"
-  );
-
-if (loadingScreen) {
-
-  loadingScreen.classList.add(
-    "hidden"
-  );
-
-}
-
-
-// ============================================================
-// LIGHT
-// ============================================================
-
-const ambientLight =
-  new THREE.AmbientLight(
-    0xffffff,
-    0.12
-  );
-
-scene.add(
-  ambientLight
-);
-
-
-// ============================================================
-// SUN
-// ============================================================
-
-const SUN_RADIUS =
-  4.65;
-
-
-const sunGeometry =
-  new THREE.SphereGeometry(
-    SUN_RADIUS,
-    64,
-    64
-  );
-
-
-const sunMaterial =
-  new THREE.MeshBasicMaterial({
-    color: 0xffcc55
-  });
-
-
-const sun =
-  new THREE.Mesh(
-    sunGeometry,
-    sunMaterial
-  );
-
-scene.add(
-  sun
-);
-
-
-// Sun glow
-
-const glowGeometry =
-  new THREE.SphereGeometry(
-    SUN_RADIUS * 1.35,
-    32,
-    32
-  );
-
-
-const glowMaterial =
-  new THREE.MeshBasicMaterial({
-    color: 0xffaa33,
-    transparent: true,
-    opacity: 0.12
-  });
-
-
-const sunGlow =
-  new THREE.Mesh(
-    glowGeometry,
-    glowMaterial
-  );
-
-scene.add(
-  sunGlow
-);
-
-
-// Sun light
-
-const sunLight =
-  new THREE.PointLight(
-    0xffffff,
-    2.5,
-    0,
-    1
-  );
-
-scene.add(
-  sunLight
-);
-
-
-// ============================================================
-// PLANET DATA
-// ============================================================
+const pressedDirections = new Set();
+const pointerDirections = new Map();
+const bodyRecords = [];
+const labelRecords = [];
+const tempVector = new THREE.Vector3();
+const forwardVector = new THREE.Vector3();
+const rightVector = new THREE.Vector3();
+const upVector = new THREE.Vector3();
+const moveVector = new THREE.Vector3();
 
 const planetData = [
-
   {
-    name: "Mercury",
+    name: "MERCURY",
     radius: 0.0163,
-    distance: 0.3871 * AU,
-    orbitDays: 87.97,
-    rotationDays: 58.646,
+    distanceAU: 0.3871,
+    period: 87.97,
+    rotation: 58.646,
     eccentricity: 0.2056,
-    color: 0xaaaaaa
+    color: 0x9b8e80,
+    phase: 0.3
   },
-
   {
-    name: "Venus",
+    name: "VENUS",
     radius: 0.0405,
-    distance: 0.7233 * AU,
-    orbitDays: 224.70,
-    rotationDays: -243.025,
+    distanceAU: 0.7233,
+    period: 224.70,
+    rotation: -243.025,
     eccentricity: 0.0068,
-    color: 0xd9a066
+    color: 0xd6ad77,
+    phase: 1.2
   },
-
   {
-    name: "Earth",
+    name: "EARTH",
     radius: 0.0426,
-    distance: 1.0000 * AU,
-    orbitDays: 365.256,
-    rotationDays: 0.9973,
+    distanceAU: 1.0,
+    period: 365.256,
+    rotation: 0.9973,
     eccentricity: 0.0167,
-    color: 0x3377ff
+    color: 0x4388cf,
+    phase: 2.2
   },
-
   {
-    name: "Mars",
+    name: "MARS",
     radius: 0.0227,
-    distance: 1.5237 * AU,
-    orbitDays: 686.98,
-    rotationDays: 1.026,
+    distanceAU: 1.5237,
+    period: 686.98,
+    rotation: 1.026,
     eccentricity: 0.0934,
-    color: 0xcc4422
+    color: 0xc95738,
+    phase: 3.0
   },
-
   {
-    name: "Jupiter",
+    name: "JUPITER",
     radius: 0.4673,
-    distance: 5.2028 * AU,
-    orbitDays: 4332.59,
-    rotationDays: 0.4135,
+    distanceAU: 5.2028,
+    period: 4332.59,
+    rotation: 0.4135,
     eccentricity: 0.0489,
-    color: 0xc9905c
+    color: 0xcaa579,
+    phase: 3.8
   },
-
   {
-    name: "Saturn",
+    name: "SATURN",
     radius: 0.3893,
-    distance: 9.5388 * AU,
-    orbitDays: 10759.22,
-    rotationDays: 0.4440,
+    distanceAU: 9.5388,
+    period: 10759.22,
+    rotation: 0.4440,
     eccentricity: 0.0565,
-    color: 0xd8c18a
+    color: 0xd6bd8a,
+    phase: 4.6
   },
-
   {
-    name: "Uranus",
+    name: "URANUS",
     radius: 0.1695,
-    distance: 19.1914 * AU,
-    orbitDays: 30688.5,
-    rotationDays: -0.7183,
+    distanceAU: 19.1914,
+    period: 30688.5,
+    rotation: -0.7183,
     eccentricity: 0.0463,
-    color: 0x66ccdd
+    color: 0x7dcaca,
+    phase: 5.3
   },
-
   {
-    name: "Neptune",
+    name: "NEPTUNE",
     radius: 0.1646,
-    distance: 30.0611 * AU,
-    orbitDays: 60182,
-    rotationDays: 0.6713,
+    distanceAU: 30.0611,
+    period: 60182,
+    rotation: 0.6713,
     eccentricity: 0.0095,
-    color: 0x3366dd
+    color: 0x4779dc,
+    phase: 5.9
   }
-
 ];
 
+function showError(message) {
+  loadingScreen.classList.add("hidden");
+  startScreen.classList.add("hidden");
+  errorScreen.classList.remove("hidden");
+  document.getElementById("errorMessage").textContent = message;
+}
 
-const planets = [];
+function makeOrbitPoints(distanceAU, eccentricity, phase) {
+  const semiMajor = distanceAU * AU;
+  const semiMinor = semiMajor * Math.sqrt(1 - eccentricity * eccentricity);
+  const points = [];
+  const count = 240;
 
+  for (let i = 0; i < count; i++) {
+    const angle = (i / count) * Math.PI * 2 + phase;
+    const x = semiMajor * (Math.cos(angle) - eccentricity);
+    const y = semiMinor * Math.sin(angle);
+    points.push(new THREE.Vector3(x, y, 0));
+  }
 
-// ============================================================
-// CREATE PLANET
-// ============================================================
+  return points;
+}
 
-function createPlanet(
-  data
-) {
-
-  const geometry =
-    new THREE.SphereGeometry(
-      data.radius,
-      32,
-      32
-    );
-
-
-  const material =
-    new THREE.MeshStandardMaterial({
-      color: data.color,
-      roughness: 0.8,
-      metalness: 0
-    });
-
-
-  const mesh =
-    new THREE.Mesh(
-      geometry,
-      material
-    );
-
-
-  scene.add(
-    mesh
+function createOrbitLine(distanceAU, eccentricity, phase, opacity = 0.15) {
+  const geometry = new THREE.BufferGeometry().setFromPoints(
+    makeOrbitPoints(distanceAU, eccentricity, phase)
   );
+  const material = new THREE.LineBasicMaterial({
+    color: 0x8096ad,
+    transparent: true,
+    opacity
+  });
+  const line = new THREE.LineLoop(geometry, material);
+  scene.add(line);
+  return line;
+}
 
+function solveKepler(meanAnomaly, eccentricity) {
+  let eccentricAnomaly = meanAnomaly;
 
-  const planet = {
+  for (let i = 0; i < 5; i++) {
+    eccentricAnomaly -=
+      (eccentricAnomaly - eccentricity * Math.sin(eccentricAnomaly) - meanAnomaly) /
+      (1 - eccentricity * Math.cos(eccentricAnomaly));
+  }
 
+  return eccentricAnomaly;
+}
+
+function orbitalPosition(body, days) {
+  const semiMajor = body.distanceAU * AU;
+  const meanMotion = (Math.PI * 2) / body.period;
+  const meanAnomaly = body.phase + meanMotion * days;
+  const eccentricAnomaly = solveKepler(meanAnomaly, body.eccentricity);
+
+  const x = semiMajor * (Math.cos(eccentricAnomaly) - body.eccentricity);
+  const y =
+    semiMajor *
+    Math.sqrt(1 - body.eccentricity * body.eccentricity) *
+    Math.sin(eccentricAnomaly);
+
+  return new THREE.Vector3(x, y, 0);
+}
+
+function addStarField() {
+  const positions = new Float32Array(STAR_COUNT * 3);
+
+  for (let i = 0; i < STAR_COUNT; i++) {
+    const direction = new THREE.Vector3(
+      Math.random() * 2 - 1,
+      Math.random() * 2 - 1,
+      Math.random() * 2 - 1
+    ).normalize();
+
+    const distance = 3000 + Math.random() * 5000;
+    positions[i * 3] = direction.x * distance;
+    positions[i * 3 + 1] = direction.y * distance;
+    positions[i * 3 + 2] = direction.z * distance;
+  }
+
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+
+  const material = new THREE.PointsMaterial({
+    color: 0xdce8ff,
+    size: 2.1,
+    sizeAttenuation: false,
+    transparent: true,
+    opacity: 0.9
+  });
+
+  scene.add(new THREE.Points(geometry, material));
+}
+
+function addLabel(body) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "planet-label";
+  button.textContent = body.name;
+  button.setAttribute("aria-label", `Target ${body.name}`);
+  button.addEventListener("click", (event) => {
+    event.stopPropagation();
+    targetBody = body;
+    updateTargetReadout();
+    updateLabels(true);
+  });
+
+  labelContainer.appendChild(button);
+
+  const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+  line.setAttribute("class", "label-line");
+  lineGroup.appendChild(line);
+
+  labelRecords.push({ body, button, line });
+}
+
+function addPlanet(data, sharedGeometry) {
+  const material = new THREE.MeshStandardMaterial({
+    color: data.color,
+    roughness: 0.92,
+    metalness: 0
+  });
+
+  const mesh = new THREE.Mesh(sharedGeometry, material);
+  mesh.scale.setScalar(data.radius);
+  scene.add(mesh);
+
+  const body = {
     ...data,
-
     mesh,
-
-    orbitAngle:
-      Math.random() *
-      Math.PI *
-      2
-
+    position: new THREE.Vector3(),
+    isMoon: false
   };
 
+  bodyRecords.push(body);
+  createOrbitLine(data.distanceAU, data.eccentricity, data.phase);
+  addLabel(body);
 
-  planets.push(
-    planet
-  );
-
-
-  return planet;
-
-}
-
-
-for (
-  const data of planetData
-) {
-
-  createPlanet(
-    data
-  );
-
-}
-
-
-// ============================================================
-// SATURN RINGS
-// ============================================================
-
-const saturn =
-  planets.find(
-    planet =>
-      planet.name ===
-      "Saturn"
-  );
-
-
-const ringGeometry =
-  new THREE.RingGeometry(
-    0.42,
-    0.65,
-    64
-  );
-
-
-const ringMaterial =
-  new THREE.MeshBasicMaterial({
-    color: 0xc8b98a,
-    side: THREE.DoubleSide,
-    transparent: true,
-    opacity: 0.65
-  });
-
-
-const rings =
-  new THREE.Mesh(
-    ringGeometry,
-    ringMaterial
-  );
-
-
-rings.rotation.x =
-  Math.PI / 2;
-
-
-saturn.mesh.add(
-  rings
-);
-
-
-// ============================================================
-// ORBITS
-// ============================================================
-
-function createOrbit(
-  planet
-) {
-
-  const points = [];
-
-  const segments =
-    256;
-
-
-  const a =
-    planet.distance;
-
-
-  const b =
-    a *
-    Math.sqrt(
-      1 -
-      planet.eccentricity *
-      planet.eccentricity
+  if (data.name === "SATURN") {
+    const ring = new THREE.Mesh(
+      new THREE.RingGeometry(data.radius * 1.35, data.radius * 2.25, 48),
+      new THREE.MeshBasicMaterial({
+        color: 0xb8a47c,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.72
+      })
     );
-
-
-  const focusOffset =
-    a *
-    planet.eccentricity;
-
-
-  for (
-    let i = 0;
-    i <= segments;
-    i++
-  ) {
-
-    const angle =
-      (i / segments) *
-      Math.PI *
-      2;
-
-
-    const x =
-      a *
-      Math.cos(angle) -
-      focusOffset;
-
-
-    const z =
-      b *
-      Math.sin(angle);
-
-
-    points.push(
-      new THREE.Vector3(
-        x,
-        0,
-        z
-      )
-    );
-
+    ring.rotation.x = Math.PI / 2.35;
+    mesh.add(ring);
   }
 
-
-  const geometry =
-    new THREE.BufferGeometry()
-      .setFromPoints(
-        points
-      );
-
-
-  const material =
-    new THREE.LineBasicMaterial({
-      color: 0x333333,
-      transparent: true,
-      opacity: 0.5
-    });
-
-
-  const orbit =
-    new THREE.LineLoop(
-      geometry,
-      material
-    );
-
-
-  scene.add(
-    orbit
-  );
-
+  return body;
 }
 
+function createScene() {
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x03060b);
 
-for (
-  const planet of planets
-) {
-
-  createOrbit(
-    planet
+  camera = new THREE.PerspectiveCamera(
+    70,
+    window.innerWidth / window.innerHeight,
+    0.05,
+    12000
   );
+  camera.position.set(0, 20, 1200);
+  camera.rotation.order = "YXZ";
 
-}
-
-
-// ============================================================
-// EARTH + MOON
-// ============================================================
-
-const earth =
-  planets.find(
-    planet =>
-      planet.name ===
-      "Earth"
-  );
-
-
-const MOON_RADIUS =
-  0.0116;
-
-
-const MOON_DISTANCE =
-  2.569;
-
-
-const MOON_ORBIT_DAYS =
-  27.321661;
-
-
-const moonGeometry =
-  new THREE.SphereGeometry(
-    MOON_RADIUS,
-    24,
-    24
-  );
-
-
-const moonMaterial =
-  new THREE.MeshStandardMaterial({
-    color: 0xaaaaaa,
-    roughness: 1
+  renderer = new THREE.WebGLRenderer({
+    canvas,
+    antialias: false,
+    powerPreference: "low-power"
   });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
 
+  scene.add(new THREE.AmbientLight(0xffffff, 0.8));
 
-const moon =
-  new THREE.Mesh(
+  const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xffd27b });
+  const sun = new THREE.Mesh(new THREE.SphereGeometry(4.65, 24, 16), sunMaterial);
+  sun.position.set(0, 0, 0);
+  scene.add(sun);
+
+  const sunLight = new THREE.PointLight(0xffd28a, 1.7, 600, 1.5);
+  sunLight.position.set(0, 0, 0);
+  scene.add(sunLight);
+
+  const sunBody = {
+    name: "SUN",
+    mesh: sun,
+    position: new THREE.Vector3(),
+    radius: 4.65,
+    isSun: true
+  };
+  bodyRecords.push(sunBody);
+  addLabel(sunBody);
+
+  const planetGeometry = new THREE.SphereGeometry(1, 14, 10);
+  const planets = {};
+
+  for (const data of planetData) {
+    planets[data.name] = addPlanet(data, planetGeometry);
+  }
+
+  const earth = planets.EARTH;
+  const moonGeometry = new THREE.SphereGeometry(1, 12, 8);
+  const moon = new THREE.Mesh(
     moonGeometry,
-    moonMaterial
+    new THREE.MeshStandardMaterial({ color: 0xa9a9a4, roughness: 1 })
   );
+  moon.scale.setScalar(0.0116);
+  scene.add(moon);
 
-scene.add(
-  moon
-);
+  const moonBody = {
+    name: "MOON",
+    mesh: moon,
+    position: new THREE.Vector3(),
+    radius: 0.0116,
+    isMoon: true,
+    parent: earth,
+    moonDistance: 2.569,
+    period: 27.321661,
+    phase: 0.4
+  };
+  bodyRecords.push(moonBody);
+  addLabel(moonBody);
 
-
-let moonAngle = 0;
-
-
-// Moon orbit line
-
-const moonOrbitPoints = [];
-
-const moonOrbitSegments =
-  96;
-
-
-for (
-  let i = 0;
-  i <= moonOrbitSegments;
-  i++
-) {
-
-  const angle =
-    (i / moonOrbitSegments) *
-    Math.PI *
-    2;
-
-
-  moonOrbitPoints.push(
-    new THREE.Vector3(
-      Math.cos(angle) *
-        MOON_DISTANCE,
-
-      0,
-
-      Math.sin(angle) *
-        MOON_DISTANCE
-    )
+  const moonOrbitGeometry = new THREE.BufferGeometry().setFromPoints(
+    Array.from({ length: 80 }, (_, i) => {
+      const angle = (i / 80) * Math.PI * 2;
+      return new THREE.Vector3(
+        Math.cos(angle) * moonBody.moonDistance,
+        Math.sin(angle) * moonBody.moonDistance,
+        0
+      );
+    })
   );
-
-}
-
-
-const moonOrbitGeometry =
-  new THREE.BufferGeometry()
-    .setFromPoints(
-      moonOrbitPoints
-    );
-
-
-const moonOrbitMaterial =
-  new THREE.LineBasicMaterial({
-    color: 0x444444,
-    transparent: true,
-    opacity: 0.35
-  });
-
-
-const moonOrbit =
-  new THREE.LineLoop(
+  const moonOrbit = new THREE.LineLoop(
     moonOrbitGeometry,
-    moonOrbitMaterial
+    new THREE.LineBasicMaterial({
+      color: 0xa5b2c0,
+      transparent: true,
+      opacity: 0.35
+    })
   );
+  scene.add(moonOrbit);
+  moonBody.orbitLine = moonOrbit;
 
-scene.add(
-  moonOrbit
-);
+  addStarField();
+  clock = new THREE.Clock();
 
-
-// ============================================================
-// STARS
-// ============================================================
-
-const starCount =
-  12000;
-
-
-const starPositions =
-  new Float32Array(
-    starCount * 3
-  );
-
-
-for (
-  let i = 0;
-  i < starCount;
-  i++
-) {
-
-  const i3 =
-    i * 3;
-
-
-  const radius =
-    3000 +
-    Math.random() *
-      5000;
-
-
-  const theta =
-    Math.random() *
-    Math.PI *
-    2;
-
-
-  const phi =
-    Math.acos(
-      2 *
-        Math.random() -
-        1
-    );
-
-
-  starPositions[i3] =
-    radius *
-    Math.sin(phi) *
-    Math.cos(theta);
-
-
-  starPositions[i3 + 1] =
-    radius *
-    Math.cos(phi);
-
-
-  starPositions[i3 + 2] =
-    radius *
-    Math.sin(phi) *
-    Math.sin(theta);
-
+  updateOrbitalBodies(0);
 }
 
+function updateOrbitalBodies(deltaDays) {
+  simulationDays += deltaDays;
 
-const starGeometry =
-  new THREE.BufferGeometry();
+  for (const body of bodyRecords) {
+    if (body.isSun) continue;
 
+    if (body.isMoon) {
+      const angle = body.phase + (Math.PI * 2 * simulationDays) / body.period;
+      body.position.copy(body.parent.position);
+      body.position.x += Math.cos(angle) * body.moonDistance;
+      body.position.y += Math.sin(angle) * body.moonDistance;
+      body.mesh.position.copy(body.position);
 
-starGeometry.setAttribute(
-  "position",
+      // Synchronous rotation: the same side of the Moon faces Earth.
+      body.mesh.rotation.z = angle + Math.PI;
+      body.orbitLine.position.copy(body.parent.position);
+      continue;
+    }
 
-  new THREE.BufferAttribute(
-    starPositions,
-    3
-  )
-);
+    body.position.copy(orbitalPosition(body, simulationDays));
+    body.mesh.position.copy(body.position);
 
-
-const starMaterial =
-  new THREE.PointsMaterial({
-    color: 0xffffff,
-    size: 2,
-    sizeAttenuation: true
-  });
-
-
-const stars =
-  new THREE.Points(
-    starGeometry,
-    starMaterial
-  );
-
-scene.add(
-  stars
-);
-
-
-// ============================================================
-// PLAYER
-// ============================================================
-
-const velocity =
-  new THREE.Vector3();
-
-
-const direction =
-  new THREE.Vector3();
-
-
-let flying =
-  false;
-
-
-// ============================================================
-// SPEED SYSTEM
-// ============================================================
-
-const CHILL_SPEED =
-  180;
-
-
-const SONIC_SPEED =
-  CHILL_SPEED * 2;
-
-
-const POOP_SPEED =
-  CHILL_SPEED * 4;
-
-
-let currentSpeedMode =
-  "chill";
-
-
-let energy =
-  100;
-
-
-const SONIC_DRAIN =
-  7;
-
-
-const POOP_DRAIN =
-  22;
-
-
-const SUN_REFILL_DISTANCE =
-  180;
-
-
-// ============================================================
-// KEYBOARD
-// ============================================================
-
-const keys = {};
-
-
-document.addEventListener(
-  "keydown",
-  event => {
-
-    keys[event.code] =
-      true;
-
+    if (body.rotation !== 0) {
+      body.mesh.rotation.y +=
+        ((Math.PI * 2 * SIMULATION_DAYS_PER_SECOND) / body.rotation) *
+        (deltaDays / SIMULATION_DAYS_PER_SECOND);
+    }
   }
-);
-
-
-document.addEventListener(
-  "keyup",
-  event => {
-
-    keys[event.code] =
-      false;
-
-  }
-);
-
-
-// ============================================================
-// MOUSE LOOK
-// ============================================================
-
-let yaw =
-  0;
-
-
-let pitch =
-  0;
-
-
-document.addEventListener(
-  "mousemove",
-  event => {
-
-    if (!flying) return;
-
-
-    const sensitivity =
-      0.002;
-
-
-    yaw -=
-      event.movementX *
-      sensitivity;
-
-
-    pitch -=
-      event.movementY *
-      sensitivity;
-
-
-    const limit =
-      Math.PI / 2 -
-      0.05;
-
-
-    pitch =
-      Math.max(
-        -limit,
-
-        Math.min(
-          limit,
-          pitch
-        )
-      );
-
-
-    camera.rotation.order =
-      "YXZ";
-
-
-    camera.rotation.y =
-      yaw;
-
-
-    camera.rotation.x =
-      pitch;
-
-  }
-);
-
-
-// ============================================================
-// START
-// ============================================================
-
-const startButton =
-  document.getElementById(
-    "startButton"
-  );
-
-
-startButton.addEventListener(
-  "click",
-  () => {
-
-    document
-      .getElementById(
-        "startScreen"
-      )
-      .classList.add(
-        "hidden"
-      );
-
-
-    flying =
-      true;
-
-
-    renderer.domElement
-      .requestPointerLock?.();
-
-  }
-);
-
-
-// Desktop click
-
-renderer.domElement.addEventListener(
-  "click",
-  () => {
-
-    if (!flying) return;
-
-    renderer.domElement
-      .requestPointerLock?.();
-
-  }
-);
-
-
-// ============================================================
-// SPEED BUTTONS
-// ============================================================
-
-const chillButton =
-  document.getElementById(
-    "chillButton"
-  );
-
-
-const sonicButton =
-  document.getElementById(
-    "sonicButton"
-  );
-
-
-const poopButton =
-  document.getElementById(
-    "poopButton"
-  );
-
+}
 
 function updateSpeedButtons() {
-
-  chillButton.classList.remove(
-    "active"
-  );
-
-
-  sonicButton.classList.remove(
-    "active"
-  );
-
-
-  poopButton.classList.remove(
-    "active"
-  );
-
-
-  if (
-    currentSpeedMode ===
-    "chill"
-  ) {
-
-    chillButton.classList.add(
-      "active"
-    );
-
-  }
-
-
-  if (
-    currentSpeedMode ===
-    "sonic"
-  ) {
-
-    sonicButton.classList.add(
-      "active"
-    );
-
-  }
-
-
-  if (
-    currentSpeedMode ===
-    "poop"
-  ) {
-
-    poopButton.classList.add(
-      "active"
-    );
-
-  }
-
+  document.querySelectorAll(".speed-button").forEach((button) => {
+    button.classList.toggle("selected", button.dataset.speed === selectedSpeed);
+  });
 }
 
+function updateTargetReadout() {
+  const panel = document.getElementById("targetReadout");
 
-function setSpeedMode(
-  mode
-) {
-
-  if (
-    energy <= 0 &&
-    mode !== "chill"
-  ) {
-
-    currentSpeedMode =
-      "chill";
-
-
-    updateSpeedButtons();
-
-
+  if (!targetBody) {
+    panel.classList.add("hidden");
     return;
-
   }
 
-
-  currentSpeedMode =
-    mode;
-
-
-  updateSpeedButtons();
-
+  panel.classList.remove("hidden");
+  document.getElementById("targetName").textContent = targetBody.name;
 }
 
-
-chillButton.addEventListener(
-  "click",
-  () => {
-
-    setSpeedMode(
-      "chill"
-    );
-
-  }
-);
-
-
-sonicButton.addEventListener(
-  "click",
-  () => {
-
-    setSpeedMode(
-      "sonic"
-    );
-
-  }
-);
-
-
-poopButton.addEventListener(
-  "click",
-  () => {
-
-    setSpeedMode(
-      "poop"
-    );
-
-  }
-);
-
-
-// ============================================================
-// MOBILE BUTTON HELPER
-// ============================================================
-
-function bindMobileButton(
-  id,
-  key
-) {
-
-  const button =
-    document.getElementById(
-      id
-    );
-
-
-  if (!button) return;
-
-
-  const start =
-    event => {
-
-      event.preventDefault();
-
-      keys[key] =
-        true;
-
-    };
-
-
-  const stop =
-    event => {
-
-      event.preventDefault();
-
-      keys[key] =
-        false;
-
-    };
-
-
-  button.addEventListener(
-    "touchstart",
-    start,
-    {
-      passive: false
-    }
-  );
-
-
-  button.addEventListener(
-    "touchend",
-    stop,
-    {
-      passive: false
-    }
-  );
-
-
-  button.addEventListener(
-    "touchcancel",
-    stop,
-    {
-      passive: false
-    }
-  );
-
-
-  button.addEventListener(
-    "mousedown",
-    start
-  );
-
-
-  button.addEventListener(
-    "mouseup",
-    stop
-  );
-
-
-  button.addEventListener(
-    "mouseleave",
-    stop
-  );
-
+function formatDistance(units) {
+  const au = units / AU;
+  if (au >= 0.01) return `${au.toFixed(2)} AU`;
+  return `${Math.round(units * 150000).toLocaleString()} km`;
 }
-
-
-// Movement
-
-bindMobileButton(
-  "forwardButton",
-  "KeyW"
-);
-
-
-bindMobileButton(
-  "backButton",
-  "KeyS"
-);
-
-
-bindMobileButton(
-  "leftButton",
-  "KeyA"
-);
-
-
-bindMobileButton(
-  "rightButton",
-  "KeyD"
-);
-
-
-// Vertical
-
-bindMobileButton(
-  "upButton",
-  "Space"
-);
-
-
-bindMobileButton(
-  "downButton",
-  "ShiftLeft"
-);
-
-
-// ============================================================
-// MOBILE LOOK
-// ============================================================
-
-let lookTouch =
-  null;
-
-
-renderer.domElement.addEventListener(
-  "touchstart",
-  event => {
-
-    if (!flying) return;
-
-
-    if (
-      event.target.closest(
-        "#mobileControls"
-      )
-    ) {
-
-      return;
-
-    }
-
-
-    const touch =
-      event.touches[0];
-
-
-    lookTouch = {
-
-      id:
-        touch.identifier,
-
-      x:
-        touch.clientX,
-
-      y:
-        touch.clientY
-
-    };
-
-  },
-  {
-    passive: false
-  }
-);
-
-
-renderer.domElement.addEventListener(
-  "touchmove",
-  event => {
-
-    if (
-      !flying ||
-      !lookTouch
-    ) {
-
-      return;
-
-    }
-
-
-    const touch =
-      [...event.touches]
-        .find(
-          t =>
-            t.identifier ===
-            lookTouch.id
-        );
-
-
-    if (!touch) return;
-
-
-    const dx =
-      touch.clientX -
-      lookTouch.x;
-
-
-    const dy =
-      touch.clientY -
-      lookTouch.y;
-
-
-    const sensitivity =
-      0.004;
-
-
-    yaw -=
-      dx *
-      sensitivity;
-
-
-    pitch -=
-      dy *
-      sensitivity;
-
-
-    const limit =
-      Math.PI / 2 -
-      0.05;
-
-
-    pitch =
-      Math.max(
-        -limit,
-
-        Math.min(
-          limit,
-          pitch
-        )
-      );
-
-
-    camera.rotation.order =
-      "YXZ";
-
-
-    camera.rotation.y =
-      yaw;
-
-
-    camera.rotation.x =
-      pitch;
-
-
-    lookTouch.x =
-      touch.clientX;
-
-
-    lookTouch.y =
-      touch.clientY;
-
-
-    event.preventDefault();
-
-  },
-  {
-    passive: false
-  }
-);
-
-
-renderer.domElement.addEventListener(
-  "touchend",
-  () => {
-
-    lookTouch =
-      null;
-
-  }
-);
-
-
-// ============================================================
-// ENERGY
-// ============================================================
-
-const energyFill =
-  document.getElementById(
-    "energyFill"
-  );
-
-
-const energyText =
-  document.getElementById(
-    "energyText"
-  );
-
-
-function updateEnergy(
-  delta,
-  isMoving
-) {
-
-  const distance =
-    camera.position.length();
-
-
-  // Sun charging
-
-  if (
-    distance <
-    SUN_REFILL_DISTANCE
-  ) {
-
-    energy +=
-      28 *
-      delta;
-
-  }
-
-
-  // Only drain while actually moving
-
-  if (
-    isMoving &&
-    currentSpeedMode ===
-      "sonic"
-  ) {
-
-    energy -=
-      SONIC_DRAIN *
-      delta;
-
-  }
-
-
-  if (
-    isMoving &&
-    currentSpeedMode ===
-      "poop"
-  ) {
-
-    energy -=
-      POOP_DRAIN *
-      delta;
-
-  }
-
-
-  energy =
-    Math.max(
-      0,
-
-      Math.min(
-        100,
-        energy
-      )
-    );
-
-
-  // Empty = automatically Chill
-
-  if (
-    energy <= 0 &&
-    currentSpeedMode !==
-      "chill"
-  ) {
-
-    energy =
-      0;
-
-
-    currentSpeedMode =
-      "chill";
-
-
-    updateSpeedButtons();
-
-  }
-
-
-  energyFill.style.width =
-    energy + "%";
-
-
-  energyText.textContent =
-    Math.round(
-      energy
-    ) + "%";
-
-}
-
-
-// ============================================================
-// PLANET ORBITS + ROTATION
-// ============================================================
-
-function updatePlanets(
-  delta
-) {
-
-  const daysPassed =
-    delta *
-    SIMULATION_DAYS_PER_SECOND;
-
-
-  for (
-    const planet of planets
-  ) {
-
-    // ORBIT
-
-    const degreesPerDay =
-      360 /
-      planet.orbitDays;
-
-
-    const orbitRadians =
-      THREE.MathUtils.degToRad(
-        degreesPerDay
-      ) *
-      daysPassed;
-
-
-    planet.orbitAngle +=
-      orbitRadians;
-
-
-    const a =
-      planet.distance;
-
-
-    const e =
-      planet.eccentricity;
-
-
-    const b =
-      a *
-      Math.sqrt(
-        1 -
-        e *
-        e
-      );
-
-
-    const focusOffset =
-      a *
-      e;
-
-
-    planet.mesh.position.x =
-      a *
-      Math.cos(
-        planet.orbitAngle
-      ) -
-      focusOffset;
-
-
-    planet.mesh.position.z =
-      b *
-      Math.sin(
-        planet.orbitAngle
-      );
-
-
-    // ROTATION
-
-    const rotationDays =
-      planet.rotationDays;
-
-
-    const rotationRadians =
-      (
-        Math.PI *
-        2 *
-        daysPassed
-      ) /
-      Math.abs(
-        rotationDays
-      );
-
-
-    if (
-      rotationDays > 0
-    ) {
-
-      planet.mesh.rotation.y +=
-        rotationRadians;
-
-    } else {
-
-      planet.mesh.rotation.y -=
-        rotationRadians;
-
-    }
-
-  }
-
-
-  // MOON ORBIT
-
-  const moonDegreesPerDay =
-    360 /
-    MOON_ORBIT_DAYS;
-
-
-  const moonOrbitRadians =
-    THREE.MathUtils.degToRad(
-      moonDegreesPerDay
-    ) *
-    daysPassed;
-
-
-  moonAngle +=
-    moonOrbitRadians;
-
-
-  moon.position.x =
-    earth.mesh.position.x +
-    Math.cos(
-      moonAngle
-    ) *
-      MOON_DISTANCE;
-
-
-  moon.position.y =
-    earth.mesh.position.y;
-
-
-  moon.position.z =
-    earth.mesh.position.z +
-    Math.sin(
-      moonAngle
-    ) *
-      MOON_DISTANCE;
-
-
-  moon.rotation.y =
-    moonAngle;
-
-}
-
-
-// ============================================================
-// PLAYER MOVEMENT
-// ============================================================
-
-function updatePlayer(
-  delta
-) {
-
-  if (!flying) {
-
-    return false;
-
-  }
-
-
-  direction.set(
-    0,
-    0,
-    0
-  );
-
-
-  if (
-    keys["KeyW"]
-  ) {
-
-    direction.z -= 1;
-
-  }
-
-
-  if (
-    keys["KeyS"]
-  ) {
-
-    direction.z += 1;
-
-  }
-
-
-  if (
-    keys["KeyA"]
-  ) {
-
-    direction.x -= 1;
-
-  }
-
-
-  if (
-    keys["KeyD"]
-  ) {
-
-    direction.x += 1;
-
-  }
-
-
-  if (
-    keys["Space"]
-  ) {
-
-    direction.y += 1;
-
-  }
-
-
-  if (
-    keys["ShiftLeft"] ||
-    keys["ShiftRight"]
-  ) {
-
-    direction.y -= 1;
-
-  }
-
-
-  const isMoving =
-    direction.lengthSq() >
-    0;
-
-
-  if (isMoving) {
-
-    direction.normalize();
-
-
-    const movement =
-      direction.clone();
-
-
-    movement.applyQuaternion(
-      camera.quaternion
-    );
-
-
-    velocity.copy(
-      movement
-    );
-
-
-    let speed =
-      CHILL_SPEED;
-
-
-    if (
-      currentSpeedMode ===
-      "sonic"
-    ) {
-
-      speed =
-        SONIC_SPEED;
-
-    }
-
-
-    if (
-      currentSpeedMode ===
-      "poop"
-    ) {
-
-      speed =
-        POOP_SPEED;
-
-    }
-
-
-    camera.position.addScaledVector(
-      velocity,
-      speed *
-      delta
-    );
-
-  } else {
-
-    velocity.multiplyScalar(
-      0.92
-    );
-
-  }
-
-
-  return isMoving;
-
-}
-
-
-// ============================================================
-// PLANET DETECTION
-// ============================================================
-
-const planetInfo =
-  document.getElementById(
-    "planetInfo"
-  );
-
-
-const planetName =
-  document.getElementById(
-    "planetName"
-  );
-
-
-const planetDistance =
-  document.getElementById(
-    "planetDistance"
-  );
-
-
-function checkNearbyPlanet() {
-
-  let closest =
-    null;
-
-
-  let closestDistance =
-    Infinity;
-
-
-  for (
-    const planet of planets
-  ) {
-
-    const distance =
-      camera.position.distanceTo(
-        planet.mesh.position
-      );
-
-
-    if (
-      distance <
-      closestDistance
-    ) {
-
-      closestDistance =
-        distance;
-
-
-      closest =
-        planet;
-
-    }
-
-  }
-
-
-  // Moon
-
-  const moonDistance =
-    camera.position.distanceTo(
-      moon.position
-    );
-
-
-  if (
-    moonDistance <
-    closestDistance
-  ) {
-
-    closestDistance =
-      moonDistance;
-
-
-    closest =
-      {
-        name: "Moon"
-      };
-
-  }
-
-
-  if (
-    closest &&
-    closestDistance < 15
-  ) {
-
-    planetInfo.classList.remove(
-      "hidden"
-    );
-
-
-    planetName.textContent =
-      closest.name;
-
-
-    planetDistance.textContent =
-      Math.round(
-        closestDistance *
-        100
-      ) /
-      100 +
-      " units away";
-
-  } else {
-
-    planetInfo.classList.add(
-      "hidden"
-    );
-
-  }
-
-}
-
-
-// ============================================================
-// HUD
-// ============================================================
-
-const speedDisplay =
-  document.getElementById(
-    "speed"
-  );
-
-
-const locationDisplay =
-  document.getElementById(
-    "location"
-  );
-
 
 function updateHUD() {
+  const sunDistance = camera.position.length();
+  document.querySelector("#distanceReadout strong").textContent =
+    `${(sunDistance / AU).toFixed(2)} AU`;
 
-  let speedName =
-    "CHILL";
+  const fill = document.getElementById("energyFill");
+  fill.style.width = `${energy}%`;
+  fill.style.background = energy < 25 ? "#ff9a73" : "#85d9a1";
+  document.getElementById("energyPercent").textContent = `${Math.round(energy)}%`;
 
+  const warning = document.getElementById("energyWarning");
+  warning.textContent =
+    energy < 20 && selectedSpeed !== "chill" ? "LOW ENERGY" : "";
 
-  if (
-    currentSpeedMode ===
-    "sonic"
-  ) {
-
-    speedName =
-      "SONIC";
-
+  const targetDistance = document.getElementById("targetDistance");
+  if (targetBody) {
+    targetDistance.textContent = formatDistance(
+      camera.position.distanceTo(targetBody.position)
+    );
   }
 
+  let nearest = null;
+  let nearestDistance = Infinity;
 
-  if (
-    currentSpeedMode ===
-    "poop"
-  ) {
-
-    speedName =
-      "U NEED TO POOP";
-
+  for (const body of bodyRecords) {
+    if (body.isSun) continue;
+    const distance = camera.position.distanceTo(body.position) - body.radius;
+    if (distance < nearestDistance) {
+      nearestDistance = distance;
+      nearest = body;
+    }
   }
 
-
-  speedDisplay.textContent =
-    "Speed: " +
-    speedName;
-
-
-  const distanceAU =
-    camera.position.length() /
-    AU;
-
-
-  locationDisplay.textContent =
-    "Distance from Sun: " +
-    distanceAU.toFixed(2) +
-    " AU";
-
+  const info = document.getElementById("planetInfo");
+  if (nearest && nearestDistance <= 15) {
+    info.classList.remove("hidden");
+    document.getElementById("nearbyPlanetName").textContent = nearest.name;
+    document.getElementById("nearbyPlanetDistance").textContent =
+      `${Math.max(0, Math.round(nearestDistance * 150000)).toLocaleString()} km`;
+  } else {
+    info.classList.add("hidden");
+  }
 }
 
+function updateLabels(force = false) {
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  const margin = 9;
+  const cameraInverse = camera.matrixWorldInverse;
 
-// ============================================================
-// RESIZE
-// ============================================================
+  camera.updateMatrixWorld();
+  camera.matrixWorldInverse.copy(camera.matrixWorld).invert();
 
-window.addEventListener(
-  "resize",
-  () => {
+  const candidates = [];
 
-    camera.aspect =
-      window.innerWidth /
-      window.innerHeight;
+  for (const record of labelRecords) {
+    const { body, button, line } = record;
 
+    tempVector.copy(body.position).project(camera);
+    const cameraSpace = body.position.clone().applyMatrix4(cameraInverse);
 
-    camera.updateProjectionMatrix();
+    const onScreen =
+      cameraSpace.z < 0 &&
+      tempVector.x >= -1 &&
+      tempVector.x <= 1 &&
+      tempVector.y >= -1 &&
+      tempVector.y <= 1;
 
+    let anchorX;
+    let anchorY;
 
-    renderer.setSize(
-      window.innerWidth,
-      window.innerHeight
+    if (onScreen) {
+      anchorX = (tempVector.x * 0.5 + 0.5) * width;
+      anchorY = (-tempVector.y * 0.5 + 0.5) * height;
+    } else {
+      let dx = cameraSpace.x;
+      let dy = -cameraSpace.y;
+
+      if (cameraSpace.z > 0) {
+        dx *= -1;
+        dy *= -1;
+      }
+
+      if (Math.abs(dx) + Math.abs(dy) < 0.001) dy = -1;
+
+      const scale = Math.min(
+        (width * 0.44) / Math.max(Math.abs(dx), 0.001),
+        (height * 0.38) / Math.max(Math.abs(dy), 0.001)
+      );
+
+      anchorX = width / 2 + dx * scale;
+      anchorY = height / 2 + dy * scale;
+      anchorX = THREE.MathUtils.clamp(anchorX, margin + 4, width - margin - 4);
+      anchorY = THREE.MathUtils.clamp(anchorY, margin + 4, height - margin - 4);
+    }
+
+    const distance = camera.position.distanceTo(body.position);
+    const isTarget = body === targetBody;
+
+    button.classList.toggle("offscreen", !onScreen);
+    button.classList.toggle("targeted", isTarget);
+    button.style.opacity = isTarget ? "1" : String(
+      onScreen ? THREE.MathUtils.clamp(0.55 + 900 / (distance + 900), 0.55, 0.92) : 0.72
     );
 
+    candidates.push({
+      body,
+      button,
+      line,
+      anchorX,
+      anchorY,
+      x: anchorX + 12,
+      y: anchorY - 12,
+      isTarget
+    });
   }
-);
 
+  // Gently separate labels that would otherwise overlap on small screens.
+  for (let pass = 0; pass < 5; pass++) {
+    for (let i = 0; i < candidates.length; i++) {
+      for (let j = i + 1; j < candidates.length; j++) {
+        const a = candidates[i];
+        const b = candidates[j];
+        if (Math.abs(a.x - b.x) < 90 && Math.abs(a.y - b.y) < 24) {
+          const push = a.isTarget ? -12 : 12;
+          b.y += push;
+          a.y -= push * 0.35;
+        }
+      }
+    }
+  }
 
-// ============================================================
-// GAME LOOP
-// ============================================================
+  for (const item of candidates) {
+    const boxWidth = item.button.offsetWidth || 76;
+    const boxHeight = item.button.offsetHeight || 23;
 
-const clock =
-  new THREE.Clock();
+    item.x = THREE.MathUtils.clamp(item.x, margin, width - boxWidth - margin);
+    item.y = THREE.MathUtils.clamp(item.y, margin + boxHeight / 2, height - margin - boxHeight / 2);
+    item.button.style.left = `${item.x}px`;
+    item.button.style.top = `${item.y}px`;
 
+    const endX = item.x;
+    const endY = item.y;
+    item.line.setAttribute("x1", item.anchorX);
+    item.line.setAttribute("y1", item.anchorY);
+    item.line.setAttribute("x2", endX);
+    item.line.setAttribute("y2", endY);
+    item.line.classList.toggle("targeted", item.isTarget);
+  }
+}
+
+function updateCameraRotation() {
+  camera.rotation.set(pitch, yaw, 0, "YXZ");
+}
+
+function movePlayer(delta) {
+  const moving =
+    pressedDirections.has("forward") ||
+    pressedDirections.has("back") ||
+    pressedDirections.has("left") ||
+    pressedDirections.has("right") ||
+    pressedDirections.has("up") ||
+    pressedDirections.has("down");
+
+  if (!moving) {
+    if (camera.position.length() < 180) {
+      energy = Math.min(100, energy + delta * 9);
+    }
+    return;
+  }
+
+  camera.updateMatrixWorld();
+  forwardVector.set(0, 0, -1).applyQuaternion(camera.quaternion);
+  rightVector.set(1, 0, 0).applyQuaternion(camera.quaternion);
+  upVector.set(0, 1, 0).applyQuaternion(camera.quaternion);
+
+  moveVector.set(0, 0, 0);
+
+  if (pressedDirections.has("forward")) moveVector.add(forwardVector);
+  if (pressedDirections.has("back")) moveVector.sub(forwardVector);
+  if (pressedDirections.has("right")) moveVector.add(rightVector);
+  if (pressedDirections.has("left")) moveVector.sub(rightVector);
+  if (pressedDirections.has("up")) moveVector.add(upVector);
+  if (pressedDirections.has("down")) moveVector.sub(upVector);
+
+  if (moveVector.lengthSq() > 0) {
+    moveVector.normalize();
+
+    const mode = speedModes[selectedSpeed];
+    const distance = mode.speed * delta;
+    camera.position.addScaledVector(moveVector, distance);
+
+    if (mode.drain > 0) {
+      energy = Math.max(0, energy - mode.drain * delta);
+      if (energy <= 0) {
+        selectedSpeed = "chill";
+        updateSpeedButtons();
+      }
+    }
+  }
+
+  // Solar energy recharge while near the Sun.
+  if (camera.position.length() < 180) {
+    energy = Math.min(100, energy + delta * 9);
+  }
+}
 
 function animate() {
+  requestAnimationFrame(animate);
 
-  requestAnimationFrame(
-    animate
-  );
+  if (!renderer || !camera) return;
 
+  const delta = Math.min(clock.getDelta(), 0.05);
 
-  const delta =
-    Math.min(
-      clock.getDelta(),
-      0.05
-    );
+  if (started) {
+    updateOrbitalBodies(delta * SIMULATION_DAYS_PER_SECOND);
+    movePlayer(delta);
+    updateHUD();
 
+    labelUpdateTimer += delta;
+    if (labelUpdateTimer >= 0.1) {
+      labelUpdateTimer = 0;
+      updateLabels();
+    }
+  }
 
-  updatePlanets(
-    delta
-  );
-
-
-  const isMoving =
-    updatePlayer(
-      delta
-    );
-
-
-  updateEnergy(
-    delta,
-    isMoving
-  );
-
-
-  checkNearbyPlanet();
-
-
-  updateHUD();
-
-
-  renderer.render(
-    scene,
-    camera
-  );
-
+  renderer.render(scene, camera);
 }
 
+function beginGame() {
+  started = true;
+  loadingScreen.classList.add("hidden");
+  startScreen.classList.add("hidden");
+  gameUI.classList.remove("hidden");
+  canvas.focus?.();
+  clock.start();
+  updateLabels(true);
+}
 
-// ============================================================
-// START GAME LOOP
-// ============================================================
+function setupControls() {
+  document.getElementById("startButton").addEventListener("click", beginGame);
 
-updateSpeedButtons();
+  document.querySelectorAll(".speed-button").forEach((button) => {
+    button.addEventListener("click", () => {
+      selectedSpeed = button.dataset.speed;
+      updateSpeedButtons();
+    });
+  });
 
-animate();
+  document.getElementById("clearTarget").addEventListener("click", () => {
+    targetBody = null;
+    updateTargetReadout();
+    updateLabels(true);
+  });
+
+  document.querySelectorAll("[data-move]").forEach((button) => {
+    const direction = button.dataset.move;
+
+    button.addEventListener("pointerdown", (event) => {
+      event.preventDefault();
+      button.setPointerCapture?.(event.pointerId);
+      pointerDirections.set(event.pointerId, direction);
+      pressedDirections.add(direction);
+      button.classList.add("active");
+    });
+
+    const release = (event) => {
+      const heldDirection = pointerDirections.get(event.pointerId);
+      if (!heldDirection) return;
+
+      pointerDirections.delete(event.pointerId);
+      pressedDirections.delete(heldDirection);
+      button.classList.remove("active");
+    };
+
+    button.addEventListener("pointerup", release);
+    button.addEventListener("pointercancel", release);
+    button.addEventListener("lostpointercapture", release);
+  });
+
+  canvas.addEventListener("pointerdown", (event) => {
+    if (!started) return;
+    dragging = true;
+    lastPointerX = event.clientX;
+    lastPointerY = event.clientY;
+    canvas.setPointerCapture?.(event.pointerId);
+  });
+
+  canvas.addEventListener("pointermove", (event) => {
+    if (!dragging || !started) return;
+
+    const dx = event.clientX - lastPointerX;
+    const dy = event.clientY - lastPointerY;
+    lastPointerX = event.clientX;
+    lastPointerY = event.clientY;
+
+    yaw -= dx * 0.0032;
+    pitch -= dy * 0.0032;
+    pitch = THREE.MathUtils.clamp(pitch, -Math.PI * 0.49, Math.PI * 0.49);
+    updateCameraRotation();
+  });
+
+  const stopDragging = () => {
+    dragging = false;
+  };
+
+  canvas.addEventListener("pointerup", stopDragging);
+  canvas.addEventListener("pointercancel", stopDragging);
+
+  // Optional desktop fallback; touchscreen remains the primary control method.
+  window.addEventListener("keydown", (event) => {
+    const keys = {
+      ArrowUp: "forward",
+      ArrowDown: "back",
+      ArrowLeft: "left",
+      ArrowRight: "right",
+      Space: "up",
+      ShiftLeft: "down"
+    };
+
+    if (keys[event.code]) {
+      event.preventDefault();
+      pressedDirections.add(keys[event.code]);
+    }
+  });
+
+  window.addEventListener("keyup", (event) => {
+    const keys = {
+      ArrowUp: "forward",
+      ArrowDown: "back",
+      ArrowLeft: "left",
+      ArrowRight: "right",
+      Space: "up",
+      ShiftLeft: "down"
+    };
+
+    if (keys[event.code]) pressedDirections.delete(keys[event.code]);
+  });
+}
+
+function resize() {
+  if (!camera || !renderer) return;
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  updateLabels(true);
+}
+
+async function startApp() {
+  try {
+    createScene();
+    setupControls();
+    updateSpeedButtons();
+    window.addEventListener("resize", resize);
+
+    loadingScreen.classList.add("hidden");
+    startScreen.classList.remove("hidden");
+
+    animate();
+  } catch (error) {
+    console.error(error);
+    showError("Could not create the 3D scene. Please try reloading the page.");
+  }
+}
+
+startApp();
 ```
