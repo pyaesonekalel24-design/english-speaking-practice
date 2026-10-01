@@ -1,102 +1,302 @@
-```html
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+  >
   <meta name="theme-color" content="#03060b">
+
   <title>SOLAR EXPLORER</title>
+
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
+
   <main id="game">
+
     <canvas id="space"></canvas>
 
     <svg id="labelLines" aria-hidden="true">
       <g id="labelLineGroup"></g>
     </svg>
+
     <div id="planetLabels"></div>
 
+
+    <!-- LOADING -->
+
     <section id="loadingScreen" class="screen">
+
       <div class="screen-card">
-        <div class="eyebrow">SOLAR EXPLORER</div>
-        <p id="loadingMessage">Loading universe...</p>
+
+        <div class="eyebrow">
+          SOLAR EXPLORER
+        </div>
+
+        <p id="loadingMessage">
+          Loading universe...
+        </p>
+
       </div>
+
     </section>
+
+
+    <!-- START -->
 
     <section id="startScreen" class="screen hidden">
+
       <div class="screen-card">
-        <div class="eyebrow">A SMALL GAME ABOUT A VERY BIG PLACE</div>
-        <h1>SOLAR<br>EXPLORER</h1>
-        <p>Fly freely through the Solar System.</p>
-        <button id="startButton" class="primary-button">START FLYING</button>
-        <div class="start-hint">Touch and drag to look around</div>
+
+        <div class="eyebrow">
+          A SMALL GAME ABOUT A VERY BIG PLACE
+        </div>
+
+        <h1>
+          SOLAR<br>EXPLORER
+        </h1>
+
+        <p>
+          Fly freely through the Solar System.
+        </p>
+
+        <button
+          id="startButton"
+          class="primary-button"
+        >
+          START FLYING
+        </button>
+
+        <div class="start-hint">
+          Touch and drag to look around
+        </div>
+
       </div>
+
     </section>
+
+
+    <!-- ERROR -->
 
     <section id="errorScreen" class="screen hidden">
+
       <div class="screen-card">
-        <div class="eyebrow">SOLAR EXPLORER</div>
-        <h2>Unable to start</h2>
-        <p id="errorMessage">The game could not be loaded.</p>
-        <p class="start-hint">Check your internet connection and reload the page.</p>
+
+        <div class="eyebrow">
+          SOLAR EXPLORER
+        </div>
+
+        <h2>
+          Unable to start
+        </h2>
+
+        <p id="errorMessage">
+          The game could not be loaded.
+        </p>
+
+        <p class="start-hint">
+          Check your internet connection and reload the page.
+        </p>
+
       </div>
+
     </section>
 
+
+    <!-- GAME UI -->
+
     <div id="gameUI" class="hidden">
+
       <header class="hud">
-        <div class="hud-title">SOLAR EXPLORER</div>
-        <div id="distanceReadout">DISTANCE FROM SUN <strong>1.20 AU</strong></div>
-        <div class="energy-row">
-          <div class="energy-track"><div id="energyFill"></div></div>
-          <span id="energyPercent">100%</span>
+
+        <div class="hud-title">
+          SOLAR EXPLORER
         </div>
+
+        <div id="distanceReadout">
+          DISTANCE FROM SUN
+          <strong>1.20 AU</strong>
+        </div>
+
+        <div class="energy-row">
+
+          <div class="energy-track">
+            <div id="energyFill"></div>
+          </div>
+
+          <span id="energyPercent">
+            100%
+          </span>
+
+        </div>
+
         <div id="energyWarning" class="energy-warning"></div>
+
       </header>
 
-      <div class="speed-controls" aria-label="Flight speed">
-        <button class="speed-button selected chill" data-speed="chill">
-          <span>CHILL</span><small>Normal</small>
+
+      <!-- SPEED -->
+
+      <div
+        class="speed-controls"
+        aria-label="Flight speed"
+      >
+
+        <button
+          class="speed-button selected chill"
+          data-speed="chill"
+        >
+          <span>CHILL</span>
+          <small>Normal</small>
         </button>
-        <button class="speed-button sonic" data-speed="sonic">
-          <span>SONIC</span><small>2×</small>
+
+        <button
+          class="speed-button sonic"
+          data-speed="sonic"
+        >
+          <span>SONIC</span>
+          <small>2×</small>
         </button>
-        <button class="speed-button poop" data-speed="poop">
-          <span>U NEED<br>TO POOP</span><small>4×</small>
+
+        <button
+          class="speed-button poop"
+          data-speed="poop"
+        >
+          <span>U NEED<br>TO POOP</span>
+          <small>4×</small>
         </button>
+
       </div>
 
-      <div id="targetReadout" class="target-readout hidden">
-        <span class="target-caption">DESTINATION</span>
-        <strong id="targetName">MARS</strong>
-        <span id="targetDistance">0 AU</span>
-        <button id="clearTarget" aria-label="Clear destination">×</button>
+
+      <!-- TARGET -->
+
+      <div
+        id="targetReadout"
+        class="target-readout hidden"
+      >
+
+        <span class="target-caption">
+          DESTINATION
+        </span>
+
+        <strong id="targetName">
+          MARS
+        </strong>
+
+        <span id="targetDistance">
+          0 AU
+        </span>
+
+        <button
+          id="clearTarget"
+          aria-label="Clear destination"
+        >
+          ×
+        </button>
+
       </div>
 
-      <div id="planetInfo" class="planet-info hidden">
-        <strong id="nearbyPlanetName">EARTH</strong>
-        <span id="nearbyPlanetDistance">0 km</span>
+
+      <!-- NEARBY PLANET -->
+
+      <div
+        id="planetInfo"
+        class="planet-info hidden"
+      >
+
+        <strong id="nearbyPlanetName">
+          EARTH
+        </strong>
+
+        <span id="nearbyPlanetDistance">
+          0 km
+        </span>
+
       </div>
 
-      <!-- Left thumb: vertical flight -->
+
+      <!-- LEFT THUMB: UP / DOWN -->
+
       <div class="vertical-controls">
-        <button class="control-button" data-move="up" aria-label="Fly up">▲</button>
-        <button class="control-button" data-move="down" aria-label="Fly down">▼</button>
+
+        <button
+          class="control-button"
+          data-move="up"
+          aria-label="Fly up"
+        >
+          ▲
+        </button>
+
+        <button
+          class="control-button"
+          data-move="down"
+          aria-label="Fly down"
+        >
+          ▼
+        </button>
+
       </div>
 
-      <!-- Right thumb: forward, backward, left, right -->
-      <div class="movement-pad" aria-label="Flight movement">
-        <button class="control-button pad-up" data-move="forward" aria-label="Fly forward">▲</button>
-        <button class="control-button pad-left" data-move="left" aria-label="Fly left">◀</button>
-        <button class="control-button pad-right" data-move="right" aria-label="Fly right">▶</button>
-        <button class="control-button pad-down" data-move="back" aria-label="Fly backward">▼</button>
+
+      <!-- RIGHT THUMB: MOVEMENT -->
+
+      <div
+        class="movement-pad"
+        aria-label="Flight movement"
+      >
+
+        <button
+          class="control-button pad-up"
+          data-move="forward"
+          aria-label="Fly forward"
+        >
+          ▲
+        </button>
+
+        <button
+          class="control-button pad-left"
+          data-move="left"
+          aria-label="Fly left"
+        >
+          ◀
+        </button>
+
+        <button
+          class="control-button pad-right"
+          data-move="right"
+          aria-label="Fly right"
+        >
+          ▶
+        </button>
+
+        <button
+          class="control-button pad-down"
+          data-move="back"
+          aria-label="Fly backward"
+        >
+          ▼
+        </button>
+
       </div>
 
-      <div class="look-hint">DRAG TO LOOK</div>
+
+      <div class="look-hint">
+        DRAG TO LOOK
+      </div>
+
     </div>
+
   </main>
 
-  <script type="module" src="app.js"></script>
+
+  <script
+    type="module"
+    src="app.js"
+  ></script>
+
 </body>
 </html>
-```
