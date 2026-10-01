@@ -1,318 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <meta name="theme-color" content="#111827">
-
-  <title>SpeakUp</title>
-
+  <title>Solar Explorer</title>
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-  <!-- =========================
-       HOME
-  ========================== -->
-
-  <section id="homeScreen" class="screen active">
-
-    <div class="logo">
-      Speak<span>Up</span>
+  <div id="game">
+    <div id="loading">
+      <div class="loadingTitle">SOLAR EXPLORER</div>
+      <div>Loading universe...</div>
     </div>
 
-    <p class="tagline">
-      Read it. Speak it. Improve it.
-    </p>
+    <div id="hud">
+      <div class="title">SOLAR EXPLORER</div>
 
-    <button id="startBtn" class="primaryBtn">
-      Start Practice
-    </button>
-
-  </section>
-
-
-  <!-- =========================
-       LEVEL
-  ========================== -->
-
-  <section id="levelScreen" class="screen">
-
-    <div class="levelPage">
-
-      <button id="backHomeBtn" class="backBtn">
-        ← Back
-      </button>
-
-      <h1>
-        Choose your level
-      </h1>
-
-      <p class="subtitle">
-        Pick a level and start speaking.
-      </p>
-
-      <div class="levelContainer">
-
-        <button class="levelBtn" data-level="easy">
-          <strong>Easy</strong>
-          <span>Short and simple English</span>
-        </button>
-
-        <button class="levelBtn" data-level="medium">
-          <strong>Medium</strong>
-          <span>Everyday English conversations</span>
-        </button>
-
-        <button class="levelBtn" data-level="intermediate">
-          <strong>Intermediate</strong>
-          <span>Longer and more challenging English</span>
-        </button>
-
+      <div class="instructions">
+        <b>W A S D</b> — Fly<br>
+        <b>SPACE</b> — Up<br>
+        <b>SHIFT</b> — Down<br>
+        <b>MOUSE</b> — Look around<br>
+        <b>CLICK</b> — Lock mouse
       </div>
 
+      <div id="speed">Speed: 0</div>
+      <div id="location">Location: Solar System</div>
     </div>
 
-  </section>
-
-
-  <!-- =========================
-       PRACTICE
-  ========================== -->
-
-  <section id="practiceScreen" class="screen">
-
-    <div class="practicePage">
-
-      <!-- TOP -->
-
-      <div class="topBar">
-
-        <button id="backLevelsBtn" class="backBtn">
-          ← Levels
-        </button>
-
-        <div id="levelLabel">
-          Easy
-        </div>
-
-      </div>
-
-
-      <!-- TITLE -->
-
-      <div class="practiceHeader">
-
-        <h1>
-          Read aloud
-        </h1>
-
-        <p>
-          Follow the moving text and read naturally.
-        </p>
-
-      </div>
-
-
-      <!-- =========================
-           SCROLLING PASSAGE
-      ========================== -->
-
-      <div class="passageViewport">
-
-        <div
-          id="passageTrack"
-          class="passageTrack"
-        >
-
-          <div
-            id="passageText"
-            class="passageText"
-          >
-          </div>
-
-        </div>
-
-      </div>
-
-
-      <div class="scrollHint">
-        The passage will scroll once.
-      </div>
-
-
-      <!-- =========================
-           WHISPER STATUS
-      ========================== -->
-
-      <div
-        id="whisperStatus"
-        class="whisperStatus"
-      >
-        Whisper will load when you use the microphone.
-      </div>
-
-
-      <!-- =========================
-           MICROPHONE
-      ========================== -->
-
-      <div class="micArea">
-
-        <button
-          id="micBtn"
-          class="micBtn"
-        >
-
-          <span id="micIcon">
-            🎙️
-          </span>
-
-        </button>
-
-        <div id="micStatus">
-          Tap the microphone to start
-        </div>
-
-        <div id="recordingTimer">
-          00:00
-        </div>
-
-      </div>
-
-
-      <!-- =========================
-           TRANSCRIPT
-      ========================== -->
-
-      <div
-        id="transcriptSection"
-        class="resultSection hidden"
-      >
-
-        <h2>
-          What Whisper heard
-        </h2>
-
-        <div
-          id="transcriptBox"
-          class="transcriptBox"
-        >
-        </div>
-
-      </div>
-
-
-      <!-- =========================
-           SCORE
-      ========================== -->
-
-      <div
-        id="scoreCard"
-        class="scoreCard hidden"
-      >
-
-        <div class="scoreNumber">
-
-          <span id="score">
-            0
-          </span>
-
-          <small>
-            /100
-          </small>
-
-        </div>
-
-        <div id="scoreMessage">
-          Keep practicing!
-        </div>
-
-      </div>
-
-
-      <!-- =========================
-           WORD COMPARISON
-      ========================== -->
-
-      <div
-        id="wordResultSection"
-        class="resultSection hidden"
-      >
-
-        <h2>
-          Word check
-        </h2>
-
-        <p class="hint">
-          Red words are words Whisper could not match.
-          Tap one to practice it.
-        </p>
-
-        <div
-          id="wordComparison"
-          class="wordComparison"
-        >
-        </div>
-
-      </div>
-
-
-      <!-- =========================
-           WORD INFORMATION
-      ========================== -->
-
-      <div
-        id="wordInfo"
-        class="wordInfo hidden"
-      >
-
-        <div
-          id="selectedWord"
-          class="selectedWord"
-        >
-          word
-        </div>
-
-        <button
-          id="pronounceBtn"
-          class="pronounceBtn"
-        >
-          🔊 Hear pronunciation
-        </button>
-
-        <div
-          id="similarWords"
-          class="similarWords"
-        >
-        </div>
-
-      </div>
-
-
-      <!-- =========================
-           AGAIN
-      ========================== -->
-
-      <button
-        id="againBtn"
-        class="primaryBtn hidden"
-      >
-        Start Again
-      </button>
-
+    <div id="crosshair">
+      <span></span>
     </div>
 
-  </section>
+    <div id="planetInfo" class="hidden">
+      <div id="planetName">Earth</div>
+      <div id="planetDistance"></div>
+    </div>
 
+    <div id="startScreen">
+      <h1>SOLAR EXPLORER</h1>
+      <p>Fly freely through the Solar System.</p>
+      <button id="startButton">ENTER SPACE</button>
+      <small>WASD + Space + Shift + Mouse</small>
+    </div>
+  </div>
 
-  <!-- APP -->
+  <script type="module" src="app.js"></script>
 
- <script src="app.js"></script>
-  
 </body>
-
 </html>
