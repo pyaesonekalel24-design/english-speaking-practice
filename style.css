@@ -4,417 +4,928 @@
   padding: 0;
 }
 
+
 body {
-  font-family: Arial, Helvetica, sans-serif;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
   background: #f4f7fb;
+
   color: #111827;
+
   min-height: 100vh;
+
 }
 
 
-/* =========================
-   SCREEN SYSTEM
-========================= */
+
+/* =================================
+   SCREEN
+================================= */
 
 .screen {
+
   display: none;
+
   min-height: 100vh;
+
   width: 100%;
+
   padding: 24px;
+
 }
+
 
 .screen.active {
+
   display: flex;
-  flex-direction: column;
+
 }
 
 
-/* =========================
+
+/* =================================
    HOME
-========================= */
+================================= */
 
 #homeScreen {
+
   justify-content: center;
+
   align-items: center;
+
   text-align: center;
+
 }
+
 
 .logo {
+
   font-size: 58px;
+
   font-weight: 800;
+
   letter-spacing: -3px;
+
 }
+
 
 .logo span {
+
   color: #2563eb;
+
 }
+
 
 .tagline {
+
   margin-top: 12px;
+
   color: #6b7280;
+
   font-size: 18px;
+
   margin-bottom: 42px;
+
 }
 
 
-/* =========================
-   BUTTONS
-========================= */
+
+/* =================================
+   BUTTON
+================================= */
 
 .primaryBtn {
+
   border: none;
+
   background: #2563eb;
+
   color: white;
+
   padding: 16px 30px;
+
   border-radius: 14px;
+
   font-size: 17px;
+
   font-weight: 700;
+
   cursor: pointer;
+
   transition: 0.2s;
+
 }
+
 
 .primaryBtn:hover {
+
   transform: translateY(-2px);
+
   background: #1d4ed8;
+
 }
+
 
 .primaryBtn:active {
+
   transform: scale(0.97);
+
 }
+
+
 
 .backBtn {
+
   border: none;
+
   background: transparent;
+
   color: #374151;
+
   font-size: 16px;
+
   cursor: pointer;
+
   width: fit-content;
-  margin-bottom: 25px;
+
 }
 
 
-/* =========================
-   LEVEL SCREEN
-========================= */
+
+/* =================================
+   LEVEL
+================================= */
 
 #levelScreen {
-  max-width: 700px;
-  margin: auto;
-  width: 100%;
+
   justify-content: center;
+
+  align-items: center;
+
 }
 
-#levelScreen h1 {
-  font-size: 36px;
-  margin-bottom: 8px;
+
+.levelPage {
+
+  width: 100%;
+
+  max-width: 700px;
+
 }
+
+
+.levelPage h1 {
+
+  font-size: 36px;
+
+  margin-top: 15px;
+
+  margin-bottom: 8px;
+
+}
+
 
 .subtitle {
+
   color: #6b7280;
+
   margin-bottom: 30px;
+
 }
+
 
 .levelContainer {
+
   display: flex;
+
   flex-direction: column;
+
   gap: 14px;
+
 }
+
 
 .levelBtn {
+
   width: 100%;
+
   text-align: left;
+
   border: 2px solid #e5e7eb;
+
   background: white;
+
   padding: 22px;
+
   border-radius: 16px;
+
   cursor: pointer;
+
   transition: 0.2s;
+
 }
+
 
 .levelBtn:hover {
+
   border-color: #2563eb;
+
   transform: translateY(-2px);
+
 }
+
 
 .levelBtn strong {
+
   display: block;
+
   font-size: 20px;
+
   margin-bottom: 6px;
+
 }
+
 
 .levelBtn span {
+
   color: #6b7280;
+
 }
 
 
-/* =========================
+
+/* =================================
    PRACTICE
-========================= */
+================================= */
 
 #practiceScreen {
-  max-width: 800px;
-  margin: auto;
-  width: 100%;
+
+  justify-content: flex-start;
+
+  align-items: center;
+
 }
+
+
+.practicePage {
+
+  width: 100%;
+
+  max-width: 800px;
+
+}
+
 
 .topBar {
+
   display: flex;
+
   justify-content: space-between;
+
   align-items: center;
+
 }
+
 
 #levelLabel {
+
   background: #e5edff;
+
   color: #2563eb;
+
   padding: 7px 13px;
+
   border-radius: 20px;
+
   font-size: 13px;
+
   font-weight: 700;
+
 }
+
 
 .practiceHeader {
+
+  margin-top: 10px;
+
   margin-bottom: 20px;
+
 }
+
 
 .practiceHeader h1 {
+
   font-size: 34px;
+
 }
+
 
 .practiceHeader p {
+
   color: #6b7280;
+
   margin-top: 6px;
+
 }
 
 
-/* =========================
-   PASSAGE
-========================= */
 
-.passageBox {
-  background: white;
-  border-radius: 20px;
-  padding: 28px;
-  min-height: 220px;
-  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.06);
-  overflow: hidden;
+/* =================================
+   SCROLLING PASSAGE
+================================= */
+
+.passageViewport {
+
   position: relative;
+
+  width: 100%;
+
+  height: 270px;
+
+  overflow: hidden;
+
+  background: white;
+
+  border-radius: 20px;
+
+  box-shadow:
+    0 5px 25px rgba(0, 0, 0, 0.06);
+
 }
+
+
+/*
+  Fade at top
+*/
+
+.passageViewport::before {
+
+  content: "";
+
+  position: absolute;
+
+  z-index: 5;
+
+  top: 0;
+
+  left: 0;
+
+  width: 100%;
+
+  height: 55px;
+
+  background:
+    linear-gradient(
+      to bottom,
+      white,
+      transparent
+    );
+
+  pointer-events: none;
+
+}
+
+
+/*
+  Fade at bottom
+*/
+
+.passageViewport::after {
+
+  content: "";
+
+  position: absolute;
+
+  z-index: 5;
+
+  bottom: 0;
+
+  left: 0;
+
+  width: 100%;
+
+  height: 55px;
+
+  background:
+    linear-gradient(
+      to top,
+      white,
+      transparent
+    );
+
+  pointer-events: none;
+
+}
+
+
+.passageTrack {
+
+  position: absolute;
+
+  width: 100%;
+
+  padding: 30px;
+
+  transform: translateY(270px);
+
+}
+
+
+.passageTrack.scrolling {
+
+  animation-name: passageScroll;
+
+  animation-timing-function: linear;
+
+  animation-iteration-count: 1;
+
+  animation-fill-mode: forwards;
+
+}
+
+
+@keyframes passageScroll {
+
+  from {
+
+    transform:
+      translateY(270px);
+
+  }
+
+  to {
+
+    transform:
+      translateY(
+        calc(-100% - 30px)
+      );
+
+  }
+
+}
+
 
 .passageText {
-  font-size: 24px;
-  line-height: 1.8;
+
+  font-size: 25px;
+
+  line-height: 1.9;
+
+  font-weight: 500;
+
 }
 
 
-/* =========================
+.scrollHint {
+
+  text-align: center;
+
+  font-size: 13px;
+
+  color: #9ca3af;
+
+  margin-top: 8px;
+
+}
+
+
+
+/* =================================
+   WHISPER STATUS
+================================= */
+
+.whisperStatus {
+
+  margin-top: 18px;
+
+  text-align: center;
+
+  font-size: 13px;
+
+  color: #6b7280;
+
+}
+
+
+.whisperStatus.loading {
+
+  color: #2563eb;
+
+}
+
+
+.whisperStatus.ready {
+
+  color: #059669;
+
+}
+
+
+.whisperStatus.error {
+
+  color: #dc2626;
+
+}
+
+
+
+/* =================================
    MICROPHONE
-========================= */
+================================= */
 
 .micArea {
+
   text-align: center;
-  margin: 28px 0;
+
+  margin: 25px 0;
+
 }
+
 
 .micBtn {
-  width: 80px;
-  height: 80px;
+
+  width: 82px;
+
+  height: 82px;
+
   border-radius: 50%;
+
   border: none;
+
   background: #111827;
+
   color: white;
+
   font-size: 32px;
+
   cursor: pointer;
+
   transition: 0.2s;
+
 }
+
 
 .micBtn:hover {
+
   transform: scale(1.05);
+
 }
 
+
 .micBtn.recording {
+
   background: #dc2626;
+
   animation: pulse 1.2s infinite;
+
 }
+
 
 @keyframes pulse {
 
   0% {
-    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.5);
+
+    box-shadow:
+      0 0 0 0
+      rgba(220, 38, 38, 0.5);
+
   }
 
   70% {
-    box-shadow: 0 0 0 18px rgba(220, 38, 38, 0);
+
+    box-shadow:
+      0 0 0 18px
+      rgba(220, 38, 38, 0);
+
   }
 
   100% {
-    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+
+    box-shadow:
+      0 0 0 0
+      rgba(220, 38, 38, 0);
+
   }
 
 }
 
+
 #micStatus {
+
   margin-top: 12px;
+
   color: #6b7280;
+
 }
+
 
 #recordingTimer {
+
   margin-top: 5px;
+
   font-size: 14px;
+
   color: #9ca3af;
+
 }
 
 
-/* =========================
+
+/* =================================
    RESULTS
-========================= */
+================================= */
 
 .resultSection {
+
   margin-top: 20px;
+
 }
+
 
 .resultSection h2 {
+
   font-size: 20px;
+
   margin-bottom: 10px;
+
 }
+
 
 .hint {
+
   color: #6b7280;
+
   font-size: 14px;
+
   margin-bottom: 15px;
+
 }
+
 
 .transcriptBox {
+
   background: white;
+
   padding: 20px;
+
   border-radius: 15px;
-  line-height: 1.7;
+
+  line-height: 1.8;
+
+  font-size: 18px;
+
 }
 
 
-/* =========================
+
+/* =================================
    SCORE
-========================= */
+================================= */
 
 .scoreCard {
+
   margin-top: 20px;
+
   background: white;
+
   border-radius: 18px;
+
   padding: 25px;
+
   text-align: center;
+
 }
+
 
 .scoreNumber {
+
   font-size: 54px;
+
   font-weight: 800;
+
 }
+
 
 .scoreNumber small {
+
   font-size: 22px;
+
   color: #9ca3af;
+
 }
+
 
 #scoreMessage {
+
   margin-top: 8px;
+
   color: #6b7280;
+
 }
 
 
-/* =========================
+
+/* =================================
    WORD COMPARISON
-========================= */
+================================= */
 
 .wordComparison {
+
   background: white;
+
   border-radius: 18px;
+
   padding: 20px;
+
   line-height: 2.2;
+
   font-size: 20px;
+
 }
+
 
 .word {
+
   display: inline-block;
+
   margin-right: 7px;
+
   cursor: pointer;
+
 }
+
 
 .word.correct {
+
   color: #111827;
+
 }
+
 
 .word.wrong {
+
   color: #dc2626;
+
   font-weight: 700;
+
   text-decoration: underline;
+
 }
 
 
-/* =========================
+.word.extra {
+
+  color: #2563eb;
+
+  font-weight: 600;
+
+}
+
+
+
+/* =================================
    WORD INFO
-========================= */
+================================= */
 
 .wordInfo {
+
   background: #111827;
+
   color: white;
+
   margin-top: 20px;
+
   padding: 22px;
+
   border-radius: 18px;
+
 }
+
 
 .selectedWord {
+
   font-size: 30px;
+
   font-weight: 800;
+
   margin-bottom: 15px;
+
 }
+
 
 .pronounceBtn {
+
   border: none;
+
   background: white;
+
   color: #111827;
+
   padding: 12px 17px;
+
   border-radius: 10px;
+
   cursor: pointer;
+
   font-weight: 700;
+
 }
+
 
 .similarWords {
+
   margin-top: 15px;
+
   color: #d1d5db;
+
 }
 
 
-/* =========================
-   UTILITY
-========================= */
+
+/* =================================
+   HIDDEN
+================================= */
 
 .hidden {
+
   display: none !important;
+
 }
 
 
-/* =========================
+
+/* =================================
+   AGAIN
+================================= */
+
+#againBtn {
+
+  display: block;
+
+  margin: 25px auto;
+
+}
+
+
+
+/* =================================
    MOBILE
-========================= */
+================================= */
 
 @media (max-width: 600px) {
 
   .screen {
+
     padding: 18px;
+
   }
+
 
   .logo {
+
     font-size: 48px;
+
   }
+
 
   .practiceHeader h1 {
+
     font-size: 28px;
+
   }
+
+
+  .passageViewport {
+
+    height: 250px;
+
+  }
+
 
   .passageText {
-    font-size: 20px;
+
+    font-size: 21px;
+
+    line-height: 1.8;
+
   }
 
-  .passageBox {
-    padding: 20px;
+
+  .passageTrack {
+
+    padding: 25px;
+
+  }
+
+
+  .wordComparison {
+
+    font-size: 18px;
+
   }
 
 }
