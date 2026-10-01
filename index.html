@@ -1,298 +1,102 @@
-<!DOCTYPE html>
+```html
+<!doctype html>
 <html lang="en">
-
 <head>
-
-  <meta charset="UTF-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-  >
-
-  <title>Solar Explorer</title>
-
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#03060b">
+  <title>SOLAR EXPLORER</title>
   <link rel="stylesheet" href="style.css">
-
 </head>
-
 <body>
+  <main id="game">
+    <canvas id="space"></canvas>
 
-  <div id="game">
+    <svg id="labelLines" aria-hidden="true">
+      <g id="labelLineGroup"></g>
+    </svg>
+    <div id="planetLabels"></div>
 
-    <!-- LOADING -->
-
-    <div id="loading">
-
-      <div class="loadingTitle">
-        SOLAR EXPLORER
+    <section id="loadingScreen" class="screen">
+      <div class="screen-card">
+        <div class="eyebrow">SOLAR EXPLORER</div>
+        <p id="loadingMessage">Loading universe...</p>
       </div>
+    </section>
 
-      <div>
-        Loading universe...
+    <section id="startScreen" class="screen hidden">
+      <div class="screen-card">
+        <div class="eyebrow">A SMALL GAME ABOUT A VERY BIG PLACE</div>
+        <h1>SOLAR<br>EXPLORER</h1>
+        <p>Fly freely through the Solar System.</p>
+        <button id="startButton" class="primary-button">START FLYING</button>
+        <div class="start-hint">Touch and drag to look around</div>
       </div>
+    </section>
 
-    </div>
-
-
-    <!-- HUD -->
-
-    <div id="hud">
-
-      <div class="title">
-        SOLAR EXPLORER
+    <section id="errorScreen" class="screen hidden">
+      <div class="screen-card">
+        <div class="eyebrow">SOLAR EXPLORER</div>
+        <h2>Unable to start</h2>
+        <p id="errorMessage">The game could not be loaded.</p>
+        <p class="start-hint">Check your internet connection and reload the page.</p>
       </div>
+    </section>
 
-
-      <div class="instructions desktopOnly">
-
-        <b>W A S D</b> — Fly / Walk<br>
-
-        <b>SPACE</b> — Up / Jump<br>
-
-        <b>SHIFT</b> — Down<br>
-
-        <b>MOUSE</b> — Look around
-
-      </div>
-
-
-      <div id="modeDisplay">
-        Mode: SPACE FLIGHT
-      </div>
-
-
-      <div id="speed">
-        Speed: CHILL
-      </div>
-
-
-      <div id="location">
-        Distance from Sun: 1.20 AU
-      </div>
-
-
-      <!-- ENERGY -->
-
-      <div id="energyContainer">
-
-        <div id="energyBar">
-
-          <div id="energyFill"></div>
-
+    <div id="gameUI" class="hidden">
+      <header class="hud">
+        <div class="hud-title">SOLAR EXPLORER</div>
+        <div id="distanceReadout">DISTANCE FROM SUN <strong>1.20 AU</strong></div>
+        <div class="energy-row">
+          <div class="energy-track"><div id="energyFill"></div></div>
+          <span id="energyPercent">100%</span>
         </div>
+        <div id="energyWarning" class="energy-warning"></div>
+      </header>
 
-        <div id="energyText">
-          100%
-        </div>
-
+      <div class="speed-controls" aria-label="Flight speed">
+        <button class="speed-button selected chill" data-speed="chill">
+          <span>CHILL</span><small>Normal</small>
+        </button>
+        <button class="speed-button sonic" data-speed="sonic">
+          <span>SONIC</span><small>2×</small>
+        </button>
+        <button class="speed-button poop" data-speed="poop">
+          <span>U NEED<br>TO POOP</span><small>4×</small>
+        </button>
       </div>
 
+      <div id="targetReadout" class="target-readout hidden">
+        <span class="target-caption">DESTINATION</span>
+        <strong id="targetName">MARS</strong>
+        <span id="targetDistance">0 AU</span>
+        <button id="clearTarget" aria-label="Clear destination">×</button>
+      </div>
+
+      <div id="planetInfo" class="planet-info hidden">
+        <strong id="nearbyPlanetName">EARTH</strong>
+        <span id="nearbyPlanetDistance">0 km</span>
+      </div>
+
+      <!-- Left thumb: vertical flight -->
+      <div class="vertical-controls">
+        <button class="control-button" data-move="up" aria-label="Fly up">▲</button>
+        <button class="control-button" data-move="down" aria-label="Fly down">▼</button>
+      </div>
+
+      <!-- Right thumb: forward, backward, left, right -->
+      <div class="movement-pad" aria-label="Flight movement">
+        <button class="control-button pad-up" data-move="forward" aria-label="Fly forward">▲</button>
+        <button class="control-button pad-left" data-move="left" aria-label="Fly left">◀</button>
+        <button class="control-button pad-right" data-move="right" aria-label="Fly right">▶</button>
+        <button class="control-button pad-down" data-move="back" aria-label="Fly backward">▼</button>
+      </div>
+
+      <div class="look-hint">DRAG TO LOOK</div>
     </div>
+  </main>
 
-
-    <!-- CROSSHAIR -->
-
-    <div id="crosshair"></div>
-
-
-    <!-- PLANET LABELS -->
-
-    <div id="labelLayer"></div>
-
-
-    <!-- PLANET INFO -->
-
-    <div
-      id="planetInfo"
-      class="hidden"
-    >
-
-      <div id="planetName">
-        Earth
-      </div>
-
-      <div id="planetDistance"></div>
-
-    </div>
-
-
-    <!-- MARS LANDING MESSAGE -->
-
-    <div
-      id="marsMessage"
-      class="hidden"
-    >
-
-      <div id="marsMessageTitle">
-        MARS
-      </div>
-
-      <div id="marsMessageText">
-        Approach the surface
-      </div>
-
-    </div>
-
-
-    <!-- START SCREEN -->
-
-    <div id="startScreen">
-
-      <h1>
-        SOLAR EXPLORER
-      </h1>
-
-      <p>
-        Fly freely through the Solar System.
-      </p>
-
-
-      <button id="startButton">
-        START FLYING
-      </button>
-
-
-      <small class="desktopOnly">
-        WASD + Space + Shift + Mouse
-      </small>
-
-
-      <small class="mobileOnly">
-        Touch controls available in space
-      </small>
-
-    </div>
-
-
-    <!-- MOBILE CONTROLS -->
-
-    <div id="mobileControls">
-
-
-      <!-- UP / DOWN -->
-
-      <div id="verticalControls">
-
-        <button
-          id="upButton"
-          class="verticalButton"
-        >
-          ▲
-        </button>
-
-
-        <button
-          id="downButton"
-          class="verticalButton"
-        >
-          ▼
-        </button>
-
-      </div>
-
-
-      <!-- MOVEMENT -->
-
-      <div id="movementPad">
-
-        <button
-          id="forwardButton"
-          class="directionButton upArrow"
-        >
-          ▲
-        </button>
-
-
-        <button
-          id="leftButton"
-          class="directionButton leftArrow"
-        >
-          ◀
-        </button>
-
-
-        <button
-          id="rightButton"
-          class="directionButton rightArrow"
-        >
-          ▶
-        </button>
-
-
-        <button
-          id="backButton"
-          class="directionButton downArrow"
-        >
-          ▼
-        </button>
-
-      </div>
-
-
-      <!-- SPEED -->
-
-      <div id="speedControls">
-
-        <button
-          id="chillButton"
-          class="speedButton chillSpeed active"
-        >
-
-          <span class="speedTitle">
-            CHILL
-          </span>
-
-          <span class="speedDescription">
-            Normal
-          </span>
-
-        </button>
-
-
-        <button
-          id="sonicButton"
-          class="speedButton sonicSpeed"
-        >
-
-          <span class="speedTitle">
-            SONIC
-          </span>
-
-          <span class="speedDescription">
-            2×
-          </span>
-
-        </button>
-
-
-        <button
-          id="poopButton"
-          class="speedButton poopSpeed"
-        >
-
-          <span class="speedTitle">
-            U NEED<br>TO POOP
-          </span>
-
-          <span class="speedDescription">
-            4×
-          </span>
-
-        </button>
-
-      </div>
-
-
-    </div>
-
-  </div>
-
-
-  <script
-    type="module"
-    src="app.js"
-  ></script>
-
+  <script type="module" src="app.js"></script>
 </body>
 </html>
+```
