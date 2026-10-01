@@ -2,8 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  >
+
   <title>Solar Explorer</title>
+
   <link rel="stylesheet" href="style.css">
 </head>
 
@@ -11,60 +16,128 @@
 
   <div id="game">
 
+    <!-- LOADING -->
+
     <div id="loading">
-      <div class="loadingTitle">SOLAR EXPLORER</div>
-      <div>Loading universe...</div>
-    </div>
 
-    <!-- HUD -->
-    <div id="hud">
-      <div class="title">SOLAR EXPLORER</div>
-
-      <div class="instructions desktopOnly">
-        <b>W A S D</b> — Fly<br>
-        <b>SPACE</b> — Up<br>
-        <b>SHIFT</b> — Down<br>
-        <b>MOUSE</b> — Look around<br>
-        <b>CTRL</b> — Boost
+      <div class="loadingTitle">
+        SOLAR EXPLORER
       </div>
 
-      <div id="speed">Speed: 0</div>
-      <div id="location">Distance from Sun: 0</div>
+      <div>
+        Loading universe...
+      </div>
+
+    </div>
+
+
+    <!-- HUD -->
+
+    <div id="hud">
+
+      <div class="title">
+        SOLAR EXPLORER
+      </div>
+
+
+      <div class="instructions desktopOnly">
+
+        <b>W A S D</b> — Fly<br>
+
+        <b>SPACE</b> — Up<br>
+
+        <b>SHIFT</b> — Down<br>
+
+        <b>MOUSE</b> — Look around
+
+      </div>
+
+
+      <div id="speed">
+        Speed: CHILL
+      </div>
+
+
+      <div id="location">
+        Distance from Sun: 0
+      </div>
+
+
+      <!-- ENERGY -->
+
+      <div id="energyContainer">
+
+        <div id="energyLabel">
+          SUN ENERGY
+        </div>
+
+        <div id="energyBar">
+
+          <div id="energyFill"></div>
+
+        </div>
+
+        <div id="energyText">
+          100%
+        </div>
+
+      </div>
+
     </div>
 
 
     <!-- CROSSHAIR -->
+
     <div id="crosshair">
+
       <span></span>
+
     </div>
 
 
     <!-- PLANET INFO -->
-    <div id="planetInfo" class="hidden">
-      <div id="planetName">Earth</div>
+
+    <div
+      id="planetInfo"
+      class="hidden"
+    >
+
+      <div id="planetName">
+        Earth
+      </div>
+
       <div id="planetDistance"></div>
+
     </div>
 
 
     <!-- START SCREEN -->
+
     <div id="startScreen">
-      <h1>SOLAR EXPLORER</h1>
+
+      <h1>
+        SOLAR EXPLORER
+      </h1>
 
       <p>
         Fly freely through the Solar System.
       </p>
 
+
       <button id="startButton">
-        ENTER SPACE
+        START FLYING
       </button>
+
 
       <small class="desktopOnly">
         WASD + Space + Shift + Mouse
       </small>
 
+
       <small class="mobileOnly">
         Touch controls available in space
       </small>
+
     </div>
 
 
@@ -74,7 +147,8 @@
 
     <div id="mobileControls">
 
-      <!-- LEFT SIDE: UP / DOWN -->
+
+      <!-- UP / DOWN -->
 
       <button
         id="upButton"
@@ -82,6 +156,7 @@
       >
         ▲
       </button>
+
 
       <button
         id="downButton"
@@ -91,9 +166,10 @@
       </button>
 
 
-      <!-- RIGHT SIDE: MOVEMENT -->
+      <!-- MOVEMENT -->
 
       <div id="movementPad">
+
 
         <button
           id="forwardButton"
@@ -102,12 +178,14 @@
           ▲
         </button>
 
+
         <button
           id="leftButton"
           class="directionButton leftArrow"
         >
           ◀
         </button>
+
 
         <button
           id="rightButton"
@@ -116,6 +194,7 @@
           ▶
         </button>
 
+
         <button
           id="backButton"
           class="directionButton downArrow"
@@ -123,33 +202,70 @@
           ▼
         </button>
 
-      </div>
-
-
-      <!-- SPEED -->
-
-      <div id="zoomControls">
-
-        <button id="zoomOutButton">
-          −
-        </button>
-
-        <div>
-          SPEED
-        </div>
-
-        <button id="zoomInButton">
-          +
-        </button>
 
       </div>
+
+
+      <!-- SPEED SELECTOR -->
+
+      <div id="speedControls">
+
+
+        <button
+          id="chillButton"
+          class="speedButton active"
+        >
+          <span class="speedTitle">
+            CHILL
+          </span>
+
+          <span class="speedDescription">
+            Normal
+          </span>
+        </button>
+
+
+        <button
+          id="sonicButton"
+          class="speedButton"
+        >
+          <span class="speedTitle">
+            SONIC
+          </span>
+
+          <span class="speedDescription">
+            2×
+          </span>
+        </button>
+
+
+        <button
+          id="poopButton"
+          class="speedButton"
+        >
+          <span class="speedTitle">
+            U NEED<br>TO POOP
+          </span>
+
+          <span class="speedDescription">
+            4×
+          </span>
+        </button>
+
+
+      </div>
+
 
     </div>
+
 
   </div>
 
 
-  <script type="module" src="app.js"></script>
+  <script
+    type="module"
+    src="app.js"
+  ></script>
 
 </body>
 </html>
