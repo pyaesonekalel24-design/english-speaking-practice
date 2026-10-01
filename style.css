@@ -724,3 +724,15 @@ canvas {
     gap: 10px;
   }
 }
+* {
+  box-sizing: border-box;
+}
+
+
+html,
+body {
+
+  margin: 0;
+
+  width: 100%;
+  height: 
