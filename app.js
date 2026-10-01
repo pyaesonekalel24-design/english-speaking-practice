@@ -1,41 +1,42 @@
-/* =====================================================
-   SPEAKUP V2
-
-   MediaRecorder
-        ↓
-   Whisper
-        ↓
-   Transcript
-        ↓
-   Word alignment
-        ↓
-   Score
-        ↓
-   Wrong-word practice
-===================================================== */
-
-
-/* =====================================================
-   WHISPER / TRANSFORMERS.JS
-===================================================== */
-
 import {
   pipeline
-} from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.0.1";
+} from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1";
 
 
 
 /* =====================================================
-   WHISPER SETTINGS
+   SPEAKUP
+   REAL WHISPER VERSION
+===================================================== */
+
+
+/* =====================================================
+   SETTINGS
 ===================================================== */
 
 const WHISPER_MODEL =
-  "onnx-community/whisper-tiny.en";
+  "Xenova/whisper-tiny.en";
 
 
-let transcriber = null;
+let whisper = null;
 
 let whisperLoading = false;
+
+let mediaRecorder = null;
+
+let audioChunks = [];
+
+let isRecording = false;
+
+let currentPassage = "";
+
+let currentLevel = "easy";
+
+let timerInterval = null;
+
+let recordingStartTime = null;
+
+let scrollTimer = null;
 
 
 
@@ -82,51 +83,10 @@ const passages = {
 
 
 /* =====================================================
-   STATE
+   SCREEN
 ===================================================== */
 
-let currentLevel = "easy";
-
-let currentPassage = "";
-
-let mediaRecorder = null;
-
-let audioChunks = [];
-
-let isRecording = false;
-
-let recordingStartTime = null;
-
-let timerInterval = null;
-
-
-
-/* =====================================================
-   DOM
-===================================================== */
-
-const micBtn =
-  document.getElementById("micBtn");
-
-const micStatus =
-  document.getElementById("micStatus");
-
-const micIcon =
-  document.getElementById("micIcon");
-
-const recordingTimer =
-  document.getElementById("recordingTimer");
-
-const whisperStatus =
-  document.getElementById("whisperStatus");
-
-
-
-/* =====================================================
-   SCREEN CONTROL
-===================================================== */
-
-window.showScreen = function(screenId) {
+window.showScreen = function(id) {
 
   document
     .querySelectorAll(".screen")
@@ -137,15 +97,9 @@ window.showScreen = function(screenId) {
     });
 
 
-  const target =
-    document.getElementById(screenId);
-
-
-  if (target) {
-
-    target.classList.add("active");
-
-  }
+  document
+    .getElementById(id)
+    .classList.add("active");
 
 };
 
@@ -215,30 +169,33 @@ function startPractice() {
     .textContent =
       currentLevel
         .charAt(0)
-        .toUpperCase() +
+        .toUpperCase()
+      +
       currentLevel.slice(1);
 
 
   resetResults();
 
 
-  showScreen("practiceScreen");
+  showScreen(
+    "practiceScreen"
+  );
 
 
   /*
-    Start the one-time scrolling
-    after the screen becomes visible.
+    Start scrolling after the
+    practice screen becomes visible.
   */
 
   setTimeout(() => {
 
     startPassageScroll();
 
-  }, 300);
+  }, 500);
 
 
   /*
-    Start loading Whisper in the background.
+    Load Whisper.
   */
 
   loadWhisper();
@@ -248,31 +205,94 @@ function startPractice() {
 
 
 /* =====================================================
-   PASSAGE SCROLL
+   REAL JAVASCRIPT SCROLL
 ===================================================== */
 
 function startPassageScroll() {
 
-  const track =
-    document.getElementById("passageTrack");
+  const viewport =
+    document.querySelector(
+      ".passageViewport"
+    );
+
+
+  const text =
+    document.getElementById(
+      "passageText"
+    );
+
+
+  if (!viewport || !text) {
+
+    console.error(
+      "Passage elements not found."
+    );
+
+    return;
+
+  }
 
 
   /*
-    Remove old animation.
+    Stop previous scrolling.
   */
 
-  track.classList.remove("scrolling");
+  if (scrollTimer) {
+
+    clearInterval(
+      scrollTimer
+    );
+
+  }
 
 
   /*
-    Force browser to reset animation.
+    Start from below the viewport.
   */
 
-  void track.offsetWidth;
+  text.style.transform =
+    `translateY(${viewport.clientHeight}px)`;
 
 
   /*
-    Longer passage = longer animation.
+    Force layout calculation.
+  */
+
+  void text.offsetHeight;
+
+
+  /*
+    Measure text.
+  */
+
+  const textHeight =
+    text.scrollHeight;
+
+
+  const viewportHeight =
+    viewport.clientHeight;
+
+
+  /*
+    Total distance.
+
+    Example:
+
+    viewport = 250px
+    text = 500px
+
+    It travels 750px.
+  */
+
+  const distance =
+    viewportHeight +
+    textHeight;
+
+
+  /*
+    Slow enough to actually read.
+
+    More words = more time.
   */
 
   const wordCount =
@@ -284,83 +304,79 @@ function startPassageScroll() {
 
   const duration =
     Math.max(
-      14,
-      wordCount * 0.48
+      12,
+      wordCount * 0.55
     );
 
 
-  track.style.animationDuration =
-    `${duration}s`;
+  const startTime =
+    performance.now();
 
 
-  track.classList.add("scrolling");
+  /*
+    Smooth animation using requestAnimationFrame.
+  */
 
-}
+  function move(now) {
 
-
-
-/* =====================================================
-   RESET RESULTS
-===================================================== */
-
-function resetResults() {
-
-  document
-    .getElementById("transcriptSection")
-    .classList.add("hidden");
+    const elapsed =
+      now - startTime;
 
 
-  document
-    .getElementById("scoreCard")
-    .classList.add("hidden");
+    const progress =
+      Math.min(
+        elapsed /
+        (duration * 1000),
+        1
+      );
 
 
-  document
-    .getElementById("wordResultSection")
-    .classList.add("hidden");
+    /*
+      Smooth linear movement.
+    */
+
+    const position =
+      viewportHeight -
+      (
+        distance *
+        progress
+      );
 
 
-  document
-    .getElementById("wordInfo")
-    .classList.add("hidden");
+    text.style.transform =
+      `translateY(${position}px)`;
 
 
-  document
-    .getElementById("againBtn")
-    .classList.add("hidden");
+    if (progress < 1) {
+
+      scrollTimer =
+        requestAnimationFrame(
+          move
+        );
+
+    }
+
+    else {
+
+      /*
+        Finished.
+
+        It stays here.
+        NO LOOP.
+      */
+
+      text.style.transform =
+        `translateY(-${textHeight}px)`;
+
+    }
+
+  }
 
 
-  document
-    .getElementById("transcriptBox")
-    .textContent =
-      "";
-
-
-  document
-    .getElementById("wordComparison")
-    .innerHTML =
-      "";
-
-
-  document
-    .getElementById("score")
-    .textContent =
-      "0";
-
-
-  micStatus.textContent =
-    "Tap the microphone to start";
-
-
-  recordingTimer.textContent =
-    "00:00";
-
-
-  micBtn.classList.remove("recording");
-
-
-  micIcon.textContent =
-    "🎙️";
+  scrollTimer =
+    requestAnimationFrame(
+      move
+    );
 
 }
 
@@ -372,12 +388,25 @@ function resetResults() {
 
 async function loadWhisper() {
 
-  if (transcriber) {
+  const status =
+    document.getElementById(
+      "whisperStatus"
+    );
 
-    whisperStatus.textContent =
-      "Whisper is ready.";
 
-    whisperStatus.className =
+  if (!status) {
+
+    return;
+
+  }
+
+
+  if (whisper) {
+
+    status.textContent =
+      "Whisper is ready ✓";
+
+    status.className =
       "whisperStatus ready";
 
     return;
@@ -392,105 +421,115 @@ async function loadWhisper() {
   }
 
 
-  whisperLoading = true;
+  whisperLoading =
+    true;
 
 
-  whisperStatus.textContent =
-    "Loading Whisper for the first time...";
+  status.textContent =
+    "Downloading Whisper... first time only";
 
 
-  whisperStatus.className =
+  status.className =
     "whisperStatus loading";
+
+
+  console.log(
+    "SpeakUp: loading Whisper..."
+  );
 
 
   try {
 
     /*
-      Try WebGPU first.
+      IMPORTANT:
 
-      This can make supported devices
-      much faster.
+      We deliberately DO NOT force WebGPU
+      for this first working version.
+
+      Let Transformers.js use its
+      normal browser/WASM backend.
+
+      Once this works, we can optimize
+      with WebGPU.
     */
 
-    if ("gpu" in navigator) {
-
-      try {
-
-        transcriber =
-          await pipeline(
-            "automatic-speech-recognition",
-            WHISPER_MODEL,
-            {
-              device: "webgpu"
-            }
-          );
+    whisper =
+      await pipeline(
+        "automatic-speech-recognition",
+        WHISPER_MODEL
+      );
 
 
-      } catch (gpuError) {
-
-        console.warn(
-          "WebGPU unavailable. Falling back to WASM.",
-          gpuError
-        );
+    console.log(
+      "SpeakUp: Whisper loaded!",
+      whisper
+    );
 
 
-        transcriber =
-          await pipeline(
-            "automatic-speech-recognition",
-            WHISPER_MODEL,
-            {
-              device: "wasm"
-            }
-          );
-
-      }
-
-    } else {
-
-      /*
-        Browser does not expose WebGPU.
-      */
-
-      transcriber =
-        await pipeline(
-          "automatic-speech-recognition",
-          WHISPER_MODEL,
-          {
-            device: "wasm"
-          }
-        );
-
-    }
-
-
-    whisperStatus.textContent =
+    status.textContent =
       "Whisper is ready ✓";
 
 
-    whisperStatus.className =
+    status.className =
       "whisperStatus ready";
 
 
-    whisperLoading = false;
+    whisperLoading =
+      false;
+
+  }
 
 
-  } catch (error) {
+  catch (error) {
 
     console.error(
-      "Whisper loading error:",
+      "SPEAKUP WHISPER ERROR:",
       error
     );
 
 
-    whisperStatus.textContent =
-      "Whisper could not load. Check the browser console.";
+    status.textContent =
+      "Whisper failed to load ❌";
 
 
-    whisperStatus.className =
+    status.className =
       "whisperStatus error";
 
 
-    whisperLoading = false;
+    whisperLoading =
+      false;
+
+
+    /*
+      Show useful debugging information.
+    */
+
+    const message =
+      document.createElement(
+        "div"
+      );
+
+
+    message.style.marginTop =
+      "8px";
+
+
+    message.style.fontSize =
+      "12px";
+
+
+    message.style.color =
+      "#dc2626";
+
+
+    message.textContent =
+      error.message ||
+      "Unknown Whisper error";
+
+
+    status.appendChild(
+      message
+    );
 
   }
 
@@ -502,22 +541,26 @@ async function loadWhisper() {
    MICROPHONE
 ===================================================== */
 
-micBtn.addEventListener(
-  "click",
-  async () => {
+document
+  .getElementById("micBtn")
+  .addEventListener(
+    "click",
+    async () => {
 
-    if (isRecording) {
+      if (isRecording) {
 
-      stopRecording();
+        stopRecording();
 
-    } else {
+      }
 
-      await startRecording();
+      else {
+
+        await startRecording();
+
+      }
 
     }
-
-  }
-);
+  );
 
 
 
@@ -527,32 +570,46 @@ micBtn.addEventListener(
 
 async function startRecording() {
 
-  try {
+  /*
+    Whisper MUST be loaded.
+  */
 
-    /*
-      Make sure Whisper is loaded.
-    */
+  if (!whisper) {
 
-    if (!transcriber) {
-
-      micStatus.textContent =
-        "Whisper is still loading...";
-
-
-      await loadWhisper();
+    const status =
+      document.getElementById(
+        "whisperStatus"
+      );
 
 
-      if (!transcriber) {
+    status.textContent =
+      "Whisper is still loading...";
 
-        return;
 
-      }
+    await loadWhisper();
+
+
+    if (!whisper) {
+
+      document
+        .getElementById(
+          "micStatus"
+        )
+        .textContent =
+          "Whisper isn't ready yet.";
+
+      return;
 
     }
 
+  }
+
+
+  try {
 
     const stream =
-      await navigator.mediaDevices
+      await navigator
+        .mediaDevices
         .getUserMedia({
           audio: true
         });
@@ -561,14 +618,56 @@ async function startRecording() {
     audioChunks = [];
 
 
+    /*
+      Pick a format the browser
+      actually supports.
+    */
+
+    let mimeType =
+      "";
+
+
+    if (
+      MediaRecorder.isTypeSupported(
+        "audio/webm;codecs=opus"
+      )
+    ) {
+
+      mimeType =
+        "audio/webm;codecs=opus";
+
+    }
+
+    else if (
+      MediaRecorder.isTypeSupported(
+        "audio/webm"
+      )
+    ) {
+
+      mimeType =
+        "audio/webm";
+
+    }
+
+
     mediaRecorder =
-      new MediaRecorder(stream);
+      mimeType
+        ? new MediaRecorder(
+            stream,
+            { mimeType }
+          )
+        : new MediaRecorder(
+            stream
+          );
 
 
     mediaRecorder.ondataavailable =
       event => {
 
-        if (event.data.size > 0) {
+        if (
+          event.data &&
+          event.data.size > 0
+        ) {
 
           audioChunks.push(
             event.data
@@ -582,20 +681,25 @@ async function startRecording() {
     mediaRecorder.onstop =
       async () => {
 
-        const audioBlob =
+        const blob =
           new Blob(
             audioChunks,
             {
-              type: mediaRecorder.mimeType
+              type:
+                mediaRecorder.mimeType
             }
           );
 
 
+        /*
+          Turn microphone off.
+        */
+
         stream
           .getTracks()
-          .forEach(track => {
-            track.stop();
-          });
+          .forEach(
+            track => track.stop()
+          );
 
 
         clearInterval(
@@ -603,14 +707,22 @@ async function startRecording() {
         );
 
 
-        isRecording = false;
+        isRecording =
+          false;
 
 
-        updateRecordingUI();
+        updateMicUI();
 
 
-        await processRecording(
-          audioBlob
+        console.log(
+          "SpeakUp recording:",
+          blob.type,
+          blob.size
+        );
+
+
+        await transcribeRecording(
+          blob
         );
 
       };
@@ -619,14 +731,15 @@ async function startRecording() {
     mediaRecorder.start();
 
 
-    isRecording = true;
+    isRecording =
+      true;
 
 
     recordingStartTime =
       Date.now();
 
 
-    updateRecordingUI();
+    updateMicUI();
 
 
     startTimer();
@@ -636,11 +749,18 @@ async function startRecording() {
 
   catch (error) {
 
-    console.error(error);
+    console.error(
+      "MICROPHONE ERROR:",
+      error
+    );
 
 
-    micStatus.textContent =
-      "Microphone permission was denied.";
+    document
+      .getElementById(
+        "micStatus"
+      )
+      .textContent =
+        "Microphone permission was denied.";
 
   }
 
@@ -649,7 +769,7 @@ async function startRecording() {
 
 
 /* =====================================================
-   STOP RECORDING
+   STOP
 ===================================================== */
 
 function stopRecording() {
@@ -671,44 +791,64 @@ function stopRecording() {
   }
 
 
-  isRecording = false;
+  isRecording =
+    false;
 
-  updateRecordingUI();
+
+  updateMicUI();
 
 }
 
 
 
 /* =====================================================
-   RECORDING UI
+   MICROPHONE UI
 ===================================================== */
 
-function updateRecordingUI() {
+function updateMicUI() {
+
+  const button =
+    document.getElementById(
+      "micBtn"
+    );
+
+
+  const icon =
+    document.getElementById(
+      "micIcon"
+    );
+
+
+  const status =
+    document.getElementById(
+      "micStatus"
+    );
+
 
   if (isRecording) {
 
-    micBtn.classList.add(
+    button.classList.add(
       "recording"
     );
 
 
-    micIcon.textContent =
+    icon.textContent =
       "⏹️";
 
 
-    micStatus.textContent =
+    status.textContent =
       "Recording... tap to stop";
 
   }
 
   else {
 
-    micBtn.classList.remove(
+    button.classList.remove(
       "recording"
     );
 
 
-    micIcon.textContent =
+    icon.textContent =
       "🎙️";
 
   }
@@ -723,14 +863,20 @@ function updateRecordingUI() {
 
 function startTimer() {
 
-  recordingTimer.textContent =
+  const timer =
+    document.getElementById(
+      "recordingTimer"
+    );
+
+
+  timer.textContent =
     "00:00";
 
 
   timerInterval =
     setInterval(() => {
 
-      const elapsed =
+      const seconds =
         Math.floor(
           (
             Date.now() -
@@ -740,21 +886,17 @@ function startTimer() {
 
 
       const minutes =
-        String(
-          Math.floor(
-            elapsed / 60
-          )
-        ).padStart(2, "0");
+        Math.floor(
+          seconds / 60
+        );
 
 
-      const seconds =
-        String(
-          elapsed % 60
-        ).padStart(2, "0");
+      const remaining =
+        seconds % 60;
 
 
-      recordingTimer.textContent =
-        `${minutes}:${seconds}`;
+      timer.textContent =
+        `${String(minutes).padStart(2, "0")}:${String(remaining).padStart(2, "0")}`;
 
     }, 1000);
 
@@ -763,30 +905,42 @@ function startTimer() {
 
 
 /* =====================================================
-   PROCESS RECORDING
+   TRANSCRIBE
 ===================================================== */
 
-async function processRecording(
+async function transcribeRecording(
   blob
 ) {
 
-  micStatus.textContent =
-    "Whisper is transcribing...";
+  const status =
+    document.getElementById(
+      "whisperStatus"
+    );
 
 
-  whisperStatus.textContent =
-    "Processing your voice...";
+  const micStatus =
+    document.getElementById(
+      "micStatus"
+    );
 
 
-  whisperStatus.className =
+  status.textContent =
+    "Whisper is listening to your recording...";
+
+
+  status.className =
     "whisperStatus loading";
+
+
+  micStatus.textContent =
+    "Transcribing...";
+
 
 
   try {
 
     /*
-      Convert the microphone recording
-      into 16 kHz mono audio.
+      Decode microphone audio.
     */
 
     const audio =
@@ -796,49 +950,67 @@ async function processRecording(
 
 
     console.log(
-      "Decoded audio:",
+      "Audio samples:",
       audio.length
     );
 
 
+    console.log(
+      "Running Whisper..."
+    );
+
+
     /*
-      SEND AUDIO TO WHISPER
+      ACTUAL WHISPER CALL
     */
 
     const result =
-      await transcriber(
+      await whisper(
         audio,
         {
           language: "english",
-          task: "transcribe",
-          chunk_length_s: 30,
-          stride_length_s: 5
+          task: "transcribe"
         }
       );
 
 
     console.log(
-      "Whisper result:",
+      "WHISPER RESULT:",
       result
     );
 
 
     const transcript =
-      result.text
-        .trim();
+      (
+        result.text ||
+        ""
+      ).trim();
 
 
     /*
-      SHOW TRANSCRIPT
+      SHOW RESULT
     */
 
-    showTranscript(
-      transcript
-    );
+    document
+      .getElementById(
+        "transcriptSection"
+      )
+      .classList.remove(
+        "hidden"
+      );
+
+
+    document
+      .getElementById(
+        "transcriptBox"
+      )
+      .textContent =
+        transcript ||
+        "Whisper did not detect speech.";
 
 
     /*
-      COMPARE WITH TARGET
+      COMPARE
     */
 
     compareSpeech(
@@ -847,16 +1019,16 @@ async function processRecording(
     );
 
 
-    whisperStatus.textContent =
-      "Transcription complete ✓";
+    status.textContent =
+      "Whisper finished ✓";
 
 
-    whisperStatus.className =
+    status.className =
       "whisperStatus ready";
 
 
     micStatus.textContent =
-      "Done. Check your result below.";
+      "Done.";
 
   }
 
@@ -864,20 +1036,21 @@ async function processRecording(
   catch (error) {
 
     console.error(
-      "Transcription error:",
+      "TRANSCRIPTION ERROR:",
       error
     );
 
 
-    whisperStatus.textContent =
-      "Transcription failed.";
+    status.textContent =
+      "Whisper transcription failed ❌";
 
-    whisperStatus.className =
+
+    status.className =
       "whisperStatus error";
 
 
     micStatus.textContent =
-      "Something went wrong while processing the recording.";
+      "Something went wrong during transcription.";
 
   }
 
@@ -886,14 +1059,14 @@ async function processRecording(
 
 
 /* =====================================================
-   AUDIO DECODING
+   DECODE AUDIO
 ===================================================== */
 
 async function decodeAudio(
   blob
 ) {
 
-  const arrayBuffer =
+  const buffer =
     await blob.arrayBuffer();
 
 
@@ -901,48 +1074,46 @@ async function decodeAudio(
     new AudioContext();
 
 
-  const audioBuffer =
-    await audioContext.decodeAudioData(
-      arrayBuffer
-    );
+  const decoded =
+    await audioContext
+      .decodeAudioData(
+        buffer
+      );
 
 
   /*
-    Whisper expects 16 kHz audio.
-
-    We create a temporary offline
-    audio context to resample it.
+    Whisper needs 16kHz mono.
   */
 
-  const targetSampleRate =
+  const targetRate =
     16000;
 
 
-  const targetLength =
+  const length =
     Math.ceil(
-      audioBuffer.duration *
-      targetSampleRate
+      decoded.duration *
+      targetRate
     );
 
 
-  const offlineContext =
+  const offline =
     new OfflineAudioContext(
       1,
-      targetLength,
-      targetSampleRate
+      length,
+      targetRate
     );
 
 
   const source =
-    offlineContext.createBufferSource();
+    offline.createBufferSource();
 
 
   source.buffer =
-    audioBuffer;
+    decoded;
 
 
   source.connect(
-    offlineContext.destination
+    offline.destination
   );
 
 
@@ -950,69 +1121,36 @@ async function decodeAudio(
 
 
   const rendered =
-    await offlineContext.startRendering();
+    await offline.startRendering();
 
 
-  const channel =
+  const samples =
     rendered.getChannelData(0);
 
 
   await audioContext.close();
 
 
-  return channel;
+  return samples;
 
 }
 
 
 
 /* =====================================================
-   SHOW TRANSCRIPT
+   WORD HELPERS
 ===================================================== */
 
-function showTranscript(
-  transcript
-) {
-
-  document
-    .getElementById("transcriptSection")
-    .classList.remove("hidden");
-
-
-  document
-    .getElementById("transcriptBox")
-    .textContent =
-      transcript ||
-      "(Whisper did not detect any speech.)";
-
-}
-
-
-
-/* =====================================================
-   WORD NORMALIZATION
-===================================================== */
-
-function normalizeWord(
-  word
-) {
+function cleanWord(word) {
 
   return word
     .toLowerCase()
-    .replace(/[^\w']/g, "")
-    .trim();
+    .replace(/[^\w']/g, "");
 
 }
 
 
-
-/* =====================================================
-   SPLIT WORDS
-===================================================== */
-
-function splitWords(
-  text
-) {
+function getWords(text) {
 
   return text
     .trim()
@@ -1024,23 +1162,8 @@ function splitWords(
 
 
 /* =====================================================
-   WORD ALIGNMENT
+   ALIGNMENT
 ===================================================== */
-
-/*
-  This is important.
-
-  We DO NOT simply compare:
-
-  target[0] with spoken[0]
-  target[1] with spoken[1]
-
-  because if Whisper misses one word,
-  everything afterward would become red.
-
-  Instead we use a small edit-distance
-  alignment.
-*/
 
 function alignWords(
   targetWords,
@@ -1056,13 +1179,12 @@ function alignWords(
 
 
   const dp =
-    Array.from(
-      {
-        length: rows
-      },
-      () =>
-        Array(cols).fill(0)
-    );
+    Array
+      .from(
+        { length: rows },
+        () =>
+          Array(cols).fill(0)
+      );
 
 
   for (
@@ -1071,7 +1193,8 @@ function alignWords(
     i++
   ) {
 
-    dp[i][0] = i;
+    dp[i][0] =
+      i;
 
   }
 
@@ -1082,7 +1205,8 @@ function alignWords(
     j++
   ) {
 
-    dp[0][j] = j;
+    dp[0][j] =
+      j;
 
   }
 
@@ -1099,20 +1223,18 @@ function alignWords(
       j++
     ) {
 
-      const target =
-        normalizeWord(
+      const same =
+        cleanWord(
           targetWords[i - 1]
-        );
-
-
-      const spoken =
-        normalizeWord(
+        )
+        ===
+        cleanWord(
           spokenWords[j - 1]
         );
 
 
-      const substitutionCost =
-        target === spoken
+      const cost =
+        same
           ? 0
           : 1;
 
@@ -1120,27 +1242,12 @@ function alignWords(
       dp[i][j] =
         Math.min(
 
-          /*
-            Delete target word
-          */
-
           dp[i - 1][j] + 1,
-
-
-          /*
-            Insert spoken word
-          */
 
           dp[i][j - 1] + 1,
 
-
-          /*
-            Match/substitute
-          */
-
-          dp[i - 1][j - 1]
-          +
-          substitutionCost
+          dp[i - 1][j - 1] +
+          cost
 
         );
 
@@ -1149,11 +1256,7 @@ function alignWords(
   }
 
 
-  /*
-    Backtrack
-  */
-
-  const alignment = [];
+  const result = [];
 
 
   let i =
@@ -1172,17 +1275,18 @@ function alignWords(
     if (
       i > 0 &&
       j > 0 &&
-      normalizeWord(
+      cleanWord(
         targetWords[i - 1]
-      ) ===
-      normalizeWord(
+      )
+      ===
+      cleanWord(
         spokenWords[j - 1]
       )
     ) {
 
-      alignment.unshift({
+      result.unshift({
 
-        type: "match",
+        type: "correct",
 
         target:
           targetWords[i - 1],
@@ -1196,7 +1300,6 @@ function alignWords(
       i--;
       j--;
 
-
       continue;
 
     }
@@ -1205,11 +1308,12 @@ function alignWords(
     if (
       i > 0 &&
       j > 0 &&
-      dp[i][j] ===
+      dp[i][j]
+      ===
       dp[i - 1][j - 1] + 1
     ) {
 
-      alignment.unshift({
+      result.unshift({
 
         type: "wrong",
 
@@ -1225,7 +1329,6 @@ function alignWords(
       i--;
       j--;
 
-
       continue;
 
     }
@@ -1233,11 +1336,12 @@ function alignWords(
 
     if (
       i > 0 &&
-      dp[i][j] ===
+      dp[i][j]
+      ===
       dp[i - 1][j] + 1
     ) {
 
-      alignment.unshift({
+      result.unshift({
 
         type: "missing",
 
@@ -1252,109 +1356,50 @@ function alignWords(
 
       i--;
 
-
       continue;
 
     }
 
 
-    if (
-      j > 0 &&
-      dp[i][j] ===
-      dp[i][j - 1] + 1
-    ) {
+    result.unshift({
 
-      alignment.unshift({
+      type: "extra",
 
-        type: "extra",
+      target:
+        null,
 
-        target:
-          null,
+      spoken:
+        spokenWords[j - 1]
 
-        spoken:
-          spokenWords[j - 1]
-
-      });
+    });
 
 
-      j--;
-
-
-      continue;
-
-    }
-
-
-    /*
-      Safety fallback
-    */
-
-    if (i > 0) {
-
-      alignment.unshift({
-
-        type: "missing",
-
-        target:
-          targetWords[i - 1],
-
-        spoken:
-          null
-
-      });
-
-
-      i--;
-
-    }
-
-    else {
-
-      alignment.unshift({
-
-        type: "extra",
-
-        target:
-          null,
-
-        spoken:
-          spokenWords[j - 1]
-
-      });
-
-
-      j--;
-
-    }
+    j--;
 
   }
 
 
-  return alignment;
+  return result;
 
 }
 
 
 
 /* =====================================================
-   COMPARE SPEECH
+   COMPARE
 ===================================================== */
 
 function compareSpeech(
-  targetText,
-  spokenText
+  target,
+  spoken
 ) {
 
   const targetWords =
-    splitWords(
-      targetText
-    );
+    getWords(target);
 
 
   const spokenWords =
-    splitWords(
-      spokenText
-    );
+    getWords(spoken);
 
 
   const alignment =
@@ -1364,14 +1409,7 @@ function compareSpeech(
     );
 
 
-  /*
-    Count only target words.
-
-    A word is correct when Whisper
-    matched it exactly.
-  */
-
-  let matched =
+  let correct =
     0;
 
 
@@ -1381,10 +1419,10 @@ function compareSpeech(
 
     if (
       item.type ===
-      "match"
+      "correct"
     ) {
 
-      matched++;
+      correct++;
 
     }
 
@@ -1392,14 +1430,12 @@ function compareSpeech(
 
 
   const score =
-    targetWords.length === 0
-      ? 0
-      : Math.round(
-          (
-            matched /
-            targetWords.length
-          ) * 100
-        );
+    Math.round(
+      (
+        correct /
+        targetWords.length
+      ) * 100
+    );
 
 
   showScore(
@@ -1407,7 +1443,7 @@ function compareSpeech(
   );
 
 
-  renderWordComparison(
+  renderComparison(
     alignment
   );
 
@@ -1419,9 +1455,7 @@ function compareSpeech(
    SCORE
 ===================================================== */
 
-function showScore(
-  score
-) {
+function showScore(score) {
 
   document
     .getElementById("score")
@@ -1456,20 +1490,22 @@ function showScore(
   else if (score >= 50) {
 
     message =
-      "Good start. Let's improve those words.";
+      "Good start. Let's work on the missed words.";
 
   }
 
   else {
 
     message =
-      "Keep practicing. You will improve.";
+      "Keep practicing. Every attempt helps.";
 
   }
 
 
   document
-    .getElementById("scoreMessage")
+    .getElementById(
+      "scoreMessage"
+    )
     .textContent =
       message;
 
@@ -1478,10 +1514,10 @@ function showScore(
 
 
 /* =====================================================
-   RENDER WORDS
+   COMPARISON DISPLAY
 ===================================================== */
 
-function renderWordComparison(
+function renderComparison(
   alignment
 ) {
 
@@ -1491,21 +1527,12 @@ function renderWordComparison(
     );
 
 
-  container.innerHTML = "";
+  container.innerHTML =
+    "";
 
 
-  for (
-    const item of alignment
-  ) {
-
-    /*
-      Correct
-    */
-
-    if (
-      item.type ===
-      "match"
-    ) {
+  alignment.forEach(
+    item => {
 
       const span =
         document.createElement(
@@ -1513,97 +1540,98 @@ function renderWordComparison(
         );
 
 
-      span.className =
-        "word correct";
-
-
-      span.textContent =
-        item.target;
-
-
-      container.appendChild(
-        span
+      span.classList.add(
+        "word"
       );
 
-    }
 
+      if (
+        item.type ===
+        "correct"
+      ) {
 
-    /*
-      Wrong or missing
-    */
-
-    else if (
-      item.type ===
-      "wrong"
-      ||
-      item.type ===
-      "missing"
-    ) {
-
-      const span =
-        document.createElement(
-          "span"
+        span.classList.add(
+          "correct"
         );
 
 
-      span.className =
-        "word wrong";
+        span.textContent =
+          item.target;
+
+      }
 
 
-      span.textContent =
-        item.target;
+      else if (
+        item.type ===
+        "wrong"
+      ) {
 
-
-      span.title =
-        item.spoken
-          ? `Whisper heard: ${item.spoken}`
-          : "Whisper did not hear this word";
-
-
-      span.addEventListener(
-        "click",
-        () => {
-
-          showWordInfo(
-            item.target
-          );
-
-        }
-      );
-
-
-      container.appendChild(
-        span
-      );
-
-    }
-
-
-    /*
-      Extra words Whisper heard
-    */
-
-    else if (
-      item.type ===
-      "extra"
-    ) {
-
-      const span =
-        document.createElement(
-          "span"
+        span.classList.add(
+          "wrong"
         );
 
 
-      span.className =
-        "word extra";
+        span.textContent =
+          item.target;
 
 
-      span.textContent =
-        `[${item.spoken}]`;
+        span.title =
+          `Whisper heard: ${item.spoken}`;
 
 
-      span.title =
-        "Extra word detected";
+        span.onclick =
+          () => {
+
+            showWordInfo(
+              item.target
+            );
+
+          };
+
+      }
+
+
+      else if (
+        item.type ===
+        "missing"
+      ) {
+
+        span.classList.add(
+          "wrong"
+        );
+
+
+        span.textContent =
+          item.target;
+
+
+        span.title =
+          "Whisper did not hear this word";
+
+
+        span.onclick =
+          () => {
+
+            showWordInfo(
+              item.target
+            );
+
+          };
+
+      }
+
+
+      else {
+
+        span.classList.add(
+          "extra"
+        );
+
+
+        span.textContent =
+          `[${item.spoken}]`;
+
+      }
 
 
       container.appendChild(
@@ -1611,8 +1639,7 @@ function renderWordComparison(
       );
 
     }
-
-  }
+  );
 
 
   document
@@ -1650,26 +1677,20 @@ function showWordInfo(
     );
 
 
-  const selected =
-    document.getElementById(
+  document
+    .getElementById(
       "selectedWord"
-    );
+    )
+    .textContent =
+      word;
 
 
-  const similar =
-    document.getElementById(
+  document
+    .getElementById(
       "similarWords"
-    );
-
-
-  selected.textContent =
-    word;
-
-
-  similar.innerHTML =
-    getSimilarWords(
-      word
-    );
+    )
+    .innerHTML =
+      getSimilarWords(word);
 
 
   info.classList.remove(
@@ -1691,11 +1712,6 @@ function showWordInfo(
       };
 
 
-  /*
-    Scroll to the word information
-    on mobile.
-  */
-
   info.scrollIntoView({
     behavior: "smooth",
     block: "center"
@@ -1713,34 +1729,25 @@ function pronounceWord(
   word
 ) {
 
-  if (
-    !("speechSynthesis" in window)
-  ) {
-
-    return;
-
-  }
-
-
   speechSynthesis.cancel();
 
 
-  const utterance =
+  const speech =
     new SpeechSynthesisUtterance(
       word
     );
 
 
-  utterance.lang =
+  speech.lang =
     "en-US";
 
 
-  utterance.rate =
+  speech.rate =
     0.72;
 
 
   speechSynthesis.speak(
-    utterance
+    speech
   );
 
 }
@@ -1748,7 +1755,7 @@ function pronounceWord(
 
 
 /* =====================================================
-   SIMILAR SOUND WORDS
+   SIMILAR SOUNDS
 ===================================================== */
 
 function getSimilarWords(
@@ -1814,8 +1821,7 @@ function getSimilarWords(
 
 
   const key =
-    word
-      .toLowerCase();
+    word.toLowerCase();
 
 
   if (
@@ -1834,7 +1840,7 @@ function getSimilarWords(
 
   return `
     Try saying the word slowly,
-    then repeat it at normal speed.
+    then repeat it normally.
   `;
 
 }
@@ -1855,25 +1861,3 @@ document
 
     }
   );
-
-
-
-/* =====================================================
-   LEAVE PRACTICE
-===================================================== */
-
-window.leavePractice =
-  function() {
-
-    if (isRecording) {
-
-      stopRecording();
-
-    }
-
-
-    showScreen(
-      "levelScreen"
-    );
-
-  };
