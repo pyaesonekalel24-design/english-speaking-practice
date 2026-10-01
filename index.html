@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
   <meta charset="UTF-8">
 
   <meta
@@ -11,6 +12,7 @@
   <title>Solar Explorer</title>
 
   <link rel="stylesheet" href="style.css">
+
 </head>
 
 <body>
@@ -60,11 +62,11 @@
 
 
       <div id="location">
-        Distance from Sun: 0
+        Distance from Sun: 1.20 AU
       </div>
 
 
-      <!-- ENERGY BAR -->
+      <!-- ENERGY -->
 
       <div id="energyContainer">
 
@@ -85,11 +87,7 @@
 
     <!-- CROSSHAIR -->
 
-    <div id="crosshair">
-
-      <span></span>
-
-    </div>
+    <div id="crosshair"></div>
 
 
     <!-- PLANET INFO -->
@@ -138,9 +136,7 @@
     </div>
 
 
-    <!-- ========================= -->
     <!-- MOBILE CONTROLS -->
-    <!-- ========================= -->
 
     <div id="mobileControls">
 
@@ -205,13 +201,13 @@
       </div>
 
 
-      <!-- SPEED SELECTOR -->
+      <!-- SPEED -->
 
       <div id="speedControls">
 
         <button
           id="chillButton"
-          class="speedButton active"
+          class="speedButton chillSpeed active"
         >
 
           <span class="speedTitle">
@@ -227,7 +223,7 @@
 
         <button
           id="sonicButton"
-          class="speedButton"
+          class="speedButton sonicSpeed"
         >
 
           <span class="speedTitle">
@@ -243,7 +239,7 @@
 
         <button
           id="poopButton"
-          class="speedButton"
+          class="speedButton poopSpeed"
         >
 
           <span class="speedTitle">
