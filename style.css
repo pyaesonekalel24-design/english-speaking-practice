@@ -1,9 +1,9 @@
-```css
 :root {
   color-scheme: dark;
   font-family: Arial, Helvetica, sans-serif;
   background: #03060b;
   color: #eef3fa;
+
   --panel: rgba(7, 13, 22, 0.78);
   --line: rgba(210, 228, 250, 0.2);
   --muted: #9aa9bc;
@@ -54,6 +54,11 @@ button {
 .hidden {
   display: none !important;
 }
+
+
+/* ========================= */
+/* SCREENS */
+/* ========================= */
 
 .screen {
   position: absolute;
@@ -124,12 +129,22 @@ button {
   font-size: 11px;
 }
 
+
+/* ========================= */
+/* GAME UI */
+/* ========================= */
+
 #gameUI {
   position: absolute;
   z-index: 5;
   inset: 0;
   pointer-events: none;
 }
+
+
+/* ========================= */
+/* HUD */
+/* ========================= */
 
 .hud {
   position: absolute;
@@ -164,6 +179,11 @@ button {
   letter-spacing: 0.04em;
 }
 
+
+/* ========================= */
+/* ENERGY */
+/* ========================= */
+
 .energy-row {
   display: flex;
   align-items: center;
@@ -182,7 +202,9 @@ button {
   width: 100%;
   height: 100%;
   background: #85d9a1;
-  transition: width 0.15s linear, background 0.2s linear;
+  transition:
+    width 0.15s linear,
+    background 0.2s linear;
 }
 
 #energyPercent {
@@ -198,6 +220,11 @@ button {
   color: #ffc66e;
   font-size: 9px;
 }
+
+
+/* ========================= */
+/* SPEED CONTROLS */
+/* ========================= */
 
 .speed-controls {
   position: absolute;
@@ -250,6 +277,11 @@ button {
   color: #ffc66e;
 }
 
+
+/* ========================= */
+/* TARGET */
+/* ========================= */
+
 .target-readout,
 .planet-info {
   position: absolute;
@@ -299,6 +331,11 @@ button {
   touch-action: manipulation;
 }
 
+
+/* ========================= */
+/* PLANET INFO */
+/* ========================= */
+
 .planet-info {
   bottom: 170px;
   display: flex;
@@ -314,6 +351,11 @@ button {
 .planet-info span {
   color: #aab8c7;
 }
+
+
+/* ========================= */
+/* MOBILE CONTROLS */
+/* ========================= */
 
 .vertical-controls,
 .movement-pad {
@@ -383,6 +425,11 @@ button {
   grid-row: 3;
 }
 
+
+/* ========================= */
+/* LOOK HINT */
+/* ========================= */
+
 .look-hint {
   position: absolute;
   bottom: max(15px, env(safe-area-inset-bottom));
@@ -394,7 +441,11 @@ button {
   white-space: nowrap;
 }
 
-/* Planet callouts: HTML labels are used so they stay readable at tiny scales. */
+
+/* ========================= */
+/* PLANET LABELS */
+/* ========================= */
+
 #labelLines,
 #planetLabels {
   position: absolute;
@@ -461,7 +512,13 @@ button {
   stroke: rgba(255, 207, 119, 0.85);
 }
 
+
+/* ========================= */
+/* SMALL PHONES */
+/* ========================= */
+
 @media (max-width: 600px) {
+
   .hud {
     width: 148px;
     padding: 9px;
@@ -521,9 +578,16 @@ button {
   .planet-info {
     bottom: 158px;
   }
+
 }
 
+
+/* ========================= */
+/* SHORT SCREENS */
+/* ========================= */
+
 @media (max-height: 500px) {
+
   .vertical-controls,
   .movement-pad {
     bottom: max(8px, env(safe-area-inset-bottom));
@@ -551,5 +615,5 @@ button {
   .planet-info {
     bottom: 118px;
   }
+
 }
-```
