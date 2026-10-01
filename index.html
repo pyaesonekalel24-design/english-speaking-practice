@@ -14,7 +14,6 @@
 
 <body>
 
-
   <!-- =========================
        HOME
   ========================== -->
@@ -36,7 +35,6 @@
   </section>
 
 
-
   <!-- =========================
        LEVEL
   ========================== -->
@@ -45,10 +43,7 @@
 
     <div class="levelPage">
 
-      <button
-        class="backBtn"
-        onclick="showScreen('homeScreen')"
-      >
+      <button id="backHomeBtn" class="backBtn">
         ← Back
       </button>
 
@@ -60,31 +55,19 @@
         Pick a level and start speaking.
       </p>
 
-
       <div class="levelContainer">
 
-        <button
-          class="levelBtn"
-          data-level="easy"
-        >
+        <button class="levelBtn" data-level="easy">
           <strong>Easy</strong>
           <span>Short and simple English</span>
         </button>
 
-
-        <button
-          class="levelBtn"
-          data-level="medium"
-        >
+        <button class="levelBtn" data-level="medium">
           <strong>Medium</strong>
           <span>Everyday English conversations</span>
         </button>
 
-
-        <button
-          class="levelBtn"
-          data-level="intermediate"
-        >
+        <button class="levelBtn" data-level="intermediate">
           <strong>Intermediate</strong>
           <span>Longer and more challenging English</span>
         </button>
@@ -96,7 +79,6 @@
   </section>
 
 
-
   <!-- =========================
        PRACTICE
   ========================== -->
@@ -105,15 +87,11 @@
 
     <div class="practicePage">
 
-
       <!-- TOP -->
 
       <div class="topBar">
 
-        <button
-          class="backBtn"
-          onclick="leavePractice()"
-        >
+        <button id="backLevelsBtn" class="backBtn">
           ← Levels
         </button>
 
@@ -122,7 +100,6 @@
         </div>
 
       </div>
-
 
 
       <!-- TITLE -->
@@ -138,7 +115,6 @@
         </p>
 
       </div>
-
 
 
       <!-- =========================
@@ -168,7 +144,6 @@
       </div>
 
 
-
       <!-- =========================
            WHISPER STATUS
       ========================== -->
@@ -177,9 +152,8 @@
         id="whisperStatus"
         class="whisperStatus"
       >
-        Whisper is ready.
+        Whisper will load when you use the microphone.
       </div>
-
 
 
       <!-- =========================
@@ -199,18 +173,15 @@
 
         </button>
 
-
         <div id="micStatus">
           Tap the microphone to start
         </div>
-
 
         <div id="recordingTimer">
           00:00
         </div>
 
       </div>
-
 
 
       <!-- =========================
@@ -226,7 +197,6 @@
           What Whisper heard
         </h2>
 
-
         <div
           id="transcriptBox"
           class="transcriptBox"
@@ -234,7 +204,6 @@
         </div>
 
       </div>
-
 
 
       <!-- =========================
@@ -258,13 +227,11 @@
 
         </div>
 
-
         <div id="scoreMessage">
           Keep practicing!
         </div>
 
       </div>
-
 
 
       <!-- =========================
@@ -280,12 +247,10 @@
           Word check
         </h2>
 
-
         <p class="hint">
           Red words are words Whisper could not match.
           Tap one to practice it.
         </p>
-
 
         <div
           id="wordComparison"
@@ -294,7 +259,6 @@
         </div>
 
       </div>
-
 
 
       <!-- =========================
@@ -313,14 +277,12 @@
           word
         </div>
 
-
         <button
           id="pronounceBtn"
           class="pronounceBtn"
         >
           🔊 Hear pronunciation
         </button>
-
 
         <div
           id="similarWords"
@@ -329,7 +291,6 @@
         </div>
 
       </div>
-
 
 
       <!-- =========================
@@ -343,17 +304,12 @@
         Start Again
       </button>
 
-
     </div>
 
   </section>
 
 
-
-  <!-- IMPORTANT:
-       app.js is now a MODULE because
-       Whisper/Transformers.js is imported.
-  -->
+  <!-- APP -->
 
   <script
     type="module"
