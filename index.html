@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Solar Explorer</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -10,42 +10,144 @@
 <body>
 
   <div id="game">
+
     <div id="loading">
       <div class="loadingTitle">SOLAR EXPLORER</div>
       <div>Loading universe...</div>
     </div>
 
+    <!-- HUD -->
     <div id="hud">
       <div class="title">SOLAR EXPLORER</div>
 
-      <div class="instructions">
+      <div class="instructions desktopOnly">
         <b>W A S D</b> — Fly<br>
         <b>SPACE</b> — Up<br>
         <b>SHIFT</b> — Down<br>
         <b>MOUSE</b> — Look around<br>
-        <b>CLICK</b> — Lock mouse
+        <b>CTRL</b> — Boost
       </div>
 
       <div id="speed">Speed: 0</div>
-      <div id="location">Location: Solar System</div>
+      <div id="location">Distance from Sun: 0</div>
     </div>
 
+
+    <!-- CROSSHAIR -->
     <div id="crosshair">
       <span></span>
     </div>
 
+
+    <!-- PLANET INFO -->
     <div id="planetInfo" class="hidden">
       <div id="planetName">Earth</div>
       <div id="planetDistance"></div>
     </div>
 
+
+    <!-- START SCREEN -->
     <div id="startScreen">
       <h1>SOLAR EXPLORER</h1>
-      <p>Fly freely through the Solar System.</p>
-      <button id="startButton">ENTER SPACE</button>
-      <small>WASD + Space + Shift + Mouse</small>
+
+      <p>
+        Fly freely through the Solar System.
+      </p>
+
+      <button id="startButton">
+        ENTER SPACE
+      </button>
+
+      <small class="desktopOnly">
+        WASD + Space + Shift + Mouse
+      </small>
+
+      <small class="mobileOnly">
+        Touch controls available in space
+      </small>
     </div>
+
+
+    <!-- ========================= -->
+    <!-- MOBILE CONTROLS -->
+    <!-- ========================= -->
+
+    <div id="mobileControls">
+
+      <!-- LEFT SIDE: UP / DOWN -->
+
+      <button
+        id="upButton"
+        class="verticalButton"
+      >
+        ▲
+      </button>
+
+      <button
+        id="downButton"
+        class="verticalButton"
+      >
+        ▼
+      </button>
+
+
+      <!-- RIGHT SIDE: MOVEMENT -->
+
+      <div id="movementPad">
+
+        <button
+          id="forwardButton"
+          class="directionButton upArrow"
+        >
+          ▲
+        </button>
+
+        <button
+          id="leftButton"
+          class="directionButton leftArrow"
+        >
+          ◀
+        </button>
+
+        <button
+          id="rightButton"
+          class="directionButton rightArrow"
+        >
+          ▶
+        </button>
+
+        <button
+          id="backButton"
+          class="directionButton downArrow"
+        >
+          ▼
+        </button>
+
+      </div>
+
+
+      <!-- SPEED -->
+
+      <div id="zoomControls">
+
+        <button id="zoomOutButton">
+          −
+        </button>
+
+        <div>
+          SPEED
+        </div>
+
+        <button id="zoomInButton">
+          +
+        </button>
+
+      </div>
+
+    </div>
+
   </div>
+
 
   <script type="module" src="app.js"></script>
 
