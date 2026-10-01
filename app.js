@@ -3,6 +3,42 @@ import * as THREE from
 
 
 // ============================================================
+// REAL SOLAR SYSTEM SCALE
+// ============================================================
+//
+// 1 game unit = 150,000 km
+//
+// 1 AU ≈ 149,600,000 km
+//
+// Therefore:
+// 1 AU ≈ 1000 game units
+//
+// Planet radii use their real approximate equatorial radii.
+// Distances use mean orbital distances.
+//
+// This means the game is physically scaled.
+// ============================================================
+
+const AU =
+  1000;
+
+
+// ============================================================
+// SIMULATION SPEED
+// ============================================================
+//
+// Real Solar System movement is obviously too slow to watch.
+//
+// 30 Earth days pass every real-world second.
+//
+// The ratios between orbital periods remain realistic.
+// ============================================================
+
+const SIMULATION_DAYS_PER_SECOND =
+  30;
+
+
+// ============================================================
 // SCENE
 // ============================================================
 
@@ -28,14 +64,18 @@ const camera =
     75,
     window.innerWidth /
       window.innerHeight,
-    0.1,
+    0.001,
     1000000
   );
+
+
+// Start around 1.2 AU from Sun.
+// This puts the player in the Earth/Mars region.
 
 camera.position.set(
   0,
   20,
-  500
+  1200
 );
 
 
@@ -85,24 +125,35 @@ scene.add(
 // ============================================================
 // SUN
 // ============================================================
+//
+// Real radius ≈ 695,700 km
+// At our scale ≈ 4.65 units
+// ============================================================
+
+const SUN_RADIUS =
+  4.65;
+
 
 const sunGeometry =
   new THREE.SphereGeometry(
-    45,
+    SUN_RADIUS,
     64,
     64
   );
+
 
 const sunMaterial =
   new THREE.MeshBasicMaterial({
     color: 0xffcc55
   });
 
+
 const sun =
   new THREE.Mesh(
     sunGeometry,
     sunMaterial
   );
+
 
 scene.add(
   sun
@@ -113,10 +164,11 @@ scene.add(
 
 const glowGeometry =
   new THREE.SphereGeometry(
-    58,
+    SUN_RADIUS * 1.35,
     32,
     32
   );
+
 
 const glowMaterial =
   new THREE.MeshBasicMaterial({
@@ -125,11 +177,13 @@ const glowMaterial =
     opacity: 0.12
   });
 
+
 const sunGlow =
   new THREE.Mesh(
     glowGeometry,
     glowMaterial
   );
+
 
 scene.add(
   sunGlow
@@ -146,39 +200,196 @@ const sunLight =
     1
   );
 
+
 scene.add(
   sunLight
 );
 
 
 // ============================================================
-// PLANETS
+// PLANET DATA
 // ============================================================
+//
+// Distances:
+// NASA mean orbital distances.
+//
+// Radii:
+// NASA planetary size data.
+//
+// Periods:
+// NASA orbital / rotational data.
+//
+// Eccentricity:
+// Used to make the orbit elliptical instead
+// of perfectly circular.
+// ============================================================
+
+const planetData = [
+
+  {
+    name: "Mercury",
+
+    radius: 0.0163,
+
+    distance: 0.3871 * AU,
+
+    orbitDays: 87.97,
+
+    rotationDays: 58.646,
+
+    eccentricity: 0.2056,
+
+    color: 0xaaaaaa
+  },
+
+
+  {
+    name: "Venus",
+
+    radius: 0.0405,
+
+    distance: 0.7233 * AU,
+
+    orbitDays: 224.70,
+
+    rotationDays: -243.025,
+
+    eccentricity: 0.0068,
+
+    color: 0xd9a066
+  },
+
+
+  {
+    name: "Earth",
+
+    radius: 0.0426,
+
+    distance: 1.0000 * AU,
+
+    orbitDays: 365.256,
+
+    rotationDays: 0.9973,
+
+    eccentricity: 0.0167,
+
+    color: 0x3377ff
+  },
+
+
+  {
+    name: "Mars",
+
+    radius: 0.0227,
+
+    distance: 1.5237 * AU,
+
+    orbitDays: 686.98,
+
+    rotationDays: 1.026,
+
+    eccentricity: 0.0934,
+
+    color: 0xcc4422
+  },
+
+
+  {
+    name: "Jupiter",
+
+    radius: 0.4673,
+
+    distance: 5.2028 * AU,
+
+    orbitDays: 4332.59,
+
+    rotationDays: 0.4135,
+
+    eccentricity: 0.0489,
+
+    color: 0xc9905c
+  },
+
+
+  {
+    name: "Saturn",
+
+    radius: 0.3893,
+
+    distance: 9.5388 * AU,
+
+    orbitDays: 10759.22,
+
+    rotationDays: 0.4440,
+
+    eccentricity: 0.0565,
+
+    color: 0xd8c18a
+  },
+
+
+  {
+    name: "Uranus",
+
+    radius: 0.1695,
+
+    distance: 19.1914 * AU,
+
+    orbitDays: 30688.5,
+
+    rotationDays: -0.7183,
+
+    eccentricity: 0.0463,
+
+    color: 0x66ccdd
+  },
+
+
+  {
+    name: "Neptune",
+
+    radius: 0.1646,
+
+    distance: 30.0611 * AU,
+
+    orbitDays: 60182,
+
+    rotationDays: 0.6713,
+
+    eccentricity: 0.0095,
+
+    color: 0x3366dd
+  }
+
+];
+
 
 const planets = [];
 
 
+// ============================================================
+// CREATE PLANET
+// ============================================================
+
 function createPlanet(
-  name,
-  radius,
-  distance,
-  color,
-  speed
+  data
 ) {
 
   const geometry =
     new THREE.SphereGeometry(
-      radius,
+      data.radius,
       32,
       32
     );
 
+
   const material =
     new THREE.MeshStandardMaterial({
-      color: color,
+      color: data.color,
       roughness: 0.8,
       metalness: 0
     });
+
 
   const mesh =
     new THREE.Mesh(
@@ -186,107 +397,68 @@ function createPlanet(
       material
     );
 
-  mesh.position.x =
-    distance;
 
   scene.add(
     mesh
   );
 
-  planets.push({
-    name,
+
+  const planet = {
+
+    ...data,
+
     mesh,
-    distance,
-    speed
-  });
 
-  return mesh;
-}
+    orbitAngle:
+      Math.random() *
+      Math.PI *
+      2
 
-
-createPlanet(
-  "Mercury",
-  4,
-  100,
-  0xaaaaaa,
-  0.012
-);
+  };
 
 
-createPlanet(
-  "Venus",
-  7,
-  150,
-  0xd9a066,
-  0.009
-);
-
-
-createPlanet(
-  "Earth",
-  9,
-  210,
-  0x3377ff,
-  0.007
-);
-
-
-createPlanet(
-  "Mars",
-  6,
-  280,
-  0xcc4422,
-  0.005
-);
-
-
-createPlanet(
-  "Jupiter",
-  22,
-  430,
-  0xc9905c,
-  0.0025
-);
-
-
-const saturn =
-  createPlanet(
-    "Saturn",
-    18,
-    570,
-    0xd8c18a,
-    0.0018
+  planets.push(
+    planet
   );
 
 
-createPlanet(
-  "Uranus",
-  13,
-  720,
-  0x66ccdd,
-  0.0012
-);
+  return planet;
+
+}
 
 
-createPlanet(
-  "Neptune",
-  13,
-  860,
-  0x3366dd,
-  0.0009
-);
+// Create planets
+
+for (
+  const data of planetData
+) {
+
+  createPlanet(
+    data
+  );
+
+}
 
 
 // ============================================================
 // SATURN RINGS
 // ============================================================
 
+const saturn =
+  planets.find(
+    planet =>
+      planet.name ===
+      "Saturn"
+  );
+
+
 const ringGeometry =
   new THREE.RingGeometry(
-    25,
-    38,
+    0.42,
+    0.65,
     64
   );
+
 
 const ringMaterial =
   new THREE.MeshBasicMaterial({
@@ -296,16 +468,19 @@ const ringMaterial =
     opacity: 0.65
   });
 
+
 const rings =
   new THREE.Mesh(
     ringGeometry,
     ringMaterial
   );
 
+
 rings.rotation.x =
   Math.PI / 2;
 
-saturn.add(
+
+saturn.mesh.add(
   rings
 );
 
@@ -315,12 +490,31 @@ saturn.add(
 // ============================================================
 
 function createOrbit(
-  radius
+  planet
 ) {
 
   const points = [];
 
-  const segments = 128;
+  const segments =
+    256;
+
+
+  const a =
+    planet.distance;
+
+
+  const b =
+    a *
+    Math.sqrt(
+      1 -
+      planet.eccentricity *
+      planet.eccentricity
+    );
+
+
+  const focusOffset =
+    a *
+    planet.eccentricity;
 
 
   for (
@@ -334,15 +528,23 @@ function createOrbit(
       Math.PI *
       2;
 
+
+    const x =
+      a *
+      Math.cos(angle) -
+      focusOffset;
+
+
+    const z =
+      b *
+      Math.sin(angle);
+
+
     points.push(
       new THREE.Vector3(
-        Math.cos(angle) *
-          radius,
-
+        x,
         0,
-
-        Math.sin(angle) *
-          radius
+        z
       )
     );
 
@@ -383,10 +585,135 @@ for (
 ) {
 
   createOrbit(
-    planet.distance
+    planet
   );
 
 }
+
+
+// ============================================================
+// EARTH + MOON
+// ============================================================
+
+const earth =
+  planets.find(
+    planet =>
+      planet.name ===
+      "Earth"
+  );
+
+
+// Moon:
+// radius ≈ 1,737 km
+// mean distance ≈ 384,400 km
+//
+// At our scale:
+// radius ≈ 0.0116 units
+// distance ≈ 2.57 units
+// ============================================================
+
+const MOON_RADIUS =
+  0.0116;
+
+
+const MOON_DISTANCE =
+  2.569;
+
+
+const MOON_ORBIT_DAYS =
+  27.321661;
+
+
+const moonGeometry =
+  new THREE.SphereGeometry(
+    MOON_RADIUS,
+    24,
+    24
+  );
+
+
+const moonMaterial =
+  new THREE.MeshStandardMaterial({
+    color: 0xaaaaaa,
+    roughness: 1
+  });
+
+
+const moon =
+  new THREE.Mesh(
+    moonGeometry,
+    moonMaterial
+  );
+
+
+scene.add(
+  moon
+);
+
+
+let moonAngle = 0;
+
+
+// Moon orbit line
+
+const moonOrbitPoints = [];
+
+const moonOrbitSegments =
+  96;
+
+
+for (
+  let i = 0;
+  i <= moonOrbitSegments;
+  i++
+) {
+
+  const angle =
+    (i / moonOrbitSegments) *
+    Math.PI *
+    2;
+
+
+  moonOrbitPoints.push(
+    new THREE.Vector3(
+      Math.cos(angle) *
+        MOON_DISTANCE,
+
+      0,
+
+      Math.sin(angle) *
+        MOON_DISTANCE
+    )
+  );
+
+}
+
+
+const moonOrbitGeometry =
+  new THREE.BufferGeometry()
+    .setFromPoints(
+      moonOrbitPoints
+    );
+
+
+const moonOrbitMaterial =
+  new THREE.LineBasicMaterial({
+    color: 0x444444,
+    transparent: true,
+    opacity: 0.35
+  });
+
+
+const moonOrbit =
+  new THREE.LineLoop(
+    moonOrbitGeometry,
+    moonOrbitMaterial
+  );
+
+
+scene.add(
+  moonOrbit
+);
 
 
 // ============================================================
@@ -395,6 +722,7 @@ for (
 
 const starCount =
   12000;
+
 
 const starPositions =
   new Float32Array(
@@ -411,15 +739,18 @@ for (
   const i3 =
     i * 3;
 
+
   const radius =
     3000 +
     Math.random() *
       5000;
 
+
   const theta =
     Math.random() *
     Math.PI *
     2;
+
 
   const phi =
     Math.acos(
@@ -489,10 +820,13 @@ scene.add(
 const velocity =
   new THREE.Vector3();
 
+
 const direction =
   new THREE.Vector3();
 
-let flying = false;
+
+let flying =
+  false;
 
 
 // ============================================================
@@ -502,34 +836,30 @@ let flying = false;
 const CHILL_SPEED =
   180;
 
+
 const SONIC_SPEED =
   CHILL_SPEED * 2;
+
 
 const POOP_SPEED =
   CHILL_SPEED * 4;
 
 
-// Default
-
 let currentSpeedMode =
   "chill";
 
 
-// Energy
+let energy =
+  100;
 
-let energy = 100;
-
-
-// Energy drain per second
 
 const SONIC_DRAIN =
   7;
 
+
 const POOP_DRAIN =
   22;
 
-
-// Sun refill radius
 
 const SUN_REFILL_DISTANCE =
   180;
@@ -568,9 +898,12 @@ document.addEventListener(
 // MOUSE LOOK
 // ============================================================
 
-let yaw = 0;
+let yaw =
+  0;
 
-let pitch = 0;
+
+let pitch =
+  0;
 
 
 document.addEventListener(
@@ -648,7 +981,8 @@ startButton.addEventListener(
       );
 
 
-    flying = true;
+    flying =
+      true;
 
 
     renderer.domElement
@@ -675,7 +1009,7 @@ renderer.domElement.addEventListener(
 
 
 // ============================================================
-// SPEED MODE BUTTONS
+// SPEED BUTTONS
 // ============================================================
 
 const chillButton =
@@ -683,10 +1017,12 @@ const chillButton =
     "chillButton"
   );
 
+
 const sonicButton =
   document.getElementById(
     "sonicButton"
   );
+
 
 const poopButton =
   document.getElementById(
@@ -700,9 +1036,11 @@ function updateSpeedButtons() {
     "active"
   );
 
+
   sonicButton.classList.remove(
     "active"
   );
+
 
   poopButton.classList.remove(
     "active"
@@ -751,9 +1089,6 @@ function setSpeedMode(
   mode
 ) {
 
-  // Can't activate energy modes
-  // when completely empty
-
   if (
     energy <= 0 &&
     mode !== "chill"
@@ -762,7 +1097,9 @@ function setSpeedMode(
     currentSpeedMode =
       "chill";
 
+
     updateSpeedButtons();
+
 
     return;
 
@@ -837,6 +1174,7 @@ function bindMobileButton(
 
       event.preventDefault();
 
+
       keys[key] =
         true;
 
@@ -847,6 +1185,7 @@ function bindMobileButton(
     event => {
 
       event.preventDefault();
+
 
       keys[key] =
         false;
@@ -1098,7 +1437,7 @@ renderer.domElement.addEventListener(
 
 
 // ============================================================
-// ENERGY SYSTEM
+// ENERGY
 // ============================================================
 
 const energyFill =
@@ -1122,9 +1461,7 @@ function updateEnergy(
     camera.position.length();
 
 
-  // -----------------------------------------
-  // REFILL NEAR SUN
-  // -----------------------------------------
+  // Sun charging
 
   if (
     distance <
@@ -1138,10 +1475,7 @@ function updateEnergy(
   }
 
 
-  // -----------------------------------------
-  // DRAIN
-  // ONLY WHILE ACTUALLY MOVING
-  // -----------------------------------------
+  // Only drain while actually moving
 
   if (
     isMoving &&
@@ -1169,8 +1503,6 @@ function updateEnergy(
   }
 
 
-  // Keep inside 0-100
-
   energy =
     Math.max(
       0,
@@ -1182,9 +1514,7 @@ function updateEnergy(
     );
 
 
-  // -----------------------------------------
-  // EMPTY ENERGY
-  // -----------------------------------------
+  // Empty = automatically Chill
 
   if (
     energy <= 0 &&
@@ -1192,19 +1522,18 @@ function updateEnergy(
       "chill"
   ) {
 
-    energy = 0;
+    energy =
+      0;
+
 
     currentSpeedMode =
       "chill";
+
 
     updateSpeedButtons();
 
   }
 
-
-  // -----------------------------------------
-  // UI
-  // -----------------------------------------
 
   energyFill.style.width =
     energy + "%";
@@ -1219,35 +1548,159 @@ function updateEnergy(
 
 
 // ============================================================
-// PLANET MOTION
+// PLANET ORBITS + ROTATION
 // ============================================================
 
-function updatePlanets() {
+function updatePlanets(
+  delta
+) {
+
+  const daysPassed =
+    delta *
+    SIMULATION_DAYS_PER_SECOND;
+
 
   for (
     const planet of planets
   ) {
 
-    const angle =
-      performance.now() *
-      0.001 *
-      planet.speed;
+    // -----------------------------------------
+    // ORBIT
+    // -----------------------------------------
+
+    const degreesPerDay =
+      360 /
+      planet.orbitDays;
+
+
+    const orbitRadians =
+      THREE.MathUtils.degToRad(
+        degreesPerDay
+      ) *
+      daysPassed;
+
+
+    planet.orbitAngle +=
+      orbitRadians;
+
+
+    const a =
+      planet.distance;
+
+
+    const e =
+      planet.eccentricity;
+
+
+    const b =
+      a *
+      Math.sqrt(
+        1 -
+        e *
+        e
+      );
+
+
+    const focusOffset =
+      a *
+      e;
 
 
     planet.mesh.position.x =
-      Math.cos(angle) *
-      planet.distance;
+      a *
+      Math.cos(
+        planet.orbitAngle
+      ) -
+      focusOffset;
 
 
     planet.mesh.position.z =
-      Math.sin(angle) *
-      planet.distance;
+      b *
+      Math.sin(
+        planet.orbitAngle
+      );
 
 
-    planet.mesh.rotation.y +=
-      0.002;
+    // -----------------------------------------
+    // ROTATION
+    // -----------------------------------------
+
+    const rotationDays =
+      planet.rotationDays;
+
+
+    const rotationRadians =
+      (
+        Math.PI *
+        2 *
+        daysPassed
+      ) /
+      Math.abs(
+        rotationDays
+      );
+
+
+    if (
+      rotationDays > 0
+    ) {
+
+      planet.mesh.rotation.y +=
+        rotationRadians;
+
+    } else {
+
+      planet.mesh.rotation.y -=
+        rotationRadians;
+
+    }
 
   }
+
+
+  // ==========================================================
+  // MOON ORBIT
+  // ==========================================================
+
+  const moonDegreesPerDay =
+    360 /
+    MOON_ORBIT_DAYS;
+
+
+  const moonOrbitRadians =
+    THREE.MathUtils.degToRad(
+      moonDegreesPerDay
+    ) *
+    daysPassed;
+
+
+  moonAngle +=
+    moonOrbitRadians;
+
+
+  moon.position.x =
+    earth.mesh.position.x +
+    Math.cos(
+      moonAngle
+    ) *
+      MOON_DISTANCE;
+
+
+  moon.position.y =
+    earth.mesh.position.y;
+
+
+  moon.position.z =
+    earth.mesh.position.z +
+    Math.sin(
+      moonAngle
+    ) *
+      MOON_DISTANCE;
+
+
+  // Moon synchronous rotation
+
+  moon.rotation.y =
+    moonAngle;
 
 }
 
@@ -1274,8 +1727,6 @@ function updatePlayer(
   );
 
 
-  // Forward
-
   if (
     keys["KeyW"]
   ) {
@@ -1284,8 +1735,6 @@ function updatePlayer(
 
   }
 
-
-  // Back
 
   if (
     keys["KeyS"]
@@ -1296,8 +1745,6 @@ function updatePlayer(
   }
 
 
-  // Left
-
   if (
     keys["KeyA"]
   ) {
@@ -1306,8 +1753,6 @@ function updatePlayer(
 
   }
 
-
-  // Right
 
   if (
     keys["KeyD"]
@@ -1318,8 +1763,6 @@ function updatePlayer(
   }
 
 
-  // Up
-
   if (
     keys["Space"]
   ) {
@@ -1328,8 +1771,6 @@ function updatePlayer(
 
   }
 
-
-  // Down
 
   if (
     keys["ShiftLeft"] ||
@@ -1342,7 +1783,8 @@ function updatePlayer(
 
 
   const isMoving =
-    direction.lengthSq() > 0;
+    direction.lengthSq() >
+    0;
 
 
   if (isMoving) {
@@ -1392,7 +1834,8 @@ function updatePlayer(
 
     camera.position.addScaledVector(
       velocity,
-      speed * delta
+      speed *
+      delta
     );
 
   } else {
@@ -1459,6 +1902,7 @@ function checkNearbyPlanet() {
       closestDistance =
         distance;
 
+
       closest =
         planet;
 
@@ -1467,9 +1911,34 @@ function checkNearbyPlanet() {
   }
 
 
+  // Moon can also be detected
+
+  const moonDistance =
+    camera.position.distanceTo(
+      moon.position
+    );
+
+
+  if (
+    moonDistance <
+    closestDistance
+  ) {
+
+    closestDistance =
+      moonDistance;
+
+
+    closest =
+      {
+        name: "Moon"
+      };
+
+  }
+
+
   if (
     closest &&
-    closestDistance < 120
+    closestDistance < 15
   ) {
 
     planetInfo.classList.remove(
@@ -1483,8 +1952,10 @@ function checkNearbyPlanet() {
 
     planetDistance.textContent =
       Math.round(
-        closestDistance
-      ) +
+        closestDistance *
+        100
+      ) /
+      100 +
       " units away";
 
   } else {
@@ -1547,11 +2018,15 @@ function updateHUD() {
     speedName;
 
 
+  const distanceAU =
+    camera.position.length() /
+    AU;
+
+
   locationDisplay.textContent =
     "Distance from Sun: " +
-    Math.round(
-      camera.position.length()
-    );
+    distanceAU.toFixed(2) +
+    " AU";
 
 }
 
@@ -1603,7 +2078,9 @@ function animate() {
     );
 
 
-  updatePlanets();
+  updatePlanets(
+    delta
+  );
 
 
   const isMoving =
