@@ -1,954 +1,555 @@
-* {
-  box-sizing: border-box;
+```css
+:root {
+  color-scheme: dark;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #03060b;
+  color: #eef3fa;
+  --panel: rgba(7, 13, 22, 0.78);
+  --line: rgba(210, 228, 250, 0.2);
+  --muted: #9aa9bc;
 }
 
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
 
 html,
-body {
-
-  margin: 0;
-
+body,
+#game {
   width: 100%;
   height: 100%;
-
+  margin: 0;
   overflow: hidden;
+  background: #03060b;
+}
 
-  background: #000;
+body {
+  overscroll-behavior: none;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
 
-  color: white;
+button {
+  color: inherit;
+  font: inherit;
+}
 
-  font-family:
-    Arial,
-    Helvetica,
-    sans-serif;
+#game {
+  position: fixed;
+  inset: 0;
+  isolation: isolate;
+}
 
+#space {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
   touch-action: none;
 }
 
-
-#game {
-
-  position: relative;
-
-  width: 100%;
-  height: 100%;
-
-  overflow: hidden;
-}
-
-
-canvas {
-
-  display: block;
-
-  width: 100%;
-  height: 100%;
-}
-
-
-/* ========================= */
-/* LOADING */
-/* ========================= */
-
-#loading {
-
-  position: absolute;
-
-  inset: 0;
-
-  z-index: 30;
-
-  display: flex;
-
-  flex-direction: column;
-
-  align-items: center;
-
-  justify-content: center;
-
-  background: #000;
-
-  font-size: 14px;
-
-  letter-spacing: 2px;
-}
-
-
-.loadingTitle {
-
-  font-size: 28px;
-
-  font-weight: bold;
-
-  margin-bottom: 12px;
-}
-
-
-/* ========================= */
-/* HUD */
-/* ========================= */
-
-#hud {
-
-  position: absolute;
-
-  top: 20px;
-  left: 20px;
-
-  z-index: 10;
-
-  pointer-events: none;
-
-  font-size: 13px;
-
-  line-height: 1.6;
-
-  text-shadow:
-    0 2px 5px #000;
-}
-
-
-.title {
-
-  font-size: 18px;
-
-  font-weight: bold;
-
-  letter-spacing: 3px;
-
-  margin-bottom: 10px;
-}
-
-
-.instructions {
-
-  opacity: 0.8;
-
-  margin-bottom: 12px;
-}
-
-
-#modeDisplay {
-
-  margin-bottom: 2px;
-
-  color: #ffcf66;
-
-  font-weight: bold;
-}
-
-
-#speed,
-#location {
-
-  opacity: 0.75;
-}
-
-
-/* ========================= */
-/* ENERGY */
-/* ========================= */
-
-#energyContainer {
-
-  width: 190px;
-
-  margin-top: 12px;
-}
-
-
-#energyBar {
-
-  width: 100%;
-
-  height: 10px;
-
-  border:
-    1px solid
-    rgba(255,255,255,0.45);
-
-  background:
-    rgba(0,0,0,0.5);
-
-  overflow: hidden;
-}
-
-
-#energyFill {
-
-  width: 100%;
-
-  height: 100%;
-
-  background:
-    linear-gradient(
-      90deg,
-      #ff7b00,
-      #ffd000,
-      #fff3a0
-    );
-
-  transition:
-    width 0.15s linear;
-}
-
-
-#energyText {
-
-  font-size: 10px;
-
-  margin-top: 3px;
-
-  opacity: 0.7;
-}
-
-
-/* ========================= */
-/* CROSSHAIR */
-/* ========================= */
-
-#crosshair {
-
-  position: absolute;
-
-  left: 50%;
-  top: 50%;
-
-  width: 18px;
-  height: 18px;
-
-  transform:
-    translate(-50%, -50%);
-
-  pointer-events: none;
-
-  z-index: 8;
-}
-
-
-#crosshair::before,
-#crosshair::after {
-
-  content: "";
-
-  position: absolute;
-
-  background:
-    rgba(255,255,255,0.8);
-}
-
-
-#crosshair::before {
-
-  width: 18px;
-  height: 1px;
-
-  left: 0;
-  top: 8px;
-}
-
-
-#crosshair::after {
-
-  width: 1px;
-  height: 18px;
-
-  left: 8px;
-  top: 0;
-}
-
-
-/* ========================= */
-/* PLANET LABELS */
-/* ========================= */
-
-#labelLayer {
-
-  position: absolute;
-
-  inset: 0;
-
-  z-index: 7;
-
-  pointer-events: none;
-
-  overflow: hidden;
-}
-
-
-.planetLabel {
-
-  position: absolute;
-
-  display: flex;
-
-  align-items: center;
-
-  transform:
-    translate(-50%, -50%);
-
-  white-space: nowrap;
-
-  text-shadow:
-    0 2px 6px #000;
-}
-
-
-.planetLabelText {
-
-  padding:
-    5px 9px;
-
-  border:
-    1px solid
-    rgba(255,255,255,0.5);
-
-  border-radius: 5px;
-
-  background:
-    rgba(0,0,0,0.68);
-
-  color: white;
-
-  font-size: 11px;
-
-  font-weight: bold;
-
-  letter-spacing: 1px;
-
-  backdrop-filter:
-    blur(5px);
-}
-
-
-.planetLabelLine {
-
-  width: 38px;
-
-  height: 1px;
-
-  margin-left: 5px;
-
-  background:
-    rgba(255,255,255,0.65);
-}
-
-
-/* ========================= */
-/* PLANET INFO */
-/* ========================= */
-
-#planetInfo {
-
-  position: absolute;
-
-  left: 50%;
-
-  bottom: 40px;
-
-  transform:
-    translateX(-50%);
-
-  z-index: 10;
-
-  padding:
-    10px 18px;
-
-  border:
-    1px solid
-    rgba(255,255,255,0.2);
-
-  background:
-    rgba(0,0,0,0.55);
-
-  text-align: center;
-
-  pointer-events: none;
-}
-
-
-#planetName {
-
-  font-size: 18px;
-
-  font-weight: bold;
-}
-
-
-#planetDistance {
-
-  margin-top: 3px;
-
-  font-size: 12px;
-
-  opacity: 0.7;
-}
-
-
 .hidden {
-
   display: none !important;
 }
 
-
-/* ========================= */
-/* MARS MESSAGE */
-/* ========================= */
-
-#marsMessage {
-
+.screen {
   position: absolute;
-
-  left: 50%;
-
-  top: 18%;
-
-  transform:
-    translateX(-50%);
-
-  z-index: 11;
-
-  padding:
-    10px 18px;
-
-  border:
-    1px solid
-    rgba(220,90,50,0.45);
-
-  background:
-    rgba(30,8,4,0.72);
-
-  text-align: center;
-
-  pointer-events: none;
-
-  backdrop-filter:
-    blur(5px);
-}
-
-
-#marsMessageTitle {
-
-  color: #ff7650;
-
-  font-size: 16px;
-
-  font-weight: bold;
-
-  letter-spacing: 3px;
-}
-
-
-#marsMessageText {
-
-  margin-top: 4px;
-
-  font-size: 11px;
-
-  opacity: 0.75;
-}
-
-
-/* ========================= */
-/* MOBILE */
-/* ========================= */
-
-#mobileControls {
-
-  display: none;
-
-  position: absolute;
-
+  z-index: 20;
   inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(2, 5, 10, 0.76);
+  backdrop-filter: blur(7px);
+}
 
-  z-index: 12;
+.screen-card {
+  width: min(460px, 100%);
+  padding: 34px 28px;
+  text-align: center;
+  border: 1px solid rgba(190, 218, 248, 0.2);
+  background: rgba(7, 13, 22, 0.88);
+  box-shadow: 0 20px 80px rgba(0, 0, 0, 0.45);
+}
 
+.eyebrow {
+  color: #9bb3cb;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+}
+
+.screen-card h1 {
+  margin: 22px 0 14px;
+  font-size: clamp(42px, 12vw, 70px);
+  font-weight: 300;
+  letter-spacing: 0.12em;
+  line-height: 0.98;
+}
+
+.screen-card h2 {
+  margin: 22px 0 12px;
+  font-size: 28px;
+  font-weight: 400;
+}
+
+.screen-card p {
+  color: #bdc8d6;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.primary-button {
+  min-height: 54px;
+  margin-top: 20px;
+  padding: 0 26px;
+  border: 1px solid rgba(182, 220, 255, 0.7);
+  border-radius: 3px;
+  background: rgba(58, 121, 174, 0.42);
+  font-size: 13px;
+  letter-spacing: 0.13em;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.primary-button:active {
+  background: rgba(78, 153, 215, 0.65);
+}
+
+.start-hint {
+  margin-top: 20px;
+  color: #8091a5;
+  font-size: 11px;
+}
+
+#gameUI {
+  position: absolute;
+  z-index: 5;
+  inset: 0;
   pointer-events: none;
 }
 
-
-#mobileControls button {
-
-  user-select: none;
-
-  -webkit-user-select: none;
-
-  touch-action: none;
-
-  -webkit-tap-highlight-color:
-    transparent;
-
-  cursor: pointer;
-}
-
-
-#mobileControls button:active {
-
-  transform:
-    scale(0.94);
-}
-
-
-/* ========================= */
-/* UP / DOWN */
-/* ========================= */
-
-#verticalControls {
-
+.hud {
   position: absolute;
-
-  left: 20px;
-
-  top: 50%;
-
-  transform:
-    translateY(-50%);
-
-  display: flex;
-
-  flex-direction: column;
-
-  gap: 12px;
-
-  padding: 8px;
-
-  border:
-    1px solid
-    rgba(255,255,255,0.18);
-
-  border-radius: 22px;
-
-  background:
-    rgba(5,10,20,0.55);
-
-  backdrop-filter:
-    blur(10px);
-
-  -webkit-backdrop-filter:
-    blur(10px);
-
-  pointer-events: auto;
+  top: max(14px, env(safe-area-inset-top));
+  left: max(14px, env(safe-area-inset-left));
+  width: min(230px, 48vw);
+  padding: 12px 13px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  pointer-events: none;
 }
 
-
-.verticalButton {
-
-  width: 58px;
-  height: 58px;
-
-  border-radius: 50%;
-
-  border:
-    1px solid
-    rgba(255,210,100,0.45);
-
-  background:
-    rgba(80,55,15,0.35);
-
-  color: white;
-
-  font-size: 20px;
-}
-
-
-.verticalButton:active {
-
-  background:
-    rgba(255,190,60,0.28);
-}
-
-
-/* ========================= */
-/* MOVEMENT PAD */
-/* ========================= */
-
-#movementPad {
-
-  position: absolute;
-
-  right: 25px;
-
-  bottom: 35px;
-
-  width: 170px;
-  height: 170px;
-
-  pointer-events: auto;
-
-  border:
-    1px solid
-    rgba(255,255,255,0.12);
-
-  border-radius: 50%;
-
-  background:
-    rgba(10,15,25,0.25);
-}
-
-
-.directionButton {
-
-  position: absolute;
-
-  width: 58px;
-  height: 58px;
-
-  border:
-    1px solid
-    rgba(255,255,255,0.28);
-
-  border-radius: 15px;
-
-  background:
-    rgba(20,25,40,0.45);
-
-  color: white;
-
-  font-size: 24px;
-
-  backdrop-filter:
-    blur(6px);
-
-  -webkit-backdrop-filter:
-    blur(6px);
-}
-
-
-.directionButton:active {
-
-  background:
-    rgba(255,255,255,0.25);
-}
-
-
-.upArrow {
-
-  left: 56px;
-
-  top: 0;
-}
-
-
-.leftArrow {
-
-  left: 0;
-
-  top: 56px;
-}
-
-
-.rightArrow {
-
-  right: 0;
-
-  top: 56px;
-}
-
-
-.downArrow {
-
-  left: 56px;
-
-  bottom: 0;
-}
-
-
-/* ========================= */
-/* SPEED BUTTONS */
-/* ========================= */
-
-#speedControls {
-
-  position: absolute;
-
-  right: 25px;
-
-  top: 25px;
-
-  display: flex;
-
-  flex-direction: column;
-
-  gap: 7px;
-
-  pointer-events: auto;
-}
-
-
-.speedButton {
-
-  width: 125px;
-
-  min-height: 47px;
-
-  padding:
-    6px 9px;
-
-  border-radius: 9px;
-
-  display: flex;
-
-  flex-direction: column;
-
-  align-items: center;
-
-  justify-content: center;
-
-  color: white;
-
-  transition:
-    0.18s ease;
-
-  opacity: 0.65;
-}
-
-
-/* CHILL */
-
-.chillSpeed {
-
-  border:
-    1px solid
-    rgba(90,255,130,0.35);
-
-  background:
-    rgba(20,70,35,0.25);
-}
-
-
-.chillSpeed.active {
-
-  opacity: 1;
-
-  border-color:
-    rgba(90,255,130,0.95);
-
-  background:
-    rgba(35,150,65,0.45);
-
-  box-shadow:
-    0 0 16px
-    rgba(70,255,120,0.35);
-}
-
-
-/* SONIC */
-
-.sonicSpeed {
-
-  border:
-    1px solid
-    rgba(80,180,255,0.35);
-
-  background:
-    rgba(20,55,90,0.25);
-}
-
-
-.sonicSpeed.active {
-
-  opacity: 1;
-
-  border-color:
-    rgba(80,190,255,0.95);
-
-  background:
-    rgba(30,100,170,0.45);
-
-  box-shadow:
-    0 0 16px
-    rgba(60,170,255,0.35);
-}
-
-
-/* POOP */
-
-.poopSpeed {
-
-  border:
-    1px solid
-    rgba(255,190,60,0.35);
-
-  background:
-    rgba(90,60,15,0.25);
-}
-
-
-.poopSpeed.active {
-
-  opacity: 1;
-
-  border-color:
-    rgba(255,200,70,0.95);
-
-  background:
-    rgba(160,105,20,0.45);
-
-  box-shadow:
-    0 0 16px
-    rgba(255,190,50,0.35);
-}
-
-
-.speedTitle {
-
+.hud-title {
+  margin-bottom: 9px;
+  color: #e7f1fb;
   font-size: 11px;
+  letter-spacing: 0.16em;
+}
 
-  font-weight: bold;
+#distanceReadout {
+  color: var(--muted);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+}
 
-  letter-spacing: 1px;
+#distanceReadout strong {
+  display: block;
+  margin-top: 4px;
+  color: #e6edf6;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
 
+.energy-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.energy-track {
+  flex: 1;
+  height: 4px;
+  overflow: hidden;
+  background: rgba(220, 230, 240, 0.16);
+}
+
+#energyFill {
+  width: 100%;
+  height: 100%;
+  background: #85d9a1;
+  transition: width 0.15s linear, background 0.2s linear;
+}
+
+#energyPercent {
+  min-width: 32px;
+  color: #dce7f1;
+  font-size: 10px;
+  text-align: right;
+}
+
+.energy-warning {
+  min-height: 12px;
+  margin-top: 4px;
+  color: #ffc66e;
+  font-size: 9px;
+}
+
+.speed-controls {
+  position: absolute;
+  top: max(14px, env(safe-area-inset-top));
+  right: max(14px, env(safe-area-inset-right));
+  display: flex;
+  gap: 6px;
+  pointer-events: auto;
+}
+
+.speed-button {
+  min-width: 61px;
+  min-height: 48px;
+  padding: 6px 8px;
+  border: 1px solid rgba(210, 228, 250, 0.18);
+  border-radius: 3px;
+  background: rgba(7, 13, 22, 0.76);
+  color: #8390a0;
+  text-align: center;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.speed-button span {
+  display: block;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.15;
+}
+
+.speed-button small {
+  display: block;
+  margin-top: 4px;
+  font-size: 8px;
+}
+
+.speed-button.selected.chill {
+  border-color: rgba(112, 226, 151, 0.7);
+  color: #8fe4aa;
+}
+
+.speed-button.selected.sonic {
+  border-color: rgba(105, 181, 255, 0.8);
+  color: #8fc9ff;
+}
+
+.speed-button.selected.poop {
+  border-color: rgba(255, 190, 94, 0.8);
+  color: #ffc66e;
+}
+
+.target-readout,
+.planet-info {
+  position: absolute;
+  left: 50%;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  transform: translateX(-50%);
   text-align: center;
 }
 
+.target-readout {
+  top: max(76px, calc(env(safe-area-inset-top) + 76px));
+  display: grid;
+  min-width: 150px;
+  gap: 3px;
+  pointer-events: auto;
+}
 
-.speedDescription {
+.target-caption {
+  color: #91a5ba;
+  font-size: 8px;
+  letter-spacing: 0.16em;
+}
 
-  margin-top: 2px;
+#targetName {
+  font-size: 12px;
+  letter-spacing: 0.11em;
+}
 
+#targetDistance {
+  color: #b8c5d4;
+  font-size: 10px;
+}
+
+#clearTarget {
+  position: absolute;
+  top: 3px;
+  right: 5px;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  background: transparent;
+  color: #aab8c7;
+  font-size: 20px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.planet-info {
+  bottom: 170px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  font-size: 10px;
+}
+
+.planet-info strong {
+  letter-spacing: 0.1em;
+}
+
+.planet-info span {
+  color: #aab8c7;
+}
+
+.vertical-controls,
+.movement-pad {
+  position: absolute;
+  bottom: max(18px, env(safe-area-inset-bottom));
+  display: grid;
+  gap: 7px;
+  pointer-events: auto;
+}
+
+.vertical-controls {
+  left: max(18px, env(safe-area-inset-left));
+  grid-template-columns: 1fr;
+}
+
+.movement-pad {
+  right: max(18px, env(safe-area-inset-right));
+  grid-template-columns: repeat(3, 54px);
+  grid-template-rows: repeat(3, 48px);
+  gap: 5px;
+}
+
+.control-button {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 54px;
+  border: 1px solid rgba(221, 234, 249, 0.32);
+  border-radius: 4px;
+  background: rgba(8, 16, 27, 0.76);
+  color: #e2edf8;
+  font-size: 17px;
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.movement-pad .control-button {
+  width: 54px;
+  height: 48px;
+}
+
+.control-button.active,
+.control-button:active {
+  border-color: rgba(130, 198, 255, 0.9);
+  background: rgba(57, 112, 157, 0.75);
+}
+
+.pad-up {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.pad-left {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.pad-right {
+  grid-column: 3;
+  grid-row: 2;
+}
+
+.pad-down {
+  grid-column: 2;
+  grid-row: 3;
+}
+
+.look-hint {
+  position: absolute;
+  bottom: max(15px, env(safe-area-inset-bottom));
+  left: 50%;
+  color: rgba(211, 224, 239, 0.48);
+  font-size: 8px;
+  letter-spacing: 0.16em;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+/* Planet callouts: HTML labels are used so they stay readable at tiny scales. */
+#labelLines,
+#planetLabels {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+#labelLines {
+  z-index: 2;
+}
+
+.planet-label {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  min-height: 23px;
+  padding: 3px 7px;
+  border: 1px solid rgba(181, 209, 236, 0.25);
+  background: rgba(4, 9, 16, 0.72);
+  color: #dce8f5;
   font-size: 9px;
-
-  opacity: 0.6;
+  letter-spacing: 0.11em;
+  white-space: nowrap;
+  transform: translate(0, -50%);
+  pointer-events: auto;
+  cursor: pointer;
+  touch-action: manipulation;
 }
 
-
-/* ========================= */
-/* MOBILE VISIBILITY */
-/* ========================= */
-
-.mobileOnly {
-
-  display: none;
+.planet-label::before {
+  width: 5px;
+  height: 5px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: #9dbbd8;
+  content: "";
 }
 
+.planet-label.offscreen {
+  color: #c3d2e1;
+  opacity: 0.76;
+}
 
-@media (max-width: 800px) {
+.planet-label.targeted {
+  border-color: rgba(255, 207, 119, 0.9);
+  color: #ffda9b;
+}
 
-  .desktopOnly {
+.planet-label.targeted::before {
+  background: #ffc66e;
+  box-shadow: 0 0 8px #ffc66e;
+}
 
-    display: none;
+.label-line {
+  stroke: rgba(176, 207, 236, 0.48);
+  stroke-width: 1;
+}
+
+.label-line.targeted {
+  stroke: rgba(255, 207, 119, 0.85);
+}
+
+@media (max-width: 600px) {
+  .hud {
+    width: 148px;
+    padding: 9px;
   }
 
-
-  .mobileOnly {
-
-    display: block;
+  .hud-title {
+    font-size: 9px;
   }
 
-
-  #mobileControls {
-
-    display: block;
+  #distanceReadout {
+    font-size: 8px;
   }
 
-
-  #hud {
-
-    top: 12px;
-
-    left: 12px;
-
+  #distanceReadout strong {
     font-size: 11px;
   }
 
-
-  .title {
-
-    font-size: 14px;
-
-    letter-spacing: 2px;
-
-    margin-bottom: 4px;
+  .speed-controls {
+    gap: 4px;
   }
 
-
-  #energyContainer {
-
-    width: 145px;
-
-    margin-top: 8px;
-  }
-
-
-  #planetInfo {
-
-    bottom: 15px;
-  }
-
-
-  #marsMessage {
-
-    top: 14%;
-  }
-
-
-  #startScreen h1 {
-
-    font-size: 38px;
-
-    letter-spacing: 4px;
-  }
-
-
-  #startScreen p {
-
-    font-size: 14px;
-  }
-
-}
-
-
-/* ========================= */
-/* SMALL PHONES */
-/* ========================= */
-
-@media (max-width: 400px) {
-
-  #verticalControls {
-
-    left: 10px;
-
-    padding: 6px;
-
-    gap: 8px;
-  }
-
-
-  .verticalButton {
-
-    width: 50px;
-
-    height: 50px;
-  }
-
-
-  #movementPad {
-
-    right: 15px;
-
-    bottom: 20px;
-
-    transform:
-      scale(0.9);
-
-    transform-origin:
-      bottom right;
-  }
-
-
-  #speedControls {
-
-    right: 15px;
-
-    top: 15px;
-  }
-
-
-  .speedButton {
-
-    width: 112px;
-
+  .speed-button {
+    min-width: 49px;
     min-height: 43px;
+    padding: 5px 4px;
   }
 
+  .speed-button span {
+    font-size: 8px;
+  }
+
+  .speed-button small {
+    font-size: 7px;
+  }
+
+  .vertical-controls {
+    left: max(12px, env(safe-area-inset-left));
+  }
+
+  .movement-pad {
+    right: max(12px, env(safe-area-inset-right));
+    grid-template-columns: repeat(3, 47px);
+    grid-template-rows: repeat(3, 43px);
+    gap: 4px;
+  }
+
+  .control-button {
+    width: 52px;
+    height: 49px;
+  }
+
+  .movement-pad .control-button {
+    width: 47px;
+    height: 43px;
+  }
+
+  .planet-info {
+    bottom: 158px;
+  }
 }
+
+@media (max-height: 500px) {
+  .vertical-controls,
+  .movement-pad {
+    bottom: max(8px, env(safe-area-inset-bottom));
+  }
+
+  .vertical-controls {
+    grid-template-columns: repeat(2, 48px);
+  }
+
+  .control-button {
+    width: 48px;
+    height: 43px;
+  }
+
+  .movement-pad {
+    grid-template-columns: repeat(3, 45px);
+    grid-template-rows: repeat(3, 36px);
+  }
+
+  .movement-pad .control-button {
+    width: 45px;
+    height: 36px;
+  }
+
+  .planet-info {
+    bottom: 118px;
+  }
+}
+```
