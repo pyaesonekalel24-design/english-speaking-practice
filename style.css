@@ -1,7 +1,3 @@
-/* =========================
-   BASIC RESET
-========================= */
-
 * {
   box-sizing: border-box;
   margin: 0;
@@ -9,39 +5,27 @@
 }
 
 body {
-  font-family:
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    Arial,
-    sans-serif;
-
-  background: #101522;
-  color: #ffffff;
-
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f4f7fb;
+  color: #111827;
   min-height: 100vh;
-
-  overflow-x: hidden;
 }
 
 
 /* =========================
-   SCREENS
+   SCREEN SYSTEM
 ========================= */
 
 .screen {
   display: none;
-
   min-height: 100vh;
-
+  width: 100%;
   padding: 24px;
-
-  align-items: center;
-  justify-content: center;
 }
 
 .screen.active {
   display: flex;
+  flex-direction: column;
 }
 
 
@@ -49,57 +33,27 @@ body {
    HOME
 ========================= */
 
-.home-card {
-  width: 100%;
-  max-width: 430px;
-
-  text-align: center;
-
-  padding: 42px 28px;
-
-  background: #192033;
-
-  border-radius: 28px;
-
-  box-shadow:
-    0 20px 60px rgba(0, 0, 0, 0.35);
-}
-
-.logo-circle {
-  width: 82px;
-  height: 82px;
-
-  margin: 0 auto 22px;
-
-  display: flex;
-  align-items: center;
+#homeScreen {
   justify-content: center;
-
-  border-radius: 50%;
-
-  background: #273653;
-
-  font-size: 38px;
+  align-items: center;
+  text-align: center;
 }
 
-h1 {
-  font-size: 38px;
-  margin-bottom: 8px;
+.logo {
+  font-size: 58px;
+  font-weight: 800;
+  letter-spacing: -3px;
 }
 
-.subtitle {
-  font-size: 19px;
-  color: #9fb4d7;
-
-  margin-bottom: 20px;
+.logo span {
+  color: #2563eb;
 }
 
-.description {
-  color: #b8c2d3;
-
-  line-height: 1.6;
-
-  margin-bottom: 30px;
+.tagline {
+  margin-top: 12px;
+  color: #6b7280;
+  font-size: 18px;
+  margin-bottom: 42px;
 }
 
 
@@ -107,41 +61,35 @@ h1 {
    BUTTONS
 ========================= */
 
-button {
-  font-family: inherit;
-  cursor: pointer;
+.primaryBtn {
   border: none;
-}
-
-.primary-button {
-  width: 100%;
-
-  padding: 16px;
-
-  border-radius: 14px;
-
-  background: #5b8cff;
+  background: #2563eb;
   color: white;
-
-  font-size: 18px;
+  padding: 16px 30px;
+  border-radius: 14px;
+  font-size: 17px;
   font-weight: 700;
-
-  transition: transform 0.15s;
+  cursor: pointer;
+  transition: 0.2s;
 }
 
-.primary-button:active {
+.primaryBtn:hover {
+  transform: translateY(-2px);
+  background: #1d4ed8;
+}
+
+.primaryBtn:active {
   transform: scale(0.97);
 }
 
-.secondary-button {
-  margin-top: 20px;
-
-  padding: 12px 20px;
-
-  border-radius: 12px;
-
-  background: #273653;
-  color: white;
+.backBtn {
+  border: none;
+  background: transparent;
+  color: #374151;
+  font-size: 16px;
+  cursor: pointer;
+  width: fit-content;
+  margin-bottom: 25px;
 }
 
 
@@ -149,230 +97,112 @@ button {
    LEVEL SCREEN
 ========================= */
 
-.level-card {
+#levelScreen {
+  max-width: 700px;
+  margin: auto;
   width: 100%;
-  max-width: 480px;
-
-  background: #192033;
-
-  border-radius: 26px;
-
-  padding: 30px;
+  justify-content: center;
 }
 
-.level-card h2 {
-  font-size: 28px;
-
+#levelScreen h1 {
+  font-size: 36px;
   margin-bottom: 8px;
 }
 
-.level-card > p {
-  color: #aebbd0;
-
-  margin-bottom: 24px;
+.subtitle {
+  color: #6b7280;
+  margin-bottom: 30px;
 }
 
-.level-buttons {
+.levelContainer {
   display: flex;
   flex-direction: column;
-
-  gap: 12px;
+  gap: 14px;
 }
 
-.level-button {
+.levelBtn {
   width: 100%;
-
   text-align: left;
-
-  padding: 18px;
-
+  border: 2px solid #e5e7eb;
+  background: white;
+  padding: 22px;
   border-radius: 16px;
-
-  background: #222d44;
-
-  color: white;
-
-  border: 2px solid transparent;
-
-  transition: 0.15s;
+  cursor: pointer;
+  transition: 0.2s;
 }
 
-.level-button:hover {
-  border-color: #5b8cff;
+.levelBtn:hover {
+  border-color: #2563eb;
+  transform: translateY(-2px);
 }
 
-.level-button strong {
+.levelBtn strong {
   display: block;
-
-  font-size: 18px;
-
-  margin-bottom: 5px;
+  font-size: 20px;
+  margin-bottom: 6px;
 }
 
-.level-button span {
-  color: #9daac0;
-
-  font-size: 14px;
+.levelBtn span {
+  color: #6b7280;
 }
 
 
 /* =========================
-   PRACTICE HEADER
+   PRACTICE
 ========================= */
 
-.practiceScreen {
-  padding: 0;
+#practiceScreen {
+  max-width: 800px;
+  margin: auto;
+  width: 100%;
 }
 
-.practice-header {
-  position: fixed;
-
-  top: 0;
-  left: 0;
-
-  width: 100%;
-
+.topBar {
   display: flex;
-
-  align-items: center;
   justify-content: space-between;
-
-  padding: 15px 20px;
-
-  background: rgba(16, 21, 34, 0.95);
-
-  z-index: 20;
-
-  border-bottom: 1px solid #28344c;
+  align-items: center;
 }
 
-.practice-header h1 {
-  font-size: 22px;
-
-  margin: 0;
-}
-
-#currentLevel {
-  color: #91a9d1;
-
+#levelLabel {
+  background: #e5edff;
+  color: #2563eb;
+  padding: 7px 13px;
+  border-radius: 20px;
   font-size: 13px;
+  font-weight: 700;
 }
 
-.small-button {
-  padding: 9px 14px;
-
-  border-radius: 10px;
-
-  background: #273653;
-
-  color: white;
+.practiceHeader {
+  margin-bottom: 20px;
 }
 
+.practiceHeader h1 {
+  font-size: 34px;
+}
 
-/* =========================
-   PRACTICE MAIN
-========================= */
-
-.practice-main {
-  width: 100%;
-  max-width: 650px;
-
-  padding-top: 90px;
-  padding-bottom: 50px;
+.practiceHeader p {
+  color: #6b7280;
+  margin-top: 6px;
 }
 
 
 /* =========================
-   READING WINDOW
+   PASSAGE
 ========================= */
 
-.reading-window {
-  position: relative;
-
-  height: 260px;
-
+.passageBox {
+  background: white;
+  border-radius: 20px;
+  padding: 28px;
+  min-height: 220px;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.06);
   overflow: hidden;
-
-  background: #f4f1e8;
-
-  color: #1b1d21;
-
-  border-radius: 22px;
-
-  padding: 35px 25px;
-
-  box-shadow:
-    0 15px 40px rgba(0, 0, 0, 0.3);
+  position: relative;
 }
 
-.reading-window::before {
-  content: "";
-
-  position: absolute;
-
-  top: 0;
-  left: 0;
-
-  width: 100%;
-  height: 55px;
-
-  background:
-    linear-gradient(
-      to bottom,
-      #f4f1e8,
-      transparent
-    );
-
-  z-index: 2;
-
-  pointer-events: none;
-}
-
-.reading-window::after {
-  content: "";
-
-  position: absolute;
-
-  bottom: 0;
-  left: 0;
-
-  width: 100%;
-  height: 55px;
-
-  background:
-    linear-gradient(
-      to top,
-      #f4f1e8,
-      transparent
-    );
-
-  z-index: 2;
-
-  pointer-events: none;
-}
-
-.scrolling-text {
-  font-family: Georgia, serif;
-
-  font-size: 22px;
-
+.passageText {
+  font-size: 24px;
   line-height: 1.8;
-
-  animation: scrollText 22s linear infinite;
-
-  padding-bottom: 100px;
-}
-
-@keyframes scrollText {
-
-  0% {
-    transform: translateY(100%);
-  }
-
-  100% {
-    transform: translateY(-100%);
-  }
-
 }
 
 
@@ -380,186 +210,180 @@ button {
    MICROPHONE
 ========================= */
 
-.mic-section {
+.micArea {
   text-align: center;
-
-  padding: 28px 0;
+  margin: 28px 0;
 }
 
-.mic-button {
-  width: 82px;
-  height: 82px;
-
+.micBtn {
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
-
-  background: #5b8cff;
-
+  border: none;
+  background: #111827;
   color: white;
-
-  font-size: 34px;
-
-  box-shadow:
-    0 10px 30px rgba(91, 140, 255, 0.3);
-
+  font-size: 32px;
+  cursor: pointer;
   transition: 0.2s;
 }
 
-.mic-button.listening {
-  transform: scale(1.08);
+.micBtn:hover {
+  transform: scale(1.05);
+}
 
-  background: #ef5364;
+.micBtn.recording {
+  background: #dc2626;
+  animation: pulse 1.2s infinite;
+}
 
-  box-shadow:
-    0 0 0 12px rgba(239, 83, 100, 0.15);
+@keyframes pulse {
+
+  0% {
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.5);
+  }
+
+  70% {
+    box-shadow: 0 0 0 18px rgba(220, 38, 38, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+  }
+
 }
 
 #micStatus {
-  color: #9facbf;
-
   margin-top: 12px;
+  color: #6b7280;
+}
 
+#recordingTimer {
+  margin-top: 5px;
   font-size: 14px;
+  color: #9ca3af;
 }
 
 
 /* =========================
-   TRANSCRIPT
+   RESULTS
 ========================= */
 
-.transcript-card,
-.result-card,
-.word-info {
-  background: #192033;
+.resultSection {
+  margin-top: 20px;
+}
 
-  border-radius: 20px;
+.resultSection h2 {
+  font-size: 20px;
+  margin-bottom: 10px;
+}
 
+.hint {
+  color: #6b7280;
+  font-size: 14px;
+  margin-bottom: 15px;
+}
+
+.transcriptBox {
+  background: white;
   padding: 20px;
-
-  margin-top: 15px;
-}
-
-.card-title {
-  color: #8fa4c5;
-
-  font-size: 13px;
-
-  text-transform: uppercase;
-
-  letter-spacing: 1px;
-
-  margin-bottom: 12px;
-}
-
-.transcript {
-  min-height: 70px;
-
-  color: #e7ebf2;
-
+  border-radius: 15px;
   line-height: 1.7;
 }
 
 
 /* =========================
-   RESULT
+   SCORE
 ========================= */
 
-.result-card h3 {
-  margin-bottom: 8px;
+.scoreCard {
+  margin-top: 20px;
+  background: white;
+  border-radius: 18px;
+  padding: 25px;
+  text-align: center;
 }
 
-#resultSummary {
-  color: #aebbd0;
-
-  margin-bottom: 15px;
+.scoreNumber {
+  font-size: 54px;
+  font-weight: 800;
 }
 
-.word-results {
-  display: flex;
+.scoreNumber small {
+  font-size: 22px;
+  color: #9ca3af;
+}
 
-  flex-wrap: wrap;
+#scoreMessage {
+  margin-top: 8px;
+  color: #6b7280;
+}
 
-  gap: 7px;
+
+/* =========================
+   WORD COMPARISON
+========================= */
+
+.wordComparison {
+  background: white;
+  border-radius: 18px;
+  padding: 20px;
+  line-height: 2.2;
+  font-size: 20px;
 }
 
 .word {
-  padding: 5px 8px;
-
-  border-radius: 7px;
-
-  background: #28354d;
-
+  display: inline-block;
+  margin-right: 7px;
   cursor: pointer;
 }
 
+.word.correct {
+  color: #111827;
+}
+
 .word.wrong {
-  background: #672f3a;
-
-  color: #ff8e9a;
-
+  color: #dc2626;
+  font-weight: 700;
   text-decoration: underline;
 }
 
 
 /* =========================
-   WORD INFORMATION
+   WORD INFO
 ========================= */
 
-.word-info {
-  position: relative;
-}
-
-.word-info h3 {
-  font-size: 28px;
-
-  margin-bottom: 10px;
-}
-
-.close-button {
-  position: absolute;
-
-  top: 12px;
-  right: 15px;
-
-  background: transparent;
-
-  color: #aab6c9;
-
-  font-size: 25px;
-}
-
-.pronounce-button {
-  width: 100%;
-
-  margin-top: 15px;
-
-  padding: 13px;
-
-  border-radius: 12px;
-
-  background: #273653;
-
+.wordInfo {
+  background: #111827;
   color: white;
-
-  font-weight: 600;
-}
-
-.sound-example {
   margin-top: 20px;
-
-  padding-top: 15px;
-
-  border-top: 1px solid #2d3a52;
-
-  color: #aebbd0;
+  padding: 22px;
+  border-radius: 18px;
 }
 
-.sound-example strong {
-  color: white;
+.selectedWord {
+  font-size: 30px;
+  font-weight: 800;
+  margin-bottom: 15px;
+}
+
+.pronounceBtn {
+  border: none;
+  background: white;
+  color: #111827;
+  padding: 12px 17px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.similarWords {
+  margin-top: 15px;
+  color: #d1d5db;
 }
 
 
 /* =========================
-   HIDDEN
+   UTILITY
 ========================= */
 
 .hidden {
@@ -571,26 +395,26 @@ button {
    MOBILE
 ========================= */
 
-@media (max-width: 500px) {
+@media (max-width: 600px) {
 
   .screen {
-    padding: 16px;
+    padding: 18px;
   }
 
-  .home-card {
-    padding: 35px 22px;
+  .logo {
+    font-size: 48px;
   }
 
-  .home-card h1 {
-    font-size: 34px;
+  .practiceHeader h1 {
+    font-size: 28px;
   }
 
-  .reading-window {
-    height: 280px;
-  }
-
-  .scrolling-text {
+  .passageText {
     font-size: 20px;
+  }
+
+  .passageBox {
+    padding: 20px;
   }
 
 }
